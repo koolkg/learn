@@ -57,9 +57,41 @@ def distribute_candy(ratings):
     # we return the sum of all candies distributed.
     return sum(candies)
 
+def candy2(ratings):
+    n = len(ratings)
+    if (n <= 1):
+        return n
+    
+    total = 1
+    up = 0 # length of current increasing run
+    down = 0 # lenth of current decreasing run
+    peak = 0 # hight of most recent peak (== up at the peak)
+
+    for i in range(1, n):
+        if (ratings[i] > ratings[i-1]): # upward trend started
+            up +=1
+            donw = 0
+            peak = up
+            total += 1 + up # add to total candies, add 1 + the increment
+        elif (ratings[i] == ratings[i-1]): # reset everything
+            up = 0
+            down = 0
+            peak = 0
+            total +=1 # add to total 1 for each flat
+        else: # downward trend started
+            up = 0 # reset up
+            down +=1 # increment up
+            # during downslope, each previous child needs one extra candy than the current child
+            # as the rating of previous child is higher
+            # that will down number of extra candies + 1 for this child
+            # eliminate double counting for peak
+            total += 1 + down - (1 if peak >= down  else 0)
+    return total
+
 def main():
-    ratings = [1, 1, 2]
-    candies = distribute_candy(ratings)
+    ratings = [5,3,7,3]
+    # candies = distribute_candy(ratings)
+    candies = candy2(ratings)
     print ("Total candies = ", candies)
 
 if __name__ == "__main__":
