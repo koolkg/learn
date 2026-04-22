@@ -1,4 +1,5 @@
 '''
+https://leetcode.com/problems/first-missing-positive/description/
 Given an unsorted integer array nums. Return the smallest positive integer that is not present in nums.
 You must implement an algorithm that runs in O(n) time and uses O(1) auxiliary space.
 
@@ -52,13 +53,18 @@ def smallest_missing_int3(values: List[int]) -> int:
     while (i < n):
         v = values[i]
 
+        # if v in the array index range and it's not in it's correct index
+        # then swap it, but do not increment i so that we can continue from there
         if (1 <= v <= n and values[v-1] != v):
             values[i],  values[v-1] = values[v-1], values[i]
         else:
             i +=1
+    
+    # now walk thorgh the sorted array to find the first element that is not in it's index reuturn i+1
     for i in range (n):
         if values[i] != i+1:
             return i+1
+    # element missting is the next element in the range (out side of range)
     return n+1
 
 def main():

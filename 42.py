@@ -44,7 +44,7 @@ def trap(height: List[int]) -> int:
     trapped_water = 0
 
     for i in range (1, n):
-        current = min(max_left[i], max_right[i]) - height[i]
+        current = min(max_left[i], max_right[i]) - height[i] # this is the formula
         #if current > 0:
         trapped_water += current if current > 0 else 0
     return trapped_water
