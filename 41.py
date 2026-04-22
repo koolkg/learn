@@ -39,3 +39,36 @@ def smallest_missing_int(values: List[int]) -> int:
         if (v == False):
             return k
     
+def smallest_missing_int2(values: List[int]) -> int:
+    seen = set(values)
+    i = 1
+    while(i in seen):
+        i += 1
+    return i
+
+def smallest_missing_int3(values: List[int]) -> int:
+    n = len(values)
+    i = 0
+    while (i < n):
+        v = values[i]
+
+        if (1 <= v <= n and values[v-1] != v):
+            values[i],  values[v-1] = values[v-1], values[i]
+        else:
+            i +=1
+    for i in range (n):
+        if values[i] != i+1:
+            return i+1
+    return n+1
+
+def main():
+    values = [7,8,9,11,12]
+    print(smallest_missing_int3(values))
+
+if __name__ == '__main__':
+    main()
+
+
+    
+
+    
