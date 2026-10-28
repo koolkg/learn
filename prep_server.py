@@ -7,12 +7,13 @@ Local runner for coding_interview_prep.html.
 - Serves the prep page and runs your Java / Python code against the tests,
   using the javac/java/python3 already installed on this computer.
 - Listens on 127.0.0.1 only. Nothing is sent anywhere else.
-- Your code is also saved as files under ./solutions/ (one file per problem and language).
+- Your code is also saved as files under ./solutions/ (one file per problem and language),
+  and your progress (done / passing / attempted) in ./solutions/progress.json.
 - Requests must carry a per-session token that is only embedded in the page this
   server serves, so other websites can't use the runner.
 Standard library only. Stop with Ctrl+C.
 """
-import argparse, json, os, re, secrets, shutil, subprocess, sys, tempfile, webbrowser
+import argparse, json, os, re, secrets, shutil, subprocess, sys, tempfile, threading, webbrowser
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
@@ -24,6 +25,37 @@ RUN_TIMEOUT = 10
 COMPILE_TIMEOUT = 60
 JAVA_IMPORTS = "import java.util.*;\nimport java.util.function.*;\nimport java.util.stream.*;\n"
 SAFE_ID = re.compile(r"^[a-z0-9-]{1,120}$")
+PROGRESS = os.path.join(SOLUTIONS, "progress.json")
+PROGRESS_FIELDS = {"done", "doneAt", "attempted", "last", "updated"}
+_lock = threading.Lock()
+
+
+def read_progress():
+    try:
+        with open(PROGRESS, encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def write_progress(data):
+    os.makedirs(SOLUTIONS, exist_ok=True)
+    tmp = PROGRESS + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, sort_keys=True)
+        f.write("\n")
+    os.replace(tmp, PROGRESS)  # atomic: never leaves a half-written file
+
+
+def solution_files():
+    out = {}
+    if os.path.isdir(SOLUTIONS):
+        for name in os.listdir(SOLUTIONS):
+            stem, ext = os.path.splitext(name)
+            if ext in (".java", ".py") and SAFE_ID.match(stem):
+                out.setdefault(stem, []).append("java" if ext == ".java" else "python")
+    return out
 
 
 def which(cmd):
@@ -126,6 +158,11 @@ class Handler(BaseHTTPRequestHandler):
             path = os.path.join(SOLUTIONS, f"{pid}.{'java' if lang == 'java' else 'py'}")
             code = open(path, encoding="utf-8").read() if os.path.exists(path) else None
             return self._send(200, json.dumps({"code": code}))
+        if u.path == "/progress":
+            if not self._auth():
+                return self._send(403, '{"error":"forbidden"}')
+            with _lock:
+                return self._send(200, json.dumps({"progress": read_progress(), "files": solution_files()}))
         if u.path == "/status":
             if not self._auth():
                 return self._send(403, '{"error":"forbidden"}')
@@ -146,6 +183,19 @@ class Handler(BaseHTTPRequestHandler):
         if u.path == "/run":
             res = run_code(req.get("lang"), req.get("code", ""), req.get("pre", ""), req.get("post", ""))
             return self._send(200, json.dumps(res))
+        if u.path == "/progress":
+            pid, patch = req.get("id", ""), req.get("patch")
+            if not SAFE_ID.match(pid) or not isinstance(patch, dict):
+                return self._send(400, '{"error":"bad request"}')
+            patch = {k: v for k, v in patch.items() if k in PROGRESS_FIELDS}
+            with _lock:
+                data = read_progress()
+                entry = data.get(pid, {})
+                entry.update(patch)
+                entry["updated"] = patch.get("updated") or __import__("datetime").datetime.now().isoformat(timespec="seconds")
+                data[pid] = entry
+                write_progress(data)
+            return self._send(200, json.dumps(entry))
         if u.path == "/save":
             pid, lang = req.get("id", ""), req.get("lang", "")
             if not SAFE_ID.match(pid) or lang not in ("java", "python"):
