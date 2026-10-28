@@ -52,7 +52,7 @@ Each function has an "end" log for each "start" log.
 '''
 from typing import List
 def exclusiveTime(n: int, logs: List[str]) -> List[int]:
-    times: List[(int, List[int])] = [None]*n # first value is cumulative time so far and second is start ts
+    times = {} # first value is cumulative time so far and second is start ts
     print(times)
     for log in logs:
         id, instr, ts = parse(log)
@@ -65,6 +65,11 @@ def exclusiveTime(n: int, logs: List[str]) -> List[int]:
             else:
                  times[id] = (ct, start_times)
         elif instr == 'start':
+            curr_times = times.get(id)
+            if curr_times:
+                
+            else:
+
             if id == len(times):
                 times.append((0, [ts]))
             else:

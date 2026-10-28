@@ -24,7 +24,9 @@ n == height.length
 
 from typing import List
 
-
+# solution is to find the max seen to left and max seen to righ from any given index
+# then use the formula min (max_left and max_right at a given index and subtract the height at that index)
+# add this value to grand total.
 def trap(height: List[int]) -> int:
     
     n = len(height)
