@@ -1,0 +1,2036 @@
+{
+ "java": [
+  {
+   "name": "String",
+   "pkg": "java.lang",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html",
+   "note": "Immutable. Use StringBuilder to build strings in loops.",
+   "methods": [
+    [
+     "length()",
+     "int",
+     "Number of chars",
+     "O(1)"
+    ],
+    [
+     "charAt(int i)",
+     "char",
+     "Char at index i",
+     "O(1)"
+    ],
+    [
+     "substring(int begin)",
+     "String",
+     "From begin to end",
+     "O(n)"
+    ],
+    [
+     "substring(int begin, int end)",
+     "String",
+     "From begin (inclusive) to end (exclusive)",
+     "O(n)"
+    ],
+    [
+     "indexOf(String s)",
+     "int",
+     "First index of s, or -1",
+     "O(n·m)"
+    ],
+    [
+     "indexOf(char c, int from)",
+     "int",
+     "First index of c at or after from",
+     "O(n)"
+    ],
+    [
+     "lastIndexOf(char c)",
+     "int",
+     "Last index of c, or -1",
+     "O(n)"
+    ],
+    [
+     "contains(CharSequence s)",
+     "boolean",
+     "Whether s occurs",
+     "O(n·m)"
+    ],
+    [
+     "startsWith(String p)",
+     "boolean",
+     "Prefix test",
+     "O(m)"
+    ],
+    [
+     "endsWith(String s)",
+     "boolean",
+     "Suffix test",
+     "O(m)"
+    ],
+    [
+     "equals(Object o)",
+     "boolean",
+     "Content equality — never use == for strings",
+     "O(n)"
+    ],
+    [
+     "equalsIgnoreCase(String s)",
+     "boolean",
+     "Case-insensitive equality",
+     "O(n)"
+    ],
+    [
+     "compareTo(String s)",
+     "int",
+     "Lexicographic compare (<0, 0, >0)",
+     "O(n)"
+    ],
+    [
+     "isEmpty()",
+     "boolean",
+     "length() == 0",
+     "O(1)"
+    ],
+    [
+     "isBlank()",
+     "boolean",
+     "Empty or only whitespace",
+     "O(n)"
+    ],
+    [
+     "toCharArray()",
+     "char[]",
+     "Copy into a char array (sort it for anagram keys)",
+     "O(n)"
+    ],
+    [
+     "split(String regex)",
+     "String[]",
+     "Split on a regex, e.g. split(\"\\\\s+\")",
+     "O(n)"
+    ],
+    [
+     "trim()",
+     "String",
+     "Strip leading/trailing whitespace",
+     "O(n)"
+    ],
+    [
+     "strip()",
+     "String",
+     "Unicode-aware trim",
+     "O(n)"
+    ],
+    [
+     "toLowerCase()",
+     "String",
+     "Lower-cased copy",
+     "O(n)"
+    ],
+    [
+     "toUpperCase()",
+     "String",
+     "Upper-cased copy",
+     "O(n)"
+    ],
+    [
+     "replace(CharSequence a, CharSequence b)",
+     "String",
+     "Replace all literal occurrences",
+     "O(n)"
+    ],
+    [
+     "repeat(int count)",
+     "String",
+     "Repeat the string count times",
+     "O(n·count)"
+    ],
+    [
+     "chars()",
+     "IntStream",
+     "Stream of char values",
+     ""
+    ],
+    [
+     "hashCode()",
+     "int",
+     "Hash of contents",
+     "O(n)"
+    ],
+    [
+     "static valueOf(Object x)",
+     "String",
+     "String form of int/char/char[]/Object",
+     ""
+    ],
+    [
+     "static join(CharSequence sep, Iterable<?> parts)",
+     "String",
+     "Join with a separator",
+     "O(n)"
+    ],
+    [
+     "static format(String fmt, Object... args)",
+     "String",
+     "printf-style formatting",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "StringBuilder",
+   "pkg": "java.lang",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/StringBuilder.html",
+   "note": "Mutable string; append is amortized O(1).",
+   "methods": [
+    [
+     "StringBuilder()",
+     "",
+     "Empty builder",
+     ""
+    ],
+    [
+     "StringBuilder(String s)",
+     "",
+     "Builder starting with s",
+     "O(n)"
+    ],
+    [
+     "append(x)",
+     "StringBuilder",
+     "Append any type (chainable)",
+     "O(1)*"
+    ],
+    [
+     "insert(int i, x)",
+     "StringBuilder",
+     "Insert at index i",
+     "O(n)"
+    ],
+    [
+     "charAt(int i)",
+     "char",
+     "Char at i",
+     "O(1)"
+    ],
+    [
+     "setCharAt(int i, char c)",
+     "void",
+     "Overwrite char at i",
+     "O(1)"
+    ],
+    [
+     "deleteCharAt(int i)",
+     "StringBuilder",
+     "Remove char at i (last char: O(1))",
+     "O(n)"
+    ],
+    [
+     "delete(int start, int end)",
+     "StringBuilder",
+     "Remove range [start, end)",
+     "O(n)"
+    ],
+    [
+     "setLength(int len)",
+     "void",
+     "Truncate (setLength(len-1) drops last char)",
+     "O(1)"
+    ],
+    [
+     "reverse()",
+     "StringBuilder",
+     "Reverse in place",
+     "O(n)"
+    ],
+    [
+     "length()",
+     "int",
+     "Current length",
+     "O(1)"
+    ],
+    [
+     "indexOf(String s)",
+     "int",
+     "First index of s",
+     "O(n·m)"
+    ],
+    [
+     "toString()",
+     "String",
+     "Build the String",
+     "O(n)"
+    ]
+   ]
+  },
+  {
+   "name": "Character",
+   "pkg": "java.lang",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Character.html",
+   "note": "Static helpers for char.",
+   "methods": [
+    [
+     "static isDigit(char c)",
+     "boolean",
+     "0-9 (and other Unicode digits)",
+     ""
+    ],
+    [
+     "static isLetter(char c)",
+     "boolean",
+     "Letter test",
+     ""
+    ],
+    [
+     "static isLetterOrDigit(char c)",
+     "boolean",
+     "Alphanumeric test",
+     ""
+    ],
+    [
+     "static isWhitespace(char c)",
+     "boolean",
+     "Whitespace test",
+     ""
+    ],
+    [
+     "static isUpperCase(char c)",
+     "boolean",
+     "Upper-case test",
+     ""
+    ],
+    [
+     "static isLowerCase(char c)",
+     "boolean",
+     "Lower-case test",
+     ""
+    ],
+    [
+     "static toLowerCase(char c)",
+     "char",
+     "Lower-case char",
+     ""
+    ],
+    [
+     "static toUpperCase(char c)",
+     "char",
+     "Upper-case char",
+     ""
+    ],
+    [
+     "static getNumericValue(char c)",
+     "int",
+     "'7' → 7  (or use c - '0')",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "Integer",
+   "pkg": "java.lang",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Integer.html",
+   "note": "Boxed int. Compare boxed values with equals() or intValue(), not ==.",
+   "methods": [
+    [
+     "static MAX_VALUE",
+     "int",
+     "2³¹−1 = 2147483647",
+     ""
+    ],
+    [
+     "static MIN_VALUE",
+     "int",
+     "−2³¹",
+     ""
+    ],
+    [
+     "static parseInt(String s)",
+     "int",
+     "Parse decimal (radix overload: parseInt(s, 2))",
+     "O(n)"
+    ],
+    [
+     "static valueOf(int i)",
+     "Integer",
+     "Boxed value (cached for −128..127)",
+     ""
+    ],
+    [
+     "static toString(int i)",
+     "String",
+     "Decimal string",
+     ""
+    ],
+    [
+     "static toBinaryString(int i)",
+     "String",
+     "Binary digits",
+     ""
+    ],
+    [
+     "static bitCount(int i)",
+     "int",
+     "Number of 1 bits",
+     "O(1)"
+    ],
+    [
+     "static compare(int a, int b)",
+     "int",
+     "Safe comparator (no overflow, unlike a - b)",
+     "O(1)"
+    ],
+    [
+     "static max(int a, int b)",
+     "int",
+     "Larger value",
+     ""
+    ],
+    [
+     "static min(int a, int b)",
+     "int",
+     "Smaller value",
+     ""
+    ],
+    [
+     "static sum(int a, int b)",
+     "int",
+     "a + b (handy as Integer::sum)",
+     ""
+    ],
+    [
+     "static reverse(int i)",
+     "int",
+     "Reverse bit order",
+     ""
+    ],
+    [
+     "static highestOneBit(int i)",
+     "int",
+     "Highest set bit only",
+     ""
+    ],
+    [
+     "static numberOfTrailingZeros(int i)",
+     "int",
+     "Zero bits below the lowest 1",
+     ""
+    ],
+    [
+     "intValue()",
+     "int",
+     "Unbox",
+     ""
+    ],
+    [
+     "equals(Object o)",
+     "boolean",
+     "Value equality",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "Long",
+   "pkg": "java.lang",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Long.html",
+   "note": "Use long for sums/products that can exceed 2³¹.",
+   "methods": [
+    [
+     "static MAX_VALUE",
+     "long",
+     "2⁶³−1",
+     ""
+    ],
+    [
+     "static MIN_VALUE",
+     "long",
+     "−2⁶³",
+     ""
+    ],
+    [
+     "static parseLong(String s)",
+     "long",
+     "Parse decimal",
+     ""
+    ],
+    [
+     "static compare(long a, long b)",
+     "int",
+     "Safe comparator",
+     ""
+    ],
+    [
+     "static bitCount(long i)",
+     "int",
+     "Number of 1 bits",
+     ""
+    ],
+    [
+     "longValue()",
+     "long",
+     "Unbox",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "Math",
+   "pkg": "java.lang",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Math.html",
+   "note": "All static.",
+   "methods": [
+    [
+     "static max(a, b)",
+     "same",
+     "Larger of two values",
+     ""
+    ],
+    [
+     "static min(a, b)",
+     "same",
+     "Smaller of two values",
+     ""
+    ],
+    [
+     "static abs(x)",
+     "same",
+     "Absolute value (abs(Integer.MIN_VALUE) is still negative!)",
+     ""
+    ],
+    [
+     "static pow(double a, double b)",
+     "double",
+     "a^b as double — cast for ints",
+     ""
+    ],
+    [
+     "static sqrt(double x)",
+     "double",
+     "Square root",
+     ""
+    ],
+    [
+     "static floorDiv(int a, int b)",
+     "int",
+     "Division rounding toward −∞",
+     ""
+    ],
+    [
+     "static floorMod(int a, int b)",
+     "int",
+     "Non-negative modulo for positive b",
+     ""
+    ],
+    [
+     "static ceil(double x)",
+     "double",
+     "Round up — for ints use (a + b - 1) / b",
+     ""
+    ],
+    [
+     "static floor(double x)",
+     "double",
+     "Round down",
+     ""
+    ],
+    [
+     "static round(double x)",
+     "long",
+     "Nearest integer",
+     ""
+    ],
+    [
+     "static log(double x)",
+     "double",
+     "Natural log",
+     ""
+    ],
+    [
+     "static addExact(int a, int b)",
+     "int",
+     "Throws on overflow",
+     ""
+    ],
+    [
+     "static random()",
+     "double",
+     "Uniform in [0, 1)",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "Arrays",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Arrays.html",
+   "note": "Static helpers for arrays.",
+   "methods": [
+    [
+     "static sort(int[] a)",
+     "void",
+     "Ascending sort (dual-pivot quicksort)",
+     "O(n log n)"
+    ],
+    [
+     "static sort(T[] a, Comparator<? super T> c)",
+     "void",
+     "Sort objects (e.g. int[][] intervals) with a comparator",
+     "O(n log n)"
+    ],
+    [
+     "static sort(int[] a, int from, int to)",
+     "void",
+     "Sort a range [from, to)",
+     ""
+    ],
+    [
+     "static fill(int[] a, int v)",
+     "void",
+     "Set every element to v",
+     "O(n)"
+    ],
+    [
+     "static copyOf(int[] a, int newLength)",
+     "int[]",
+     "Copy (truncate or pad)",
+     "O(n)"
+    ],
+    [
+     "static copyOfRange(int[] a, int from, int to)",
+     "int[]",
+     "Copy a range [from, to)",
+     "O(n)"
+    ],
+    [
+     "static asList(T... a)",
+     "List<T>",
+     "Fixed-size List view (no add/remove)",
+     "O(1)"
+    ],
+    [
+     "static toString(int[] a)",
+     "String",
+     "\"[1, 2, 3]\" — for printing",
+     "O(n)"
+    ],
+    [
+     "static deepToString(Object[] a)",
+     "String",
+     "Print 2-D arrays",
+     "O(n)"
+    ],
+    [
+     "static equals(int[] a, int[] b)",
+     "boolean",
+     "Element-wise equality",
+     "O(n)"
+    ],
+    [
+     "static binarySearch(int[] a, int key)",
+     "int",
+     "Index, or −(insertionPoint) − 1",
+     "O(log n)"
+    ],
+    [
+     "static stream(int[] a)",
+     "IntStream",
+     "Stream (e.g. Arrays.stream(a).sum())",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "Collections",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Collections.html",
+   "note": "Static helpers for collections.",
+   "methods": [
+    [
+     "static sort(List<T> list)",
+     "void",
+     "Sort a list (stable merge sort)",
+     "O(n log n)"
+    ],
+    [
+     "static sort(List<T> list, Comparator<? super T> c)",
+     "void",
+     "Sort with comparator",
+     "O(n log n)"
+    ],
+    [
+     "static reverse(List<?> list)",
+     "void",
+     "Reverse in place",
+     "O(n)"
+    ],
+    [
+     "static swap(List<?> list, int i, int j)",
+     "void",
+     "Swap two elements",
+     "O(1)"
+    ],
+    [
+     "static max(Collection<T> c)",
+     "T",
+     "Largest element",
+     "O(n)"
+    ],
+    [
+     "static min(Collection<T> c)",
+     "T",
+     "Smallest element",
+     "O(n)"
+    ],
+    [
+     "static reverseOrder()",
+     "Comparator<T>",
+     "Descending comparator — max-heap: new PriorityQueue<>(Collections.reverseOrder())",
+     ""
+    ],
+    [
+     "static frequency(Collection<?> c, Object o)",
+     "int",
+     "Count occurrences",
+     "O(n)"
+    ],
+    [
+     "static emptyList()",
+     "List<T>",
+     "Immutable empty list",
+     ""
+    ],
+    [
+     "static singletonList(T o)",
+     "List<T>",
+     "Immutable one-element list",
+     ""
+    ],
+    [
+     "static unmodifiableList(List<T> l)",
+     "List<T>",
+     "Read-only view",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "List",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html",
+   "kind": "interface",
+   "note": "Ordered collection. Implementations: ArrayList (default), LinkedList.",
+   "methods": [
+    [
+     "add(E e)",
+     "boolean",
+     "Append to end",
+     "O(1)*"
+    ],
+    [
+     "add(int i, E e)",
+     "void",
+     "Insert at index (shifts right)",
+     "O(n)"
+    ],
+    [
+     "get(int i)",
+     "E",
+     "Element at index",
+     "O(1) ArrayList"
+    ],
+    [
+     "set(int i, E e)",
+     "E",
+     "Replace at index; returns old",
+     "O(1) ArrayList"
+    ],
+    [
+     "remove(int i)",
+     "E",
+     "Remove by index (last element: O(1))",
+     "O(n)"
+    ],
+    [
+     "remove(Object o)",
+     "boolean",
+     "Remove first equal element — careful: list.remove(Integer.valueOf(x))",
+     "O(n)"
+    ],
+    [
+     "size()",
+     "int",
+     "Number of elements",
+     "O(1)"
+    ],
+    [
+     "isEmpty()",
+     "boolean",
+     "size() == 0",
+     "O(1)"
+    ],
+    [
+     "contains(Object o)",
+     "boolean",
+     "Linear search",
+     "O(n)"
+    ],
+    [
+     "indexOf(Object o)",
+     "int",
+     "First index or −1",
+     "O(n)"
+    ],
+    [
+     "clear()",
+     "void",
+     "Remove all",
+     "O(n)"
+    ],
+    [
+     "addAll(Collection<? extends E> c)",
+     "boolean",
+     "Append all",
+     "O(m)"
+    ],
+    [
+     "subList(int from, int to)",
+     "List<E>",
+     "View of [from, to)",
+     "O(1)"
+    ],
+    [
+     "sort(Comparator<? super E> c)",
+     "void",
+     "Sort in place (null = natural order)",
+     "O(n log n)"
+    ],
+    [
+     "iterator()",
+     "Iterator<E>",
+     "Iterator",
+     ""
+    ],
+    [
+     "toArray(new T[0])",
+     "T[]",
+     "Copy to array",
+     "O(n)"
+    ],
+    [
+     "static of(E... e)",
+     "List<E>",
+     "Immutable list literal",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "ArrayList",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayList.html",
+   "impl": [
+    "List"
+   ],
+   "note": "Resizable array — the default List. new ArrayList<Integer>() or new ArrayList<>(otherCollection).",
+   "methods": [
+    [
+     "ArrayList()",
+     "",
+     "Empty list",
+     ""
+    ],
+    [
+     "ArrayList(Collection<? extends E> c)",
+     "",
+     "Copy of c",
+     "O(n)"
+    ]
+   ]
+  },
+  {
+   "name": "LinkedList",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/LinkedList.html",
+   "impl": [
+    "List",
+    "Deque"
+   ],
+   "note": "Doubly linked list; also a Deque. Prefer ArrayDeque for stacks/queues.",
+   "methods": [
+    [
+     "addFirst(E e)",
+     "void",
+     "Insert at head",
+     "O(1)"
+    ],
+    [
+     "addLast(E e)",
+     "void",
+     "Insert at tail",
+     "O(1)"
+    ],
+    [
+     "removeFirst()",
+     "E",
+     "Remove head",
+     "O(1)"
+    ],
+    [
+     "removeLast()",
+     "E",
+     "Remove tail",
+     "O(1)"
+    ],
+    [
+     "getFirst()",
+     "E",
+     "Peek head",
+     "O(1)"
+    ],
+    [
+     "getLast()",
+     "E",
+     "Peek tail",
+     "O(1)"
+    ]
+   ]
+  },
+  {
+   "name": "Map",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Map.html",
+   "kind": "interface",
+   "note": "Key → value. Implementations: HashMap (default), TreeMap (sorted), LinkedHashMap (insertion/access order).",
+   "methods": [
+    [
+     "put(K k, V v)",
+     "V",
+     "Insert/replace; returns old value or null",
+     "O(1) avg"
+    ],
+    [
+     "get(Object k)",
+     "V",
+     "Value or null",
+     "O(1) avg"
+    ],
+    [
+     "getOrDefault(Object k, V def)",
+     "V",
+     "Value or def — counting: m.put(x, m.getOrDefault(x, 0) + 1)",
+     "O(1) avg"
+    ],
+    [
+     "containsKey(Object k)",
+     "boolean",
+     "Key present?",
+     "O(1) avg"
+    ],
+    [
+     "containsValue(Object v)",
+     "boolean",
+     "Linear scan of values",
+     "O(n)"
+    ],
+    [
+     "remove(Object k)",
+     "V",
+     "Remove key; returns old value",
+     "O(1) avg"
+    ],
+    [
+     "putIfAbsent(K k, V v)",
+     "V",
+     "Insert only if missing",
+     "O(1) avg"
+    ],
+    [
+     "merge(K k, V v, BiFunction f)",
+     "V",
+     "Counting: m.merge(x, 1, Integer::sum)",
+     "O(1) avg"
+    ],
+    [
+     "computeIfAbsent(K k, Function f)",
+     "V",
+     "Get or create, e.g. map-of-lists",
+     "O(1) avg"
+    ],
+    [
+     "size()",
+     "int",
+     "Number of entries",
+     "O(1)"
+    ],
+    [
+     "isEmpty()",
+     "boolean",
+     "size() == 0",
+     "O(1)"
+    ],
+    [
+     "keySet()",
+     "Set<K>",
+     "Keys view",
+     "O(1)"
+    ],
+    [
+     "values()",
+     "Collection<V>",
+     "Values view",
+     "O(1)"
+    ],
+    [
+     "entrySet()",
+     "Set<Map.Entry<K,V>>",
+     "Iterate: for (Map.Entry<K,V> e : m.entrySet()) e.getKey(), e.getValue()",
+     "O(1)"
+    ],
+    [
+     "clear()",
+     "void",
+     "Remove all",
+     "O(n)"
+    ]
+   ]
+  },
+  {
+   "name": "HashMap",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html",
+   "impl": [
+    "Map"
+   ],
+   "note": "Unordered hash table. Keys need good equals/hashCode (String, Integer, List are fine; int[] is NOT — use a String or List key).",
+   "methods": [
+    [
+     "HashMap()",
+     "",
+     "Empty map",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "LinkedHashMap",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/LinkedHashMap.html",
+   "impl": [
+    "Map"
+   ],
+   "note": "HashMap + linked list of entries. new LinkedHashMap<>(16, 0.75f, true) keeps access order → easy LRU cache.",
+   "methods": [
+    [
+     "LinkedHashMap(int cap, float load, boolean accessOrder)",
+     "",
+     "accessOrder=true: get() moves entry to the end",
+     ""
+    ],
+    [
+     "removeEldestEntry(Map.Entry<K,V> e)",
+     "boolean",
+     "Override to auto-evict (return size() > capacity)",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "TreeMap",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/TreeMap.html",
+   "impl": [
+    "Map"
+   ],
+   "note": "Red-black tree: keys kept sorted ascending. All key operations O(log n). NOT a heap.",
+   "methods": [
+    [
+     "firstKey()",
+     "K",
+     "Smallest key (throws if empty)",
+     "O(log n)"
+    ],
+    [
+     "lastKey()",
+     "K",
+     "Largest key (throws if empty)",
+     "O(log n)"
+    ],
+    [
+     "floorKey(K k)",
+     "K",
+     "Largest key ≤ k, or null",
+     "O(log n)"
+    ],
+    [
+     "ceilingKey(K k)",
+     "K",
+     "Smallest key ≥ k, or null",
+     "O(log n)"
+    ],
+    [
+     "lowerKey(K k)",
+     "K",
+     "Largest key < k, or null",
+     "O(log n)"
+    ],
+    [
+     "higherKey(K k)",
+     "K",
+     "Smallest key > k, or null",
+     "O(log n)"
+    ],
+    [
+     "firstEntry()",
+     "Map.Entry<K,V>",
+     "Smallest entry or null",
+     "O(log n)"
+    ],
+    [
+     "lastEntry()",
+     "Map.Entry<K,V>",
+     "Largest entry or null",
+     "O(log n)"
+    ],
+    [
+     "floorEntry(K k)",
+     "Map.Entry<K,V>",
+     "Entry with largest key ≤ k",
+     "O(log n)"
+    ],
+    [
+     "ceilingEntry(K k)",
+     "Map.Entry<K,V>",
+     "Entry with smallest key ≥ k",
+     "O(log n)"
+    ],
+    [
+     "pollFirstEntry()",
+     "Map.Entry<K,V>",
+     "Remove and return smallest",
+     "O(log n)"
+    ],
+    [
+     "pollLastEntry()",
+     "Map.Entry<K,V>",
+     "Remove and return largest",
+     "O(log n)"
+    ],
+    [
+     "headMap(K to)",
+     "SortedMap<K,V>",
+     "View of keys < to",
+     "O(log n)"
+    ],
+    [
+     "tailMap(K from)",
+     "SortedMap<K,V>",
+     "View of keys ≥ from",
+     "O(log n)"
+    ],
+    [
+     "descendingMap()",
+     "NavigableMap<K,V>",
+     "Reverse-order view",
+     "O(1)"
+    ]
+   ]
+  },
+  {
+   "name": "Set",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Set.html",
+   "kind": "interface",
+   "note": "No duplicates. Implementations: HashSet (default), TreeSet (sorted), LinkedHashSet.",
+   "methods": [
+    [
+     "add(E e)",
+     "boolean",
+     "Insert; false if already present",
+     "O(1) avg"
+    ],
+    [
+     "remove(Object o)",
+     "boolean",
+     "Remove; false if absent",
+     "O(1) avg"
+    ],
+    [
+     "contains(Object o)",
+     "boolean",
+     "Membership test",
+     "O(1) avg"
+    ],
+    [
+     "size()",
+     "int",
+     "Number of elements",
+     "O(1)"
+    ],
+    [
+     "isEmpty()",
+     "boolean",
+     "size() == 0",
+     "O(1)"
+    ],
+    [
+     "addAll(Collection<? extends E> c)",
+     "boolean",
+     "Union into this set",
+     "O(m)"
+    ],
+    [
+     "retainAll(Collection<?> c)",
+     "boolean",
+     "Intersection into this set",
+     "O(n)"
+    ],
+    [
+     "removeAll(Collection<?> c)",
+     "boolean",
+     "Difference",
+     "O(n)"
+    ],
+    [
+     "iterator()",
+     "Iterator<E>",
+     "Iterator",
+     ""
+    ],
+    [
+     "clear()",
+     "void",
+     "Remove all",
+     "O(n)"
+    ],
+    [
+     "static of(E... e)",
+     "Set<E>",
+     "Immutable set literal",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "HashSet",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashSet.html",
+   "impl": [
+    "Set"
+   ],
+   "note": "Hash table set.",
+   "methods": [
+    [
+     "HashSet()",
+     "",
+     "Empty set",
+     ""
+    ],
+    [
+     "HashSet(Collection<? extends E> c)",
+     "",
+     "Set from a collection",
+     "O(n)"
+    ]
+   ]
+  },
+  {
+   "name": "TreeSet",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/TreeSet.html",
+   "impl": [
+    "Set"
+   ],
+   "note": "Sorted set (red-black tree).",
+   "methods": [
+    [
+     "first()",
+     "E",
+     "Smallest",
+     "O(log n)"
+    ],
+    [
+     "last()",
+     "E",
+     "Largest",
+     "O(log n)"
+    ],
+    [
+     "floor(E e)",
+     "E",
+     "Largest ≤ e, or null",
+     "O(log n)"
+    ],
+    [
+     "ceiling(E e)",
+     "E",
+     "Smallest ≥ e, or null",
+     "O(log n)"
+    ],
+    [
+     "lower(E e)",
+     "E",
+     "Largest < e, or null",
+     "O(log n)"
+    ],
+    [
+     "higher(E e)",
+     "E",
+     "Smallest > e, or null",
+     "O(log n)"
+    ],
+    [
+     "pollFirst()",
+     "E",
+     "Remove smallest",
+     "O(log n)"
+    ],
+    [
+     "pollLast()",
+     "E",
+     "Remove largest",
+     "O(log n)"
+    ],
+    [
+     "headSet(E to)",
+     "SortedSet<E>",
+     "Elements < to",
+     "O(log n)"
+    ],
+    [
+     "tailSet(E from)",
+     "SortedSet<E>",
+     "Elements ≥ from",
+     "O(log n)"
+    ],
+    [
+     "descendingSet()",
+     "NavigableSet<E>",
+     "Reverse view",
+     "O(1)"
+    ]
+   ]
+  },
+  {
+   "name": "Deque",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Deque.html",
+   "kind": "interface",
+   "note": "Double-ended queue — use as a stack (push/pop/peek) or a queue (offer/poll/peek). Implementation: ArrayDeque.",
+   "methods": [
+    [
+     "push(E e)",
+     "void",
+     "Stack push (adds to front)",
+     "O(1)"
+    ],
+    [
+     "pop()",
+     "E",
+     "Stack pop (removes front; throws if empty)",
+     "O(1)"
+    ],
+    [
+     "peek()",
+     "E",
+     "Front element or null",
+     "O(1)"
+    ],
+    [
+     "offer(E e)",
+     "boolean",
+     "Queue add (to back)",
+     "O(1)"
+    ],
+    [
+     "poll()",
+     "E",
+     "Queue remove front, or null",
+     "O(1)"
+    ],
+    [
+     "offerFirst(E e)",
+     "boolean",
+     "Add to front",
+     "O(1)"
+    ],
+    [
+     "offerLast(E e)",
+     "boolean",
+     "Add to back",
+     "O(1)"
+    ],
+    [
+     "pollFirst()",
+     "E",
+     "Remove front or null",
+     "O(1)"
+    ],
+    [
+     "pollLast()",
+     "E",
+     "Remove back or null (monotonic deque!)",
+     "O(1)"
+    ],
+    [
+     "peekFirst()",
+     "E",
+     "Front or null",
+     "O(1)"
+    ],
+    [
+     "peekLast()",
+     "E",
+     "Back or null",
+     "O(1)"
+    ],
+    [
+     "addFirst(E e)",
+     "void",
+     "Add to front (throws if full)",
+     "O(1)"
+    ],
+    [
+     "addLast(E e)",
+     "void",
+     "Add to back",
+     "O(1)"
+    ],
+    [
+     "removeFirst()",
+     "E",
+     "Remove front (throws if empty)",
+     "O(1)"
+    ],
+    [
+     "removeLast()",
+     "E",
+     "Remove back (throws if empty)",
+     "O(1)"
+    ],
+    [
+     "size()",
+     "int",
+     "Number of elements",
+     "O(1)"
+    ],
+    [
+     "isEmpty()",
+     "boolean",
+     "size() == 0",
+     "O(1)"
+    ],
+    [
+     "descendingIterator()",
+     "Iterator<E>",
+     "Back-to-front iterator",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "ArrayDeque",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayDeque.html",
+   "impl": [
+    "Deque"
+   ],
+   "note": "Fast array-backed Deque. Preferred over Stack and LinkedList. No null elements.",
+   "methods": [
+    [
+     "ArrayDeque()",
+     "",
+     "Empty deque",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "Queue",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Queue.html",
+   "kind": "interface",
+   "note": "FIFO. Queue<Integer> q = new ArrayDeque<>(); (or LinkedList).",
+   "methods": [
+    [
+     "offer(E e)",
+     "boolean",
+     "Add to back",
+     "O(1)"
+    ],
+    [
+     "poll()",
+     "E",
+     "Remove front or null",
+     "O(1)"
+    ],
+    [
+     "peek()",
+     "E",
+     "Front or null",
+     "O(1)"
+    ],
+    [
+     "size()",
+     "int",
+     "Number of elements",
+     "O(1)"
+    ],
+    [
+     "isEmpty()",
+     "boolean",
+     "size() == 0",
+     "O(1)"
+    ]
+   ]
+  },
+  {
+   "name": "PriorityQueue",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/PriorityQueue.html",
+   "impl": [
+    "Queue"
+   ],
+   "note": "Binary heap. MIN-heap by default; max-heap: new PriorityQueue<>(Collections.reverseOrder()).",
+   "methods": [
+    [
+     "PriorityQueue()",
+     "",
+     "Min-heap with natural order",
+     ""
+    ],
+    [
+     "PriorityQueue(Comparator<? super E> c)",
+     "",
+     "Heap ordered by comparator (e.g. int[] by a[0])",
+     ""
+    ],
+    [
+     "offer(E e) / add(E e)",
+     "boolean",
+     "Insert",
+     "O(log n)"
+    ],
+    [
+     "poll()",
+     "E",
+     "Remove smallest (by comparator) or null",
+     "O(log n)"
+    ],
+    [
+     "peek()",
+     "E",
+     "Smallest or null",
+     "O(1)"
+    ],
+    [
+     "remove(Object o)",
+     "boolean",
+     "Remove arbitrary element",
+     "O(n)"
+    ],
+    [
+     "size()",
+     "int",
+     "Number of elements",
+     "O(1)"
+    ]
+   ]
+  },
+  {
+   "name": "Iterator",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Iterator.html",
+   "kind": "interface",
+   "note": "",
+   "methods": [
+    [
+     "hasNext()",
+     "boolean",
+     "More elements?",
+     ""
+    ],
+    [
+     "next()",
+     "E",
+     "Next element",
+     ""
+    ],
+    [
+     "remove()",
+     "void",
+     "Remove the last returned element",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "Comparator",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Comparator.html",
+   "kind": "interface",
+   "note": "Anonymous class form: new Comparator<int[]>() { public int compare(int[] a, int[] b) { return Integer.compare(a[0], b[0]); } }",
+   "methods": [
+    [
+     "compare(T a, T b)",
+     "int",
+     "Negative if a comes first, 0 if equal, positive if b comes first",
+     ""
+    ],
+    [
+     "reversed()",
+     "Comparator<T>",
+     "Opposite order",
+     ""
+    ],
+    [
+     "thenComparing(Comparator<? super T> other)",
+     "Comparator<T>",
+     "Tie-breaker",
+     ""
+    ],
+    [
+     "static comparingInt(ToIntFunction<T> key)",
+     "Comparator<T>",
+     "Compare by an int key, e.g. Comparator.comparingInt(a -> a[0])",
+     ""
+    ],
+    [
+     "static naturalOrder()",
+     "Comparator<T>",
+     "Ascending",
+     ""
+    ],
+    [
+     "static reverseOrder()",
+     "Comparator<T>",
+     "Descending",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "Random",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Random.html",
+   "note": "",
+   "methods": [
+    [
+     "Random()",
+     "",
+     "New generator",
+     ""
+    ],
+    [
+     "nextInt(int bound)",
+     "int",
+     "Uniform in [0, bound)",
+     "O(1)"
+    ],
+    [
+     "nextDouble()",
+     "double",
+     "Uniform in [0, 1)",
+     "O(1)"
+    ]
+   ]
+  },
+  {
+   "name": "Objects",
+   "pkg": "java.util",
+   "url": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Objects.html",
+   "note": "",
+   "methods": [
+    [
+     "static equals(Object a, Object b)",
+     "boolean",
+     "Null-safe equals",
+     ""
+    ],
+    [
+     "static hash(Object... values)",
+     "int",
+     "Combine hashes (for your own hashCode())",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "array (T[])",
+   "pkg": "language",
+   "url": "https://docs.oracle.com/javase/specs/jls/se21/html/jls-10.html",
+   "key": "__array__",
+   "note": "int[] a = new int[n]; int[][] g = new int[r][c]; int[] b = {1, 2, 3}; defaults are 0 / false / null.",
+   "methods": [
+    [
+     "length",
+     "int",
+     "Array size (field, not a method)",
+     "O(1)"
+    ],
+    [
+     "clone()",
+     "T[]",
+     "Shallow copy",
+     "O(n)"
+    ]
+   ]
+  }
+ ],
+ "javaSnippets": [
+  [
+   "Count frequencies",
+   "Map<Character, Integer> count = new HashMap<Character, Integer>();\nfor (char c : s.toCharArray()) {\n    count.put(c, count.getOrDefault(c, 0) + 1);\n}"
+  ],
+  [
+   "Map of lists (no lambdas)",
+   "List<String> group = map.get(key);\nif (group == null) {\n    group = new ArrayList<String>();\n    map.put(key, group);\n}\ngroup.add(word);"
+  ],
+  [
+   "Iterate a map",
+   "for (Map.Entry<String, Integer> e : map.entrySet()) {\n    String k = e.getKey();\n    int v = e.getValue();\n}"
+  ],
+  [
+   "Max-heap",
+   "PriorityQueue<Integer> maxHeap = new PriorityQueue<Integer>(Collections.reverseOrder());"
+  ],
+  [
+   "Heap of int[] by first element",
+   "PriorityQueue<int[]> pq = new PriorityQueue<int[]>(new Comparator<int[]>() {\n    public int compare(int[] a, int[] b) {\n        return Integer.compare(a[0], b[0]);\n    }\n});"
+  ],
+  [
+   "Sort intervals by start",
+   "Arrays.sort(intervals, new Comparator<int[]>() {\n    public int compare(int[] a, int[] b) {\n        return Integer.compare(a[0], b[0]);\n    }\n});"
+  ],
+  [
+   "Stack and queue",
+   "Deque<Integer> stack = new ArrayDeque<Integer>();\nstack.push(1); stack.pop(); stack.peek();\n\nQueue<int[]> queue = new ArrayDeque<int[]>();\nqueue.offer(new int[]{r, c}); queue.poll();"
+  ],
+  [
+   "BFS on a grid",
+   "int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};\nQueue<int[]> q = new ArrayDeque<int[]>();\nq.offer(new int[]{sr, sc});\nwhile (!q.isEmpty()) {\n    int[] cur = q.poll();\n    for (int[] d : dirs) {\n        int r = cur[0] + d[0], c = cur[1] + d[1];\n        if (r < 0 || c < 0 || r >= rows || c >= cols) continue;\n        // visit (r, c)\n    }\n}"
+  ],
+  [
+   "Binary search (first index ≥ target)",
+   "int lo = 0, hi = nums.length;\nwhile (lo < hi) {\n    int mid = lo + (hi - lo) / 2;\n    if (nums[mid] < target) lo = mid + 1;\n    else hi = mid;\n}\n// lo = first index with nums[lo] >= target"
+  ],
+  [
+   "List<Integer> ↔ int[]",
+   "int[] arr = new int[list.size()];\nfor (int i = 0; i < arr.length; i++) arr[i] = list.get(i);\n\nList<Integer> back = new ArrayList<Integer>();\nfor (int x : arr) back.add(x);"
+  ],
+  [
+   "Char ↔ index",
+   "int idx = c - 'a';          // 'c' → 2\nchar ch = (char) ('a' + idx); // 2 → 'c'\nint digit = c - '0';         // '7' → 7"
+  ],
+  [
+   "Print for debugging",
+   "System.out.println(Arrays.toString(arr));\nSystem.out.println(Arrays.deepToString(grid));\nSystem.out.println(list + \" \" + map);"
+  ],
+  [
+   "Try your own input",
+   "// Add inside your class:\npublic static void main(String[] args) {\n    System.out.println(new Solution().twoSum(new int[]{2, 7}, 9)[0]);\n}"
+  ]
+ ],
+ "python": [
+  {
+   "name": "list",
+   "url": "https://docs.python.org/3/tutorial/datastructures.html#more-on-lists",
+   "note": "Dynamic array.",
+   "methods": [
+    [
+     "append(x)",
+     "None",
+     "Add to end",
+     "O(1)*"
+    ],
+    [
+     "pop()",
+     "item",
+     "Remove last",
+     "O(1)"
+    ],
+    [
+     "pop(i)",
+     "item",
+     "Remove at i",
+     "O(n)"
+    ],
+    [
+     "insert(i, x)",
+     "None",
+     "Insert at i",
+     "O(n)"
+    ],
+    [
+     "sort(key=None, reverse=False)",
+     "None",
+     "Sort in place",
+     "O(n log n)"
+    ],
+    [
+     "reverse()",
+     "None",
+     "Reverse in place",
+     "O(n)"
+    ],
+    [
+     "index(x)",
+     "int",
+     "First index of x",
+     "O(n)"
+    ],
+    [
+     "count(x)",
+     "int",
+     "Occurrences",
+     "O(n)"
+    ],
+    [
+     "extend(iterable)",
+     "None",
+     "Append all",
+     "O(k)"
+    ],
+    [
+     "copy()",
+     "list",
+     "Shallow copy",
+     "O(n)"
+    ]
+   ]
+  },
+  {
+   "name": "dict",
+   "url": "https://docs.python.org/3/library/stdtypes.html#mapping-types-dict",
+   "note": "Hash map (keeps insertion order).",
+   "methods": [
+    [
+     "get(k, default)",
+     "value",
+     "Value or default",
+     "O(1)"
+    ],
+    [
+     "setdefault(k, default)",
+     "value",
+     "Get or insert",
+     "O(1)"
+    ],
+    [
+     "items()",
+     "view",
+     "(key, value) pairs",
+     ""
+    ],
+    [
+     "keys()",
+     "view",
+     "Keys",
+     ""
+    ],
+    [
+     "values()",
+     "view",
+     "Values",
+     ""
+    ],
+    [
+     "pop(k, default)",
+     "value",
+     "Remove key",
+     "O(1)"
+    ]
+   ]
+  },
+  {
+   "name": "set",
+   "url": "https://docs.python.org/3/library/stdtypes.html#set-types-set-frozenset",
+   "note": "",
+   "methods": [
+    [
+     "add(x)",
+     "None",
+     "Insert",
+     "O(1)"
+    ],
+    [
+     "discard(x)",
+     "None",
+     "Remove if present",
+     "O(1)"
+    ],
+    [
+     "remove(x)",
+     "None",
+     "Remove (KeyError if absent)",
+     "O(1)"
+    ]
+   ]
+  },
+  {
+   "name": "str",
+   "url": "https://docs.python.org/3/library/stdtypes.html#string-methods",
+   "note": "Immutable.",
+   "methods": [
+    [
+     "split(sep=None)",
+     "list",
+     "Split on whitespace or sep",
+     "O(n)"
+    ],
+    [
+     "join(iterable)",
+     "str",
+     "\"\".join(parts)",
+     "O(n)"
+    ],
+    [
+     "isdigit()",
+     "bool",
+     "All digits",
+     ""
+    ],
+    [
+     "isalnum()",
+     "bool",
+     "All alphanumeric",
+     ""
+    ],
+    [
+     "lower()",
+     "str",
+     "Lower-case",
+     ""
+    ],
+    [
+     "startswith(p)",
+     "bool",
+     "Prefix test",
+     ""
+    ],
+    [
+     "find(s)",
+     "int",
+     "Index or -1",
+     "O(n·m)"
+    ]
+   ]
+  },
+  {
+   "name": "collections.deque",
+   "url": "https://docs.python.org/3/library/collections.html#collections.deque",
+   "note": "",
+   "methods": [
+    [
+     "append(x)",
+     "None",
+     "Add right",
+     "O(1)"
+    ],
+    [
+     "appendleft(x)",
+     "None",
+     "Add left",
+     "O(1)"
+    ],
+    [
+     "pop()",
+     "item",
+     "Remove right",
+     "O(1)"
+    ],
+    [
+     "popleft()",
+     "item",
+     "Remove left",
+     "O(1)"
+    ]
+   ]
+  },
+  {
+   "name": "collections",
+   "url": "https://docs.python.org/3/library/collections.html",
+   "note": "",
+   "methods": [
+    [
+     "Counter(iterable)",
+     "Counter",
+     "Count items; .most_common(k)",
+     "O(n)"
+    ],
+    [
+     "defaultdict(list)",
+     "dict",
+     "Missing keys get list()",
+     ""
+    ],
+    [
+     "OrderedDict()",
+     "dict",
+     "move_to_end(k), popitem(last=False) → LRU",
+     ""
+    ]
+   ]
+  },
+  {
+   "name": "heapq",
+   "url": "https://docs.python.org/3/library/heapq.html",
+   "note": "Min-heap on a list. Max-heap: push -x.",
+   "methods": [
+    [
+     "heappush(h, x)",
+     "None",
+     "Push",
+     "O(log n)"
+    ],
+    [
+     "heappop(h)",
+     "item",
+     "Pop smallest",
+     "O(log n)"
+    ],
+    [
+     "heapify(list)",
+     "None",
+     "Build heap",
+     "O(n)"
+    ],
+    [
+     "nlargest(k, iterable)",
+     "list",
+     "k largest",
+     "O(n log k)"
+    ],
+    [
+     "nsmallest(k, iterable)",
+     "list",
+     "k smallest",
+     "O(n log k)"
+    ]
+   ]
+  },
+  {
+   "name": "bisect",
+   "url": "https://docs.python.org/3/library/bisect.html",
+   "note": "Binary search on sorted lists.",
+   "methods": [
+    [
+     "bisect_left(a, x)",
+     "int",
+     "First index ≥ x",
+     "O(log n)"
+    ],
+    [
+     "bisect_right(a, x)",
+     "int",
+     "First index > x",
+     "O(log n)"
+    ],
+    [
+     "insort(a, x)",
+     "None",
+     "Insert keeping order",
+     "O(n)"
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,2993 @@
+{
+ "generated": "2026-10-28T18:43:22",
+ "snapshot": "1 June 2025",
+ "window": "6mo",
+ "window_label": "6 months",
+ "companies": [
+  {
+   "folder": "LinkedIn",
+   "name": "LinkedIn",
+   "slug": "linkedin",
+   "count": 19,
+   "by_window": {
+    "30d": 6,
+    "3mo": 9,
+    "6mo": 4,
+    "all": 0
+   }
+  },
+  {
+   "folder": "Nvidia",
+   "name": "NVIDIA",
+   "slug": "nvidia",
+   "count": 20,
+   "by_window": {
+    "30d": 2,
+    "3mo": 8,
+    "6mo": 10,
+    "all": 0
+   }
+  }
+ ],
+ "blind75_total": 75,
+ "patterns": [
+  "Arrays & Hashing",
+  "Two Pointers",
+  "Sliding Window",
+  "Binary Search",
+  "Stack",
+  "Linked List",
+  "Trees",
+  "Tries",
+  "Graphs",
+  "Heap",
+  "Intervals",
+  "Backtracking",
+  "Dynamic Programming",
+  "Greedy",
+  "Matrix",
+  "Strings",
+  "Math & Bits",
+  "Design",
+  "Concurrency",
+  "SQL",
+  "Other"
+ ],
+ "config": {
+  "dataset": "../leetcode-company-wise-problems-main",
+  "companies": [
+   "LinkedIn",
+   "Nvidia"
+  ],
+  "window": "6mo",
+  "blind75": true
+ },
+ "shared": {
+  "py_helpers": "\nimport traceback as _tb, sys as _sys\n_sys.setrecursionlimit(100000)\n\nimport json as _json\ndef _norm(x):\n    if x is None or isinstance(x, (bool, int, float, str)):\n        return x\n    if type(x).__name__ == \"ListNode\":\n        out, n, seen = [], x, 0\n        while n is not None and seen < 100000:\n            out.append(n.val); n = n.next; seen += 1\n        return out\n    if isinstance(x, (list, tuple)):\n        return [_norm(v) for v in x]\n    if isinstance(x, (set, frozenset)):\n        return sorted(_norm(v) for v in x)\n    return repr(x)\ndef _key(v):\n    if isinstance(v, bool): return (3, _json.dumps(v))\n    if isinstance(v, (int, float)): return (0, v, \"\")\n    if isinstance(v, str): return (1, 0, v)\n    return (2, 0, _json.dumps(v, separators=(\",\", \":\")))\ndef _canon(x, mode):\n    x = _norm(x)\n    if mode == \"sort\" and isinstance(x, list):\n        x = sorted(x, key=_key)\n    elif mode == \"sortinner\" and isinstance(x, list):\n        x = sorted([sorted(v, key=_key) if isinstance(v, list) else v for v in x], key=_key)\n    return _json.dumps(x, separators=(\",\", \":\"))\n\ndef L(arr):\n    d = ListNode(); c = d\n    for v in arr:\n        c.next = ListNode(v); c = c.next\n    return d.next\ndef LC(arr, pos):\n    head = L(arr)\n    if pos >= 0 and head:\n        tail, target, i, n = None, None, 0, head\n        while n:\n            if i == pos: target = n\n            tail = n; n = n.next; i += 1\n        tail.next = target\n    return head\ndef T(arr):\n    if not arr or arr[0] is None: return None\n    root = TreeNode(arr[0]); q = [root]; i = 1; qi = 0\n    while i < len(arr):\n        node = q[qi]; qi += 1\n        if i < len(arr) and arr[i] is not None:\n            node.left = TreeNode(arr[i]); q.append(node.left)\n        i += 1\n        if i < len(arr) and arr[i] is not None:\n            node.right = TreeNode(arr[i]); q.append(node.right)\n        i += 1\n    return root\ndef _LA(x):\n    return [] if x is None else x\ndef _ops(cls, ops, args):\n    o = cls(*args[0]); out = [None]\n    for op, a in zip(ops[1:], args[1:]):\n        out.append(getattr(o, op)(*a))\n    return out\ndef _t(label, fn, exp, mode):\n    try:\n        g = _canon(fn(), mode)\n        print(\"@@R \" + _json.dumps({\"label\": label, \"ok\": g == exp, \"got\": g, \"exp\": exp}), flush=True)\n    except Exception:\n        lines = _tb.format_exc().strip().splitlines()\n        print(\"@@R \" + _json.dumps({\"label\": label, \"ok\": False, \"exp\": exp, \"err\": \"\\n\".join(lines[-4:])}), flush=True)\n",
+  "py_prelude": "from typing import *\nimport collections, heapq, math, bisect, functools, itertools, random, re, string\nfrom collections import deque, defaultdict, Counter, OrderedDict\nfrom heapq import heappush, heappop, heapify\nfrom functools import lru_cache, cache\n\nclass ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\nclass TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n",
+  "java_main_helpers": "\n    static Object __norm(Object o) {\n        if (o == null) return null;\n        if (o instanceof Integer || o instanceof Long || o instanceof Short || o instanceof Byte) return ((Number) o).longValue();\n        if (o instanceof Boolean || o instanceof String || o instanceof Double || o instanceof Float) return o;\n        if (o instanceof Character) return String.valueOf(o);\n        if (o instanceof int[]) { List<Object> r = new ArrayList<>(); for (int x : (int[]) o) r.add((long) x); return r; }\n        if (o instanceof long[]) { List<Object> r = new ArrayList<>(); for (long x : (long[]) o) r.add(x); return r; }\n        if (o instanceof boolean[]) { List<Object> r = new ArrayList<>(); for (boolean x : (boolean[]) o) r.add(x); return r; }\n        if (o instanceof char[]) { List<Object> r = new ArrayList<>(); for (char x : (char[]) o) r.add(String.valueOf(x)); return r; }\n        if (o instanceof double[]) { List<Object> r = new ArrayList<>(); for (double x : (double[]) o) r.add(x); return r; }\n        if (o instanceof Object[]) { List<Object> r = new ArrayList<>(); for (Object x : (Object[]) o) r.add(__norm(x)); return r; }\n        if (o instanceof Iterable) { List<Object> r = new ArrayList<>(); for (Object x : (Iterable<?>) o) r.add(__norm(x)); return r; }\n        if (o.getClass().getSimpleName().equals(\"ListNode\")) {\n            List<Object> r = new ArrayList<>();\n            try {\n                Object n = o; int guard = 0;\n                while (n != null && guard++ < 100000) {\n                    r.add(((Number) n.getClass().getDeclaredField(\"val\").get(n)).longValue());\n                    n = n.getClass().getDeclaredField(\"next\").get(n);\n                }\n            } catch (Exception e) { throw new RuntimeException(e); }\n            return r;\n        }\n        return String.valueOf(o);\n    }\n    static Object __LA(Object o) { return o == null ? new ArrayList<Object>() : o; }\n    static int __rank(Object v) { return v instanceof Long || v instanceof Double ? 0 : v instanceof String ? 1 : v instanceof Boolean ? 3 : 2; }\n    static int __cmp(Object a, Object b) {\n        int ra = __rank(a), rb = __rank(b);\n        if (ra != rb) return Integer.compare(ra, rb);\n        if (ra == 0) return Double.compare(((Number) a).doubleValue(), ((Number) b).doubleValue());\n        if (ra == 1) return ((String) a).compareTo((String) b);\n        return __json(a).compareTo(__json(b));\n    }\n    @SuppressWarnings(\"unchecked\")\n    static String __canon(Object o, String mode) {\n        Object x = __norm(o);\n        if (x instanceof List && mode.equals(\"sort\")) { List<Object> l = new ArrayList<>((List<Object>) x); l.sort(Main::__cmp); x = l; }\n        else if (x instanceof List && mode.equals(\"sortinner\")) {\n            List<Object> l = new ArrayList<>();\n            for (Object v : (List<Object>) x) { if (v instanceof List) { List<Object> in = new ArrayList<>((List<Object>) v); in.sort(Main::__cmp); l.add(in); } else l.add(v); }\n            l.sort(Main::__cmp); x = l;\n        }\n        return __json(x);\n    }\n    static String __json(Object x) {\n        if (x == null) return \"null\";\n        if (x instanceof String) {\n            StringBuilder sb = new StringBuilder(\"\\\"\");\n            for (char c : ((String) x).toCharArray()) {\n                if (c == '\"') sb.append(\"\\\\\\\"\"); else if (c == '\\\\') sb.append(\"\\\\\\\\\");\n                else if (c == '\\n') sb.append(\"\\\\n\"); else if (c < 0x20 || c > 0x7e) sb.append(String.format(\"\\\\u%04x\", (int) c));\n                else sb.append(c);\n            }\n            return sb.append('\"').toString();\n        }\n        if (x instanceof Double) { double d = (Double) x; return d == Math.rint(d) && !Double.isInfinite(d) ? String.valueOf((long) d) + \".0\" : String.valueOf(d); }\n        if (x instanceof List) {\n            StringBuilder sb = new StringBuilder(\"[\");\n            boolean first = true;\n            for (Object v : (List<?>) x) { if (!first) sb.append(\",\"); sb.append(__json(v)); first = false; }\n            return sb.append(\"]\").toString();\n        }\n        return String.valueOf(x);\n    }\n    static String __q(String s) { return __json(s); }\n    static void __t(String label, java.util.concurrent.Callable<Object> fn, String exp, String mode) {\n        try {\n            String g = __canon(fn.call(), mode);\n            System.out.println(\"@@R {\\\"label\\\":\" + __q(label) + \",\\\"ok\\\":\" + g.equals(exp) + \",\\\"got\\\":\" + __q(g) + \",\\\"exp\\\":\" + __q(exp) + \"}\");\n        } catch (Throwable e) {\n            StringBuilder sb = new StringBuilder(e.toString());\n            StackTraceElement[] st = e.getStackTrace();\n            for (int i = 0; i < Math.min(3, st.length); i++) sb.append(\"\\n    at \").append(st[i]);\n            System.out.println(\"@@R {\\\"label\\\":\" + __q(label) + \",\\\"ok\\\":false,\\\"exp\\\":\" + __q(exp) + \",\\\"err\\\":\" + __q(sb.toString()) + \"}\");\n        }\n        System.out.flush();\n    }\n",
+  "java_user_main": "        for (String __c : new String[]{\"Solution\", \"Codec\", \"Trie\", \"WordDictionary\", \"MedianFinder\", \"MaxStack\", \"LRUCache\", \"MyCircularQueue\", \"WordDistance\", \"RandomizedCollection\"}) {\n            try { Class.forName(__c).getMethod(\"main\", String[].class).invoke(null, (Object) new String[0]); }\n            catch (ClassNotFoundException | NoSuchMethodException e) { }\n            catch (java.lang.reflect.InvocationTargetException e) { e.getCause().printStackTrace(System.out); }\n            catch (Exception e) { }\n        }\n"
+ },
+ "problems": [
+  {
+   "slug": "number-of-islands",
+   "title": "Number of Islands",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/number-of-islands",
+   "pattern": "Graphs",
+   "pattern_slug": "graphs",
+   "companies": {
+    "LinkedIn": {
+     "window": "6mo",
+     "freq": 61.8
+    },
+    "NVIDIA": {
+     "window": "3mo",
+     "freq": 85.3
+    }
+   },
+   "blind75": true,
+   "summary": "Given a grid of '1' (land) and '0' (water), count the islands. Land cells belong to the same island when they touch up, down, left or right.",
+   "example": "[['1','1','0'],['0','1','0'],['1','0','1']] → 3",
+   "idea": "For each unvisited '1', count it and flood-fill (BFS/DFS) its island to mark visited. O(m·n).",
+   "topics": "Array, Depth-First Search, Breadth-First Search, Union-Find, Matrix",
+   "tests": [
+    [
+     "numIslands([[\"1\", \"1\", \"0\"], [\"0\", \"1\", \"0\"], [\"1\", \"0\", \"1\"]])",
+     "3"
+    ],
+    [
+     "numIslands([[\"1\", \"1\"], [\"1\", \"1\"]])",
+     "1"
+    ],
+    [
+     "numIslands([[\"0\"]])",
+     "0"
+    ],
+    [
+     "numIslands([[\"1\", \"0\", \"1\", \"0\", \"1\"]])",
+     "3"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def numIslands(self, grid: List[List[str]]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int numIslands(char[][] grid) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('numIslands([[\"1\", \"1\", \"0\"], [\"0\", \"1\", \"0\"], [\"1\", \"0\", \"1\"]])', lambda: (Solution().numIslands([['1', '1', '0'], ['0', '1', '0'], ['1', '0', '1']])), '3', 'eq')\n_t('numIslands([[\"1\", \"1\"], [\"1\", \"1\"]])', lambda: (Solution().numIslands([['1', '1'], ['1', '1']])), '1', 'eq')\n_t('numIslands([[\"0\"]])', lambda: (Solution().numIslands([['0']])), '0', 'eq')\n_t('numIslands([[\"1\", \"0\", \"1\", \"0\", \"1\"]])', lambda: (Solution().numIslands([['1', '0', '1', '0', '1']])), '3', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"numIslands([[\\\"1\\\", \\\"1\\\", \\\"0\\\"], [\\\"0\\\", \\\"1\\\", \\\"0\\\"], [\\\"1\\\", \\\"0\\\", \\\"1\\\"]])\", () -> (new Solution().numIslands(new char[][]{{'1', '1', '0'}, {'0', '1', '0'}, {'1', '0', '1'}})), \"3\", \"eq\");\n        __t(\"numIslands([[\\\"1\\\", \\\"1\\\"], [\\\"1\\\", \\\"1\\\"]])\", () -> (new Solution().numIslands(new char[][]{{'1', '1'}, {'1', '1'}})), \"1\", \"eq\");\n        __t(\"numIslands([[\\\"0\\\"]])\", () -> (new Solution().numIslands(new char[][]{{'0'}})), \"0\", \"eq\");\n        __t(\"numIslands([[\\\"1\\\", \\\"0\\\", \\\"1\\\", \\\"0\\\", \\\"1\\\"]])\", () -> (new Solution().numIslands(new char[][]{{'1', '0', '1', '0', '1'}})), \"3\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "nested-list-weight-sum-ii",
+   "title": "Nested List Weight Sum II",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/nested-list-weight-sum-ii",
+   "pattern": "Graphs",
+   "pattern_slug": "graphs",
+   "companies": {
+    "LinkedIn": {
+     "window": "30d",
+     "freq": 100.0
+    }
+   },
+   "blind75": false,
+   "summary": "You get a nested list of integers. An integer's weight is maxDepth − depth + 1, so the deepest integers weigh 1 and top-level ones weigh the most. Return the sum of every integer times its weight.",
+   "example": "[[1,1],2,[1,1]] → 8   (the 1s weigh 1, the 2 weighs 2)",
+   "idea": "BFS level by level; keep a running sum of all integers seen so far and add it to the total at each level — deeper items get counted fewer times.",
+   "topics": "Stack, Depth-First Search, Breadth-First Search",
+   "tests": [
+    [
+     "depthSumInverse([[1, 1], 2, [1, 1]])",
+     "8"
+    ],
+    [
+     "depthSumInverse([1, [4, [6]]])",
+     "17"
+    ],
+    [
+     "depthSumInverse([5])",
+     "5"
+    ],
+    [
+     "depthSumInverse([[[3]], 1])",
+     "6"
+    ]
+   ],
+   "provided": [
+    "NestedInteger"
+   ],
+   "py_starter": "class Solution:\n    def depthSumInverse(self, nestedList: List[NestedInteger]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int depthSumInverse(List<NestedInteger> nestedList) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@\nclass NestedInteger:\n    \"\"\"Provided: isInteger(), getInteger(), getList().\"\"\"\n    def __init__(self, v): self._v = v\n    def isInteger(self) -> bool: return isinstance(self._v, int)\n    def getInteger(self): return self._v if isinstance(self._v, int) else None\n    def getList(self): return self._v if isinstance(self._v, list) else None\n",
+   "py_post": "@@PYHELPERS@@\n\ndef _ni(e): return NestedInteger(e) if isinstance(e, int) else NestedInteger([_ni(y) for y in e])\ndef NL(x): return [_ni(e) for e in x]\n\n_t('depthSumInverse([[1, 1], 2, [1, 1]])', lambda: (Solution().depthSumInverse(NL([[1, 1], 2, [1, 1]]))), '8', 'eq')\n_t('depthSumInverse([1, [4, [6]]])', lambda: (Solution().depthSumInverse(NL([1, [4, [6]]]))), '17', 'eq')\n_t('depthSumInverse([5])', lambda: (Solution().depthSumInverse(NL([5]))), '5', 'eq')\n_t('depthSumInverse([[[3]], 1])', lambda: (Solution().depthSumInverse(NL([[[3]], 1]))), '6', 'eq')\n",
+   "java_post": "\nclass NestedInteger {\n    private Integer v; private List<NestedInteger> l;\n    NestedInteger(int v) { this.v = v; }\n    NestedInteger(List<NestedInteger> l) { this.l = l; }\n    public boolean isInteger() { return v != null; }\n    public Integer getInteger() { return v; }\n    public List<NestedInteger> getList() { return l; }\n}\n\npublic class Main {\n@@JHELPERS@@\n    static NestedInteger __ni(Object e) {\n        if (e instanceof Integer) return new NestedInteger((Integer) e);\n        List<NestedInteger> l = new ArrayList<>(); for (Object y : (Object[]) e) l.add(__ni(y)); return new NestedInteger(l);\n    }\n    static List<NestedInteger> NL(Object[] x) { List<NestedInteger> l = new ArrayList<>(); for (Object e : x) l.add(__ni(e)); return l; }\n    public static void main(String[] args) {\n        __t(\"depthSumInverse([[1, 1], 2, [1, 1]])\", () -> (new Solution().depthSumInverse(NL(new Object[]{new Object[]{1, 1}, 2, new Object[]{1, 1}}))), \"8\", \"eq\");\n        __t(\"depthSumInverse([1, [4, [6]]])\", () -> (new Solution().depthSumInverse(NL(new Object[]{1, new Object[]{4, new Object[]{6}}}))), \"17\", \"eq\");\n        __t(\"depthSumInverse([5])\", () -> (new Solution().depthSumInverse(NL(new Object[]{5}))), \"5\", \"eq\");\n        __t(\"depthSumInverse([[[3]], 1])\", () -> (new Solution().depthSumInverse(NL(new Object[]{new Object[]{new Object[]{3}}, 1}))), \"6\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "max-stack",
+   "title": "Max Stack",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/max-stack",
+   "pattern": "Design",
+   "pattern_slug": "design",
+   "companies": {
+    "LinkedIn": {
+     "window": "30d",
+     "freq": 94.7
+    }
+   },
+   "blind75": false,
+   "summary": "Design a stack that also supports finding and removing its maximum: push(x), pop(), top(), peekMax(), and popMax(). If several elements share the max, popMax removes the one closest to the top.",
+   "example": "push 5, push 1, push 5 → top()=5, popMax()=5, top()=1, peekMax()=5, pop()=1, top()=5",
+   "idea": "Doubly linked list for stack order + TreeMap&lt;val, Deque&lt;Node&gt;&gt; for max; popMax unlinks from the middle. O(log n).",
+   "topics": "Linked List, Stack, Design, Doubly-Linked List, Ordered Set",
+   "tests": [
+    [
+     "[\"MaxStack\", \"push\", \"push\", \"push\", \"top\", \"popMax\", \"top\", \"peekMax\", \"pop\", \"top\"]  [[], [5], [1], [5], [], [], [], [], [], []]",
+     "[null,null,null,null,5,5,1,5,1,5]"
+    ],
+    [
+     "[\"MaxStack\", \"push\", \"push\", \"push\", \"push\", \"popMax\", \"pop\", \"pop\", \"peekMax\", \"top\"]  [[], [3], [1], [3], [2], [], [], [], [], []]",
+     "[null,null,null,null,null,3,2,1,3,3]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class MaxStack:\n\n    def __init__(self):\n        pass\n\n    def push(self, x: int) -> None:\n        pass\n\n    def pop(self) -> int:\n        pass\n\n    def top(self) -> int:\n        pass\n\n    def peekMax(self) -> int:\n        pass\n\n    def popMax(self) -> int:\n        pass\n",
+   "java_starter": "class MaxStack {\n\n    public MaxStack() {\n\n    }\n\n    public void push(int x) {\n\n    }\n\n    public int pop() {\n\n    }\n\n    public int top() {\n\n    }\n\n    public int peekMax() {\n\n    }\n\n    public int popMax() {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('[\"MaxStack\", \"push\", \"push\", \"push\", \"top\", \"popMax\", \"top\", \"peekMax\", \"pop\", \"top\"]  [[], [5], [1], [5], [], [], [], [], [], []]', lambda: _ops(MaxStack, ['MaxStack', 'push', 'push', 'push', 'top', 'popMax', 'top', 'peekMax', 'pop', 'top'], [[], [5], [1], [5], [], [], [], [], [], []]), '[null,null,null,null,5,5,1,5,1,5]', 'eq')\n_t('[\"MaxStack\", \"push\", \"push\", \"push\", \"push\", \"popMax\", \"pop\", \"pop\", \"peekMax\", \"top\"]  [[], [3], [1], [3], [2], [], [], [], [], []]', lambda: _ops(MaxStack, ['MaxStack', 'push', 'push', 'push', 'push', 'popMax', 'pop', 'pop', 'peekMax', 'top'], [[], [3], [1], [3], [2], [], [], [], [], []]), '[null,null,null,null,null,3,2,1,3,3]', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"[\\\"MaxStack\\\", \\\"push\\\", \\\"push\\\", \\\"push\\\", \\\"top\\\", \\\"popMax\\\", \\\"top\\\", \\\"peekMax\\\", \\\"pop\\\", \\\"top\\\"]  [[], [5], [1], [5], [], [], [], [], [], []]\", () -> { List<Object> out = new ArrayList<>(); MaxStack o = new MaxStack(); out.add(null); o.push(5); out.add(null); o.push(1); out.add(null); o.push(5); out.add(null); out.add(o.top()); out.add(o.popMax()); out.add(o.top()); out.add(o.peekMax()); out.add(o.pop()); out.add(o.top()); return out; }, \"[null,null,null,null,5,5,1,5,1,5]\", \"eq\");\n        __t(\"[\\\"MaxStack\\\", \\\"push\\\", \\\"push\\\", \\\"push\\\", \\\"push\\\", \\\"popMax\\\", \\\"pop\\\", \\\"pop\\\", \\\"peekMax\\\", \\\"top\\\"]  [[], [3], [1], [3], [2], [], [], [], [], []]\", () -> { List<Object> out = new ArrayList<>(); MaxStack o = new MaxStack(); out.add(null); o.push(3); out.add(null); o.push(1); out.add(null); o.push(3); out.add(null); o.push(2); out.add(null); out.add(o.popMax()); out.add(o.pop()); out.add(o.pop()); out.add(o.peekMax()); out.add(o.top()); return out; }, \"[null,null,null,null,null,3,2,1,3,3]\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "can-place-flowers",
+   "title": "Can Place Flowers",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/can-place-flowers",
+   "pattern": "Greedy",
+   "pattern_slug": "greedy",
+   "companies": {
+    "LinkedIn": {
+     "window": "30d",
+     "freq": 91.5
+    }
+   },
+   "blind75": false,
+   "summary": "A flowerbed is an array of 0 (empty) and 1 (planted). Flowers can't be planted in adjacent plots. Return whether n more flowers can be planted.",
+   "example": "flowerbed [0,0,1,0,0], n = 2 → true (plant at both ends)",
+   "idea": "Greedy: plant whenever the current, left and right plots are empty (out of bounds = empty).",
+   "topics": "Array, Greedy",
+   "tests": [
+    [
+     "canPlaceFlowers([1, 0, 0, 0, 1], 1)",
+     "true"
+    ],
+    [
+     "canPlaceFlowers([1, 0, 0, 0, 1], 2)",
+     "false"
+    ],
+    [
+     "canPlaceFlowers([0, 0, 1, 0, 0], 2)",
+     "true"
+    ],
+    [
+     "canPlaceFlowers([0], 1)",
+     "true"
+    ],
+    [
+     "canPlaceFlowers([1, 0, 1], 1)",
+     "false"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def canPlaceFlowers(self, flowerbed: List[int], n: int) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean canPlaceFlowers(int[] flowerbed, int n) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('canPlaceFlowers([1, 0, 0, 0, 1], 1)', lambda: (Solution().canPlaceFlowers([1, 0, 0, 0, 1], 1)), 'true', 'eq')\n_t('canPlaceFlowers([1, 0, 0, 0, 1], 2)', lambda: (Solution().canPlaceFlowers([1, 0, 0, 0, 1], 2)), 'false', 'eq')\n_t('canPlaceFlowers([0, 0, 1, 0, 0], 2)', lambda: (Solution().canPlaceFlowers([0, 0, 1, 0, 0], 2)), 'true', 'eq')\n_t('canPlaceFlowers([0], 1)', lambda: (Solution().canPlaceFlowers([0], 1)), 'true', 'eq')\n_t('canPlaceFlowers([1, 0, 1], 1)', lambda: (Solution().canPlaceFlowers([1, 0, 1], 1)), 'false', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"canPlaceFlowers([1, 0, 0, 0, 1], 1)\", () -> (new Solution().canPlaceFlowers(new int[]{1, 0, 0, 0, 1}, 1)), \"true\", \"eq\");\n        __t(\"canPlaceFlowers([1, 0, 0, 0, 1], 2)\", () -> (new Solution().canPlaceFlowers(new int[]{1, 0, 0, 0, 1}, 2)), \"false\", \"eq\");\n        __t(\"canPlaceFlowers([0, 0, 1, 0, 0], 2)\", () -> (new Solution().canPlaceFlowers(new int[]{0, 0, 1, 0, 0}, 2)), \"true\", \"eq\");\n        __t(\"canPlaceFlowers([0], 1)\", () -> (new Solution().canPlaceFlowers(new int[]{0}, 1)), \"true\", \"eq\");\n        __t(\"canPlaceFlowers([1, 0, 1], 1)\", () -> (new Solution().canPlaceFlowers(new int[]{1, 0, 1}, 1)), \"false\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "letter-combinations-of-a-phone-number",
+   "title": "Letter Combinations of a Phone Number",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/letter-combinations-of-a-phone-number",
+   "pattern": "Backtracking",
+   "pattern_slug": "backtracking",
+   "companies": {
+    "LinkedIn": {
+     "window": "30d",
+     "freq": 87.9
+    }
+   },
+   "blind75": false,
+   "summary": "Each digit 2–9 maps to letters as on a phone keypad (2 → abc, …, 7 → pqrs, 9 → wxyz). Return every letter string the digit string could represent, in any order. An empty input gives an empty list.",
+   "example": "\"23\" → [ad, ae, af, bd, be, bf, cd, ce, cf]",
+   "idea": "Backtrack digit by digit, append each mapped letter, undo.",
+   "topics": "Hash Table, String, Backtracking",
+   "tests": [
+    [
+     "letterCombinations(\"23\")",
+     "[\"ad\",\"ae\",\"af\",\"bd\",\"be\",\"bf\",\"cd\",\"ce\",\"cf\"]"
+    ],
+    [
+     "letterCombinations(\"\")",
+     "[]"
+    ],
+    [
+     "letterCombinations(\"7\")",
+     "[\"p\",\"q\",\"r\",\"s\"]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def letterCombinations(self, digits: str) -> List[str]:\n        pass\n",
+   "java_starter": "class Solution {\n    public List<String> letterCombinations(String digits) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('letterCombinations(\"23\")', lambda: (Solution().letterCombinations('23')), '[\"ad\",\"ae\",\"af\",\"bd\",\"be\",\"bf\",\"cd\",\"ce\",\"cf\"]', 'sort')\n_t('letterCombinations(\"\")', lambda: (Solution().letterCombinations('')), '[]', 'sort')\n_t('letterCombinations(\"7\")', lambda: (Solution().letterCombinations('7')), '[\"p\",\"q\",\"r\",\"s\"]', 'sort')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"letterCombinations(\\\"23\\\")\", () -> (new Solution().letterCombinations(\"23\")), \"[\\\"ad\\\",\\\"ae\\\",\\\"af\\\",\\\"bd\\\",\\\"be\\\",\\\"bf\\\",\\\"cd\\\",\\\"ce\\\",\\\"cf\\\"]\", \"sort\");\n        __t(\"letterCombinations(\\\"\\\")\", () -> (new Solution().letterCombinations(\"\")), \"[]\", \"sort\");\n        __t(\"letterCombinations(\\\"7\\\")\", () -> (new Solution().letterCombinations(\"7\")), \"[\\\"p\\\",\\\"q\\\",\\\"r\\\",\\\"s\\\"]\", \"sort\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "decode-string",
+   "title": "Decode String",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/decode-string",
+   "pattern": "Stack",
+   "pattern_slug": "stack",
+   "companies": {
+    "NVIDIA": {
+     "window": "30d",
+     "freq": 85.3
+    }
+   },
+   "blind75": false,
+   "summary": "Expand an encoded string where k[s] means s repeated k times. Encodings can be nested and k can have several digits.",
+   "example": "\"2[x3[y]]z\" → \"xyyyxyyyz\"",
+   "idea": "Stack of (repeat count, string so far); on ']' pop and append current × count. Handle multi-digit counts.",
+   "topics": "String, Stack, Recursion",
+   "tests": [
+    [
+     "decodeString(\"3[a]2[bc]\")",
+     "\"aaabcbc\""
+    ],
+    [
+     "decodeString(\"2[x3[y]]z\")",
+     "\"xyyyxyyyz\""
+    ],
+    [
+     "decodeString(\"10[a]\")",
+     "\"aaaaaaaaaa\""
+    ],
+    [
+     "decodeString(\"ab\")",
+     "\"ab\""
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def decodeString(self, s: str) -> str:\n        pass\n",
+   "java_starter": "class Solution {\n    public String decodeString(String s) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('decodeString(\"3[a]2[bc]\")', lambda: (Solution().decodeString('3[a]2[bc]')), '\"aaabcbc\"', 'eq')\n_t('decodeString(\"2[x3[y]]z\")', lambda: (Solution().decodeString('2[x3[y]]z')), '\"xyyyxyyyz\"', 'eq')\n_t('decodeString(\"10[a]\")', lambda: (Solution().decodeString('10[a]')), '\"aaaaaaaaaa\"', 'eq')\n_t('decodeString(\"ab\")', lambda: (Solution().decodeString('ab')), '\"ab\"', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"decodeString(\\\"3[a]2[bc]\\\")\", () -> (new Solution().decodeString(\"3[a]2[bc]\")), \"\\\"aaabcbc\\\"\", \"eq\");\n        __t(\"decodeString(\\\"2[x3[y]]z\\\")\", () -> (new Solution().decodeString(\"2[x3[y]]z\")), \"\\\"xyyyxyyyz\\\"\", \"eq\");\n        __t(\"decodeString(\\\"10[a]\\\")\", () -> (new Solution().decodeString(\"10[a]\")), \"\\\"aaaaaaaaaa\\\"\", \"eq\");\n        __t(\"decodeString(\\\"ab\\\")\", () -> (new Solution().decodeString(\"ab\")), \"\\\"ab\\\"\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "read-n-characters-given-read4-ii-call-multiple-times",
+   "title": "Read N Characters Given read4 II - Call Multiple Times",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/read-n-characters-given-read4-ii-call-multiple-times",
+   "pattern": "Design",
+   "pattern_slug": "design",
+   "companies": {
+    "NVIDIA": {
+     "window": "30d",
+     "freq": 73.7
+    }
+   },
+   "blind75": false,
+   "summary": "You can only read a file through read4(buf4), which copies up to 4 characters into buf4 and returns how many it copied. Implement read(buf, n) that copies up to n characters into buf and returns the count. read may be called many times, so characters read4 fetched but you didn't return yet must be kept for the next call.",
+   "example": "file \"abc\": read(1) → \"a\", read(2) → \"bc\", read(1) → \"\"",
+   "idea": "Keep a 4-char buffer + pointer + count as fields across calls; drain the buffer first, call read4 when empty, stop at n or EOF.",
+   "topics": "Array, Simulation, Interactive",
+   "tests": [
+    [
+     "file \"abc\", read(1), read(2), read(1)",
+     "[\"a\",\"bc\",\"\"]"
+    ],
+    [
+     "file \"abcdefgh\", read(5), read(2), read(4)",
+     "[\"abcde\",\"fg\",\"h\"]"
+    ],
+    [
+     "file \"\", read(1)",
+     "[\"\"]"
+    ],
+    [
+     "file \"abcdef\", read(3), read(3), read(3)",
+     "[\"abc\",\"def\",\"\"]"
+    ]
+   ],
+   "provided": [
+    "read4"
+   ],
+   "py_starter": "# The read4 API is provided:\n#   def read4(buf4: List[str]) -> int   (fills buf4[0..3], returns count)\n\nclass Solution:\n    def read(self, buf: List[str], n: int) -> int:\n        pass\n",
+   "java_starter": "/**\n * The read4 API is provided by the parent class:\n *   int read4(char[] buf4)   // fills buf4[0..3], returns count\n */\npublic class Solution extends Reader4 {\n    public int read(char[] buf, int n) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@\n_file = {\"s\": \"\", \"p\": 0}\ndef read4(buf4) -> int:\n    c = 0\n    while c < 4 and _file[\"p\"] < len(_file[\"s\"]):\n        buf4[c] = _file[\"s\"][_file[\"p\"]]; _file[\"p\"] += 1; c += 1\n    return c\n",
+   "py_post": "@@PYHELPERS@@\n\ndef read_calls(file, ns):\n    _file[\"s\"] = file; _file[\"p\"] = 0\n    s = Solution(); out = []\n    for n in ns:\n        buf = [\"\"] * (n + 4)\n        c = s.read(buf, n)\n        out.append(\"\".join(buf[:c]))\n    return out\n\ndef _f0():\n    got = read_calls(\"abc\", [1, 2, 1])\n    return got\n_t('file \"abc\", read(1), read(2), read(1)', _f0, '[\"a\",\"bc\",\"\"]', 'eq')\ndef _f1():\n    got = read_calls(\"abcdefgh\", [5, 2, 4])\n    return got\n_t('file \"abcdefgh\", read(5), read(2), read(4)', _f1, '[\"abcde\",\"fg\",\"h\"]', 'eq')\ndef _f2():\n    got = read_calls(\"\", [1])\n    return got\n_t('file \"\", read(1)', _f2, '[\"\"]', 'eq')\ndef _f3():\n    got = read_calls(\"abcdef\", [3, 3, 3])\n    return got\n_t('file \"abcdef\", read(3), read(3), read(3)', _f3, '[\"abc\",\"def\",\"\"]', 'eq')\n",
+   "java_post": "\nabstract class Reader4 {\n    static String __file = \"\"; static int __pos = 0;\n    int read4(char[] buf4) {\n        int c = 0;\n        while (c < 4 && __pos < __file.length()) buf4[c++] = __file.charAt(__pos++);\n        return c;\n    }\n}\n\npublic class Main {\n@@JHELPERS@@\n    static List<String> readCalls(String file, int[] ns) {\n        Reader4.__file = file; Reader4.__pos = 0;\n        Solution s = new Solution(); List<String> out = new ArrayList<>();\n        for (int n : ns) { char[] buf = new char[n + 4]; int c = s.read(buf, n); out.add(new String(buf, 0, c)); }\n        return out;\n    }\n    public static void main(String[] args) {\n        __t(\"file \\\"abc\\\", read(1), read(2), read(1)\", () -> { Object got; got = readCalls(\"abc\", new int[]{1, 2, 1}); return got; }, \"[\\\"a\\\",\\\"bc\\\",\\\"\\\"]\", \"eq\");\n        __t(\"file \\\"abcdefgh\\\", read(5), read(2), read(4)\", () -> { Object got; got = readCalls(\"abcdefgh\", new int[]{5, 2, 4}); return got; }, \"[\\\"abcde\\\",\\\"fg\\\",\\\"h\\\"]\", \"eq\");\n        __t(\"file \\\"\\\", read(1)\", () -> { Object got; got = readCalls(\"\", new int[]{1}); return got; }, \"[\\\"\\\"]\", \"eq\");\n        __t(\"file \\\"abcdef\\\", read(3), read(3), read(3)\", () -> { Object got; got = readCalls(\"abcdef\", new int[]{3, 3, 3}); return got; }, \"[\\\"abc\\\",\\\"def\\\",\\\"\\\"]\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "valid-parentheses",
+   "title": "Valid Parentheses",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/valid-parentheses",
+   "pattern": "Stack",
+   "pattern_slug": "stack",
+   "companies": {
+    "LinkedIn": {
+     "window": "30d",
+     "freq": 71.4
+    }
+   },
+   "blind75": true,
+   "summary": "A string contains only ()[]{}. Return whether every bracket is closed by the same type of bracket, in the correct order.",
+   "example": "\"{[]}\" → true,  \"([)]\" → false",
+   "idea": "Stack of open brackets; each closing bracket must match the top; stack empty at the end.",
+   "topics": "String, Stack, Bracket Sequences",
+   "tests": [
+    [
+     "isValid(\"()[]{}\")",
+     "true"
+    ],
+    [
+     "isValid(\"(]\")",
+     "false"
+    ],
+    [
+     "isValid(\"([)]\")",
+     "false"
+    ],
+    [
+     "isValid(\"{[]}\")",
+     "true"
+    ],
+    [
+     "isValid(\"(\")",
+     "false"
+    ],
+    [
+     "isValid(\"]\")",
+     "false"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def isValid(self, s: str) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean isValid(String s) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('isValid(\"()[]{}\")', lambda: (Solution().isValid('()[]{}')), 'true', 'eq')\n_t('isValid(\"(]\")', lambda: (Solution().isValid('(]')), 'false', 'eq')\n_t('isValid(\"([)]\")', lambda: (Solution().isValid('([)]')), 'false', 'eq')\n_t('isValid(\"{[]}\")', lambda: (Solution().isValid('{[]}')), 'true', 'eq')\n_t('isValid(\"(\")', lambda: (Solution().isValid('(')), 'false', 'eq')\n_t('isValid(\"]\")', lambda: (Solution().isValid(']')), 'false', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"isValid(\\\"()[]{}\\\")\", () -> (new Solution().isValid(\"()[]{}\")), \"true\", \"eq\");\n        __t(\"isValid(\\\"(]\\\")\", () -> (new Solution().isValid(\"(]\")), \"false\", \"eq\");\n        __t(\"isValid(\\\"([)]\\\")\", () -> (new Solution().isValid(\"([)]\")), \"false\", \"eq\");\n        __t(\"isValid(\\\"{[]}\\\")\", () -> (new Solution().isValid(\"{[]}\")), \"true\", \"eq\");\n        __t(\"isValid(\\\"(\\\")\", () -> (new Solution().isValid(\"(\")), \"false\", \"eq\");\n        __t(\"isValid(\\\"]\\\")\", () -> (new Solution().isValid(\"]\")), \"false\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "find-k-pairs-with-smallest-sums",
+   "title": "Find K Pairs with Smallest Sums",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/find-k-pairs-with-smallest-sums",
+   "pattern": "Heap",
+   "pattern_slug": "heap",
+   "companies": {
+    "LinkedIn": {
+     "window": "30d",
+     "freq": 61.8
+    }
+   },
+   "blind75": false,
+   "summary": "Given two ascending arrays, form pairs (one element from each) and return the k pairs with the smallest sums.",
+   "example": "[1,7,11], [2,4,6], k = 3 → [[1,2],[1,4],[1,6]]",
+   "idea": "Min-heap seeded with (nums1[i]+nums2[0], i, 0) for i &lt; k; pop k times, each time push (i, j+1).",
+   "topics": "Array, Heap (Priority Queue)",
+   "tests": [
+    [
+     "kSmallestPairs([1, 7, 11], [2, 4, 6], 3)",
+     "[[1,2],[1,4],[1,6]]"
+    ],
+    [
+     "kSmallestPairs([1, 2], [3], 2)",
+     "[[1,3],[2,3]]"
+    ],
+    [
+     "kSmallestPairs([1, 1, 2], [1, 2, 3], 2)",
+     "[[1,1],[1,1]]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def kSmallestPairs(self, nums1: List[int], nums2: List[int], k: int) -> List[List[int]]:\n        pass\n",
+   "java_starter": "class Solution {\n    public List<List<Integer>> kSmallestPairs(int[] nums1, int[] nums2, int k) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('kSmallestPairs([1, 7, 11], [2, 4, 6], 3)', lambda: (Solution().kSmallestPairs([1, 7, 11], [2, 4, 6], 3)), '[[1,2],[1,4],[1,6]]', 'sort')\n_t('kSmallestPairs([1, 2], [3], 2)', lambda: (Solution().kSmallestPairs([1, 2], [3], 2)), '[[1,3],[2,3]]', 'sort')\n_t('kSmallestPairs([1, 1, 2], [1, 2, 3], 2)', lambda: (Solution().kSmallestPairs([1, 1, 2], [1, 2, 3], 2)), '[[1,1],[1,1]]', 'sort')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"kSmallestPairs([1, 7, 11], [2, 4, 6], 3)\", () -> (new Solution().kSmallestPairs(new int[]{1, 7, 11}, new int[]{2, 4, 6}, 3)), \"[[1,2],[1,4],[1,6]]\", \"sort\");\n        __t(\"kSmallestPairs([1, 2], [3], 2)\", () -> (new Solution().kSmallestPairs(new int[]{1, 2}, new int[]{3}, 2)), \"[[1,3],[2,3]]\", \"sort\");\n        __t(\"kSmallestPairs([1, 1, 2], [1, 2, 3], 2)\", () -> (new Solution().kSmallestPairs(new int[]{1, 1, 2}, new int[]{1, 2, 3}, 2)), \"[[1,1],[1,1]]\", \"sort\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "group-anagrams",
+   "title": "Group Anagrams",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/group-anagrams",
+   "pattern": "Arrays & Hashing",
+   "pattern_slug": "arrays-hashing",
+   "companies": {
+    "NVIDIA": {
+     "window": "3mo",
+     "freq": 100.0
+    }
+   },
+   "blind75": true,
+   "summary": "Group words that are anagrams of each other (same letters, different order). Groups and the words inside them can be in any order.",
+   "example": "[eat, tea, tan, ate, nat, bat] → [[eat, tea, ate], [tan, nat], [bat]]",
+   "idea": "Key = sorted word (or 26-count signature) → map key to list of words.",
+   "topics": "Array, Hash Table, String, Sorting",
+   "tests": [
+    [
+     "groupAnagrams([\"eat\", \"tea\", \"tan\", \"ate\", \"nat\", \"bat\"])",
+     "[[\"ate\",\"eat\",\"tea\"],[\"bat\"],[\"nat\",\"tan\"]]"
+    ],
+    [
+     "groupAnagrams([\"\"])",
+     "[[\"\"]]"
+    ],
+    [
+     "groupAnagrams([\"a\"])",
+     "[[\"a\"]]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:\n        pass\n",
+   "java_starter": "class Solution {\n    public List<List<String>> groupAnagrams(String[] strs) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('groupAnagrams([\"eat\", \"tea\", \"tan\", \"ate\", \"nat\", \"bat\"])', lambda: (Solution().groupAnagrams(['eat', 'tea', 'tan', 'ate', 'nat', 'bat'])), '[[\"ate\",\"eat\",\"tea\"],[\"bat\"],[\"nat\",\"tan\"]]', 'sortinner')\n_t('groupAnagrams([\"\"])', lambda: (Solution().groupAnagrams([''])), '[[\"\"]]', 'sortinner')\n_t('groupAnagrams([\"a\"])', lambda: (Solution().groupAnagrams(['a'])), '[[\"a\"]]', 'sortinner')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"groupAnagrams([\\\"eat\\\", \\\"tea\\\", \\\"tan\\\", \\\"ate\\\", \\\"nat\\\", \\\"bat\\\"])\", () -> (new Solution().groupAnagrams(new String[]{\"eat\", \"tea\", \"tan\", \"ate\", \"nat\", \"bat\"})), \"[[\\\"ate\\\",\\\"eat\\\",\\\"tea\\\"],[\\\"bat\\\"],[\\\"nat\\\",\\\"tan\\\"]]\", \"sortinner\");\n        __t(\"groupAnagrams([\\\"\\\"])\", () -> (new Solution().groupAnagrams(new String[]{\"\"})), \"[[\\\"\\\"]]\", \"sortinner\");\n        __t(\"groupAnagrams([\\\"a\\\"])\", () -> (new Solution().groupAnagrams(new String[]{\"a\"})), \"[[\\\"a\\\"]]\", \"sortinner\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "lru-cache",
+   "title": "LRU Cache",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/lru-cache",
+   "pattern": "Design",
+   "pattern_slug": "design",
+   "companies": {
+    "NVIDIA": {
+     "window": "3mo",
+     "freq": 93.6
+    }
+   },
+   "blind75": false,
+   "summary": "Design a fixed-capacity key-value cache with get(key) (returns -1 if missing) and put(key, value). When it's full, inserting a new key evicts the least recently used key. Both operations should be O(1).",
+   "example": "capacity 2: put(1,1), put(2,2), get(1)=1, put(3,3) evicts 2, get(2)=-1",
+   "idea": "HashMap + doubly linked list; move to front on get/put, evict from the tail. (LinkedHashMap with accessOrder is the shortcut.)",
+   "topics": "Hash Table, Linked List, Design, Doubly-Linked List",
+   "tests": [
+    [
+     "[\"LRUCache\", \"put\", \"put\", \"get\", \"put\", \"get\", \"put\", \"get\", \"get\", \"get\"]  [[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]",
+     "[null,null,null,1,null,-1,null,-1,3,4]"
+    ],
+    [
+     "[\"LRUCache\", \"put\", \"put\", \"put\", \"get\", \"get\"]  [[1], [1, 10], [1, 20], [2, 30], [1], [2]]",
+     "[null,null,null,null,-1,30]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class LRUCache:\n\n    def __init__(self, capacity: int):\n        pass\n\n    def get(self, key: int) -> int:\n        pass\n\n    def put(self, key: int, value: int) -> None:\n        pass\n",
+   "java_starter": "class LRUCache {\n\n    public LRUCache(int capacity) {\n\n    }\n\n    public int get(int key) {\n\n    }\n\n    public void put(int key, int value) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('[\"LRUCache\", \"put\", \"put\", \"get\", \"put\", \"get\", \"put\", \"get\", \"get\", \"get\"]  [[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]', lambda: _ops(LRUCache, ['LRUCache', 'put', 'put', 'get', 'put', 'get', 'put', 'get', 'get', 'get'], [[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]), '[null,null,null,1,null,-1,null,-1,3,4]', 'eq')\n_t('[\"LRUCache\", \"put\", \"put\", \"put\", \"get\", \"get\"]  [[1], [1, 10], [1, 20], [2, 30], [1], [2]]', lambda: _ops(LRUCache, ['LRUCache', 'put', 'put', 'put', 'get', 'get'], [[1], [1, 10], [1, 20], [2, 30], [1], [2]]), '[null,null,null,null,-1,30]', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"[\\\"LRUCache\\\", \\\"put\\\", \\\"put\\\", \\\"get\\\", \\\"put\\\", \\\"get\\\", \\\"put\\\", \\\"get\\\", \\\"get\\\", \\\"get\\\"]  [[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]\", () -> { List<Object> out = new ArrayList<>(); LRUCache o = new LRUCache(2); out.add(null); o.put(1, 1); out.add(null); o.put(2, 2); out.add(null); out.add(o.get(1)); o.put(3, 3); out.add(null); out.add(o.get(2)); o.put(4, 4); out.add(null); out.add(o.get(1)); out.add(o.get(3)); out.add(o.get(4)); return out; }, \"[null,null,null,1,null,-1,null,-1,3,4]\", \"eq\");\n        __t(\"[\\\"LRUCache\\\", \\\"put\\\", \\\"put\\\", \\\"put\\\", \\\"get\\\", \\\"get\\\"]  [[1], [1, 10], [1, 20], [2, 30], [1], [2]]\", () -> { List<Object> out = new ArrayList<>(); LRUCache o = new LRUCache(1); out.add(null); o.put(1, 10); out.add(null); o.put(1, 20); out.add(null); o.put(2, 30); out.add(null); out.add(o.get(1)); out.add(o.get(2)); return out; }, \"[null,null,null,null,-1,30]\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "bulb-switcher",
+   "title": "Bulb Switcher",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/bulb-switcher",
+   "pattern": "Math & Bits",
+   "pattern_slug": "math-bits",
+   "companies": {
+    "LinkedIn": {
+     "window": "3mo",
+     "freq": 91.5
+    }
+   },
+   "blind75": false,
+   "summary": "n bulbs start off. On round i (1 … n) you toggle every i-th bulb. How many bulbs are on after n rounds?",
+   "example": "n = 10 → 3 (bulbs 1, 4 and 9)",
+   "idea": "Bulb i stays on iff it has an odd number of divisors, i.e. is a perfect square → floor(sqrt(n)).",
+   "topics": "Math, Brainteaser",
+   "tests": [
+    [
+     "bulbSwitch(0)",
+     "0"
+    ],
+    [
+     "bulbSwitch(1)",
+     "1"
+    ],
+    [
+     "bulbSwitch(3)",
+     "1"
+    ],
+    [
+     "bulbSwitch(10)",
+     "3"
+    ],
+    [
+     "bulbSwitch(1000)",
+     "31"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def bulbSwitch(self, n: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int bulbSwitch(int n) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('bulbSwitch(0)', lambda: (Solution().bulbSwitch(0)), '0', 'eq')\n_t('bulbSwitch(1)', lambda: (Solution().bulbSwitch(1)), '1', 'eq')\n_t('bulbSwitch(3)', lambda: (Solution().bulbSwitch(3)), '1', 'eq')\n_t('bulbSwitch(10)', lambda: (Solution().bulbSwitch(10)), '3', 'eq')\n_t('bulbSwitch(1000)', lambda: (Solution().bulbSwitch(1000)), '31', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"bulbSwitch(0)\", () -> (new Solution().bulbSwitch(0)), \"0\", \"eq\");\n        __t(\"bulbSwitch(1)\", () -> (new Solution().bulbSwitch(1)), \"1\", \"eq\");\n        __t(\"bulbSwitch(3)\", () -> (new Solution().bulbSwitch(3)), \"1\", \"eq\");\n        __t(\"bulbSwitch(10)\", () -> (new Solution().bulbSwitch(10)), \"3\", \"eq\");\n        __t(\"bulbSwitch(1000)\", () -> (new Solution().bulbSwitch(1000)), \"31\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "best-time-to-buy-and-sell-stock",
+   "title": "Best Time to Buy and Sell Stock",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock",
+   "pattern": "Sliding Window",
+   "pattern_slug": "sliding-window",
+   "companies": {
+    "NVIDIA": {
+     "window": "3mo",
+     "freq": 85.3
+    }
+   },
+   "blind75": true,
+   "summary": "prices[i] is a stock's price on day i. Buy on one day and sell on a later day. Return the maximum profit, or 0 if you can't profit.",
+   "example": "[7,1,5,3,6,4] → 5 (buy at 1, sell at 6)",
+   "idea": "Track the minimum price so far; best = max(best, price − min).",
+   "topics": "Array, Dynamic Programming",
+   "tests": [
+    [
+     "maxProfit([7, 1, 5, 3, 6, 4])",
+     "5"
+    ],
+    [
+     "maxProfit([7, 6, 4, 3, 1])",
+     "0"
+    ],
+    [
+     "maxProfit([2, 4, 1])",
+     "2"
+    ],
+    [
+     "maxProfit([3])",
+     "0"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def maxProfit(self, prices: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int maxProfit(int[] prices) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('maxProfit([7, 1, 5, 3, 6, 4])', lambda: (Solution().maxProfit([7, 1, 5, 3, 6, 4])), '5', 'eq')\n_t('maxProfit([7, 6, 4, 3, 1])', lambda: (Solution().maxProfit([7, 6, 4, 3, 1])), '0', 'eq')\n_t('maxProfit([2, 4, 1])', lambda: (Solution().maxProfit([2, 4, 1])), '2', 'eq')\n_t('maxProfit([3])', lambda: (Solution().maxProfit([3])), '0', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"maxProfit([7, 1, 5, 3, 6, 4])\", () -> (new Solution().maxProfit(new int[]{7, 1, 5, 3, 6, 4})), \"5\", \"eq\");\n        __t(\"maxProfit([7, 6, 4, 3, 1])\", () -> (new Solution().maxProfit(new int[]{7, 6, 4, 3, 1})), \"0\", \"eq\");\n        __t(\"maxProfit([2, 4, 1])\", () -> (new Solution().maxProfit(new int[]{2, 4, 1})), \"2\", \"eq\");\n        __t(\"maxProfit([3])\", () -> (new Solution().maxProfit(new int[]{3})), \"0\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "top-k-frequent-elements",
+   "title": "Top K Frequent Elements",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/top-k-frequent-elements",
+   "pattern": "Heap",
+   "pattern_slug": "heap",
+   "companies": {
+    "NVIDIA": {
+     "window": "3mo",
+     "freq": 85.3
+    }
+   },
+   "blind75": true,
+   "summary": "Return the k values that appear most often, in any order. The answer is guaranteed to be unique.",
+   "example": "[1,1,1,2,2,3], k = 2 → [1,2]",
+   "idea": "Count with a map, then bucket by frequency (O(n)) or keep a min-heap of size k.",
+   "topics": "Array, Hash Table, Divide and Conquer, Sorting, Heap (Priority Queue), Bucket Sort, Counting, Quickselect",
+   "tests": [
+    [
+     "topKFrequent([1, 1, 1, 2, 2, 3], 2)",
+     "[1,2]"
+    ],
+    [
+     "topKFrequent([4], 1)",
+     "[4]"
+    ],
+    [
+     "topKFrequent([5, 5, 6, 6, 6, 7], 1)",
+     "[6]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def topKFrequent(self, nums: List[int], k: int) -> List[int]:\n        pass\n",
+   "java_starter": "class Solution {\n    public int[] topKFrequent(int[] nums, int k) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('topKFrequent([1, 1, 1, 2, 2, 3], 2)', lambda: (Solution().topKFrequent([1, 1, 1, 2, 2, 3], 2)), '[1,2]', 'sort')\n_t('topKFrequent([4], 1)', lambda: (Solution().topKFrequent([4], 1)), '[4]', 'sort')\n_t('topKFrequent([5, 5, 6, 6, 6, 7], 1)', lambda: (Solution().topKFrequent([5, 5, 6, 6, 6, 7], 1)), '[6]', 'sort')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"topKFrequent([1, 1, 1, 2, 2, 3], 2)\", () -> (new Solution().topKFrequent(new int[]{1, 1, 1, 2, 2, 3}, 2)), \"[1,2]\", \"sort\");\n        __t(\"topKFrequent([4], 1)\", () -> (new Solution().topKFrequent(new int[]{4}, 1)), \"[4]\", \"sort\");\n        __t(\"topKFrequent([5, 5, 6, 6, 6, 7], 1)\", () -> (new Solution().topKFrequent(new int[]{5, 5, 6, 6, 6, 7}, 1)), \"[6]\", \"sort\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "insert-delete-getrandom-o1-duplicates-allowed",
+   "title": "Insert Delete GetRandom O(1) - Duplicates allowed",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/insert-delete-getrandom-o1-duplicates-allowed",
+   "pattern": "Design",
+   "pattern_slug": "design",
+   "companies": {
+    "LinkedIn": {
+     "window": "3mo",
+     "freq": 78.3
+    }
+   },
+   "blind75": false,
+   "summary": "Design a multiset with average O(1) insert(val), remove(val) and getRandom(). insert returns true if val was not already present. remove deletes one copy and returns true if val was present. getRandom returns an element with probability proportional to how many copies it has.",
+   "example": "insert 1 → true, insert 1 → false, insert 2 → true, getRandom → 1 with prob 2/3",
+   "idea": "ArrayList of values + map val → Set of indices; remove by swapping with the last element and fixing its index set.",
+   "topics": "Array, Hash Table, Math, Design, Randomized",
+   "tests": [
+    [
+     "insert 1, 1, 2; remove 1; getRandom ∈ {1,2}; remove 1, 1; getRandom",
+     "[true,false,true,true,true,true,false,2]"
+    ],
+    [
+     "insert 1, 1, 2 → getRandom returns 1 about 2/3 of the time",
+     "true"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class RandomizedCollection:\n\n    def __init__(self):\n        pass\n\n    def insert(self, val: int) -> bool:\n        pass\n\n    def remove(self, val: int) -> bool:\n        pass\n\n    def getRandom(self) -> int:\n        pass\n",
+   "java_starter": "class RandomizedCollection {\n\n    public RandomizedCollection() {\n\n    }\n\n    public boolean insert(int val) {\n\n    }\n\n    public boolean remove(int val) {\n\n    }\n\n    public int getRandom() {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\ndef _f0():\n    c = RandomizedCollection()\n    got = [c.insert(1), c.insert(1), c.insert(2), c.remove(1), c.getRandom() in (1, 2), c.remove(1), c.remove(1), c.getRandom()]\n    return got\n_t('insert 1, 1, 2; remove 1; getRandom ∈ {1,2}; remove 1, 1; getRandom', _f0, '[true,false,true,true,true,true,false,2]', 'eq')\ndef _f1():\n    c = RandomizedCollection()\n    c.insert(1); c.insert(1); c.insert(2)\n    share = sum(c.getRandom() == 1 for _ in range(3000)) / 3000\n    got = 0.58 < share < 0.75\n    return got\n_t('insert 1, 1, 2 → getRandom returns 1 about 2/3 of the time', _f1, 'true', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"insert 1, 1, 2; remove 1; getRandom \\u2208 {1,2}; remove 1, 1; getRandom\", () -> { Object got; RandomizedCollection c = new RandomizedCollection(); int r1; got = Arrays.asList(c.insert(1), c.insert(1), c.insert(2), c.remove(1), ((r1 = c.getRandom()) == 1 || r1 == 2), c.remove(1), c.remove(1), c.getRandom()); return got; }, \"[true,false,true,true,true,true,false,2]\", \"eq\");\n        __t(\"insert 1, 1, 2 \\u2192 getRandom returns 1 about 2/3 of the time\", () -> { Object got; RandomizedCollection c = new RandomizedCollection(); c.insert(1); c.insert(1); c.insert(2); int ones = 0; for (int i = 0; i < 3000; i++) if (c.getRandom() == 1) ones++; got = ones / 3000.0 > 0.58 && ones / 3000.0 < 0.75; return got; }, \"true\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "maximum-subarray",
+   "title": "Maximum Subarray",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/maximum-subarray",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {
+    "LinkedIn": {
+     "window": "3mo",
+     "freq": 78.3
+    }
+   },
+   "blind75": true,
+   "summary": "Return the largest sum of any non-empty contiguous subarray.",
+   "example": "[-2,1,-3,4,-1,2,1,-5,4] → 6 (the subarray [4,-1,2,1])",
+   "idea": "Kadane: cur = max(x, cur + x); best = max(best, cur).",
+   "topics": "Array, Divide and Conquer, Dynamic Programming",
+   "tests": [
+    [
+     "maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4])",
+     "6"
+    ],
+    [
+     "maxSubArray([-3, -1, -2])",
+     "-1"
+    ],
+    [
+     "maxSubArray([5])",
+     "5"
+    ],
+    [
+     "maxSubArray([2, -1, 2])",
+     "3"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def maxSubArray(self, nums: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int maxSubArray(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4])', lambda: (Solution().maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4])), '6', 'eq')\n_t('maxSubArray([-3, -1, -2])', lambda: (Solution().maxSubArray([-3, -1, -2])), '-1', 'eq')\n_t('maxSubArray([5])', lambda: (Solution().maxSubArray([5])), '5', 'eq')\n_t('maxSubArray([2, -1, 2])', lambda: (Solution().maxSubArray([2, -1, 2])), '3', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4])\", () -> (new Solution().maxSubArray(new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4})), \"6\", \"eq\");\n        __t(\"maxSubArray([-3, -1, -2])\", () -> (new Solution().maxSubArray(new int[]{-3, -1, -2})), \"-1\", \"eq\");\n        __t(\"maxSubArray([5])\", () -> (new Solution().maxSubArray(new int[]{5})), \"5\", \"eq\");\n        __t(\"maxSubArray([2, -1, 2])\", () -> (new Solution().maxSubArray(new int[]{2, -1, 2})), \"3\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "find-first-and-last-position-of-element-in-sorted-array",
+   "title": "Find First and Last Position of Element in Sorted Array",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array",
+   "pattern": "Binary Search",
+   "pattern_slug": "binary-search",
+   "companies": {
+    "NVIDIA": {
+     "window": "3mo",
+     "freq": 73.7
+    }
+   },
+   "blind75": false,
+   "summary": "In an ascending array, return [first index, last index] of target, or [-1,-1] if it's absent, in O(log n).",
+   "example": "[5,7,7,8,8,10], target 8 → [3,4]",
+   "idea": "Two binary searches: first index ≥ target and first index &gt; target (minus 1).",
+   "topics": "Array, Binary Search",
+   "tests": [
+    [
+     "searchRange([5, 7, 7, 8, 8, 10], 8)",
+     "[3,4]"
+    ],
+    [
+     "searchRange([5, 7, 7, 8, 8, 10], 6)",
+     "[-1,-1]"
+    ],
+    [
+     "searchRange([], 0)",
+     "[-1,-1]"
+    ],
+    [
+     "searchRange([2, 2], 2)",
+     "[0,1]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def searchRange(self, nums: List[int], target: int) -> List[int]:\n        pass\n",
+   "java_starter": "class Solution {\n    public int[] searchRange(int[] nums, int target) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('searchRange([5, 7, 7, 8, 8, 10], 8)', lambda: (Solution().searchRange([5, 7, 7, 8, 8, 10], 8)), '[3,4]', 'eq')\n_t('searchRange([5, 7, 7, 8, 8, 10], 6)', lambda: (Solution().searchRange([5, 7, 7, 8, 8, 10], 6)), '[-1,-1]', 'eq')\n_t('searchRange([], 0)', lambda: (Solution().searchRange([], 0)), '[-1,-1]', 'eq')\n_t('searchRange([2, 2], 2)', lambda: (Solution().searchRange([2, 2], 2)), '[0,1]', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"searchRange([5, 7, 7, 8, 8, 10], 8)\", () -> (new Solution().searchRange(new int[]{5, 7, 7, 8, 8, 10}, 8)), \"[3,4]\", \"eq\");\n        __t(\"searchRange([5, 7, 7, 8, 8, 10], 6)\", () -> (new Solution().searchRange(new int[]{5, 7, 7, 8, 8, 10}, 6)), \"[-1,-1]\", \"eq\");\n        __t(\"searchRange([], 0)\", () -> (new Solution().searchRange(new int[]{}, 0)), \"[-1,-1]\", \"eq\");\n        __t(\"searchRange([2, 2], 2)\", () -> (new Solution().searchRange(new int[]{2, 2}, 2)), \"[0,1]\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "merge-k-sorted-lists",
+   "title": "Merge k Sorted Lists",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/merge-k-sorted-lists",
+   "pattern": "Linked List",
+   "pattern_slug": "linked-list",
+   "companies": {
+    "NVIDIA": {
+     "window": "3mo",
+     "freq": 73.7
+    }
+   },
+   "blind75": true,
+   "summary": "Merge k sorted linked lists into one sorted linked list and return its head.",
+   "example": "[[1,4,5],[1,3,4],[2,6]] → [1,1,2,3,4,4,5,6]",
+   "idea": "Min-heap of list heads: O(N log k). Or divide and conquer, merging pairs.",
+   "topics": "Linked List, Divide and Conquer, Heap (Priority Queue), Merge Sort, Tournament Sort",
+   "tests": [
+    [
+     "mergeKLists([[1, 4, 5], [1, 3, 4], [2, 6]])",
+     "[1,1,2,3,4,4,5,6]"
+    ],
+    [
+     "mergeKLists([])",
+     "[]"
+    ],
+    [
+     "mergeKLists([[]])",
+     "[]"
+    ],
+    [
+     "mergeKLists([[2], [], [1]])",
+     "[1,2]"
+    ]
+   ],
+   "provided": [
+    "ListNode"
+   ],
+   "py_starter": "class Solution:\n    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:\n        pass\n",
+   "java_starter": "class Solution {\n    public ListNode mergeKLists(ListNode[] lists) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('mergeKLists([[1, 4, 5], [1, 3, 4], [2, 6]])', lambda: _LA(Solution().mergeKLists([L(x) for x in [[1, 4, 5], [1, 3, 4], [2, 6]]])), '[1,1,2,3,4,4,5,6]', 'eq')\n_t('mergeKLists([])', lambda: _LA(Solution().mergeKLists([L(x) for x in []])), '[]', 'eq')\n_t('mergeKLists([[]])', lambda: _LA(Solution().mergeKLists([L(x) for x in [[]]])), '[]', 'eq')\n_t('mergeKLists([[2], [], [1]])', lambda: _LA(Solution().mergeKLists([L(x) for x in [[2], [], [1]]])), '[1,2]', 'eq')\n",
+   "java_post": "\nclass ListNode {\n    int val; ListNode next;\n    ListNode() {}\n    ListNode(int val) { this.val = val; }\n    ListNode(int val, ListNode next) { this.val = val; this.next = next; }\n}\n\npublic class Main {\n@@JHELPERS@@\n    static ListNode L(int[] a) { ListNode d = new ListNode(0), c = d; for (int v : a) { c.next = new ListNode(v); c = c.next; } return d.next; }\n    static ListNode LC(int[] a, int pos) {\n        ListNode h = L(a);\n        if (pos >= 0 && h != null) { ListNode tail = h, target = null; int i = 0; for (ListNode n = h; n != null; n = n.next, i++) { if (i == pos) target = n; tail = n; } tail.next = target; }\n        return h;\n    }\n    public static void main(String[] args) {\n        __t(\"mergeKLists([[1, 4, 5], [1, 3, 4], [2, 6]])\", () -> __LA(new Solution().mergeKLists(new ListNode[]{L(new int[]{1, 4, 5}), L(new int[]{1, 3, 4}), L(new int[]{2, 6})})), \"[1,1,2,3,4,4,5,6]\", \"eq\");\n        __t(\"mergeKLists([])\", () -> __LA(new Solution().mergeKLists(new ListNode[]{})), \"[]\", \"eq\");\n        __t(\"mergeKLists([[]])\", () -> __LA(new Solution().mergeKLists(new ListNode[]{L(new int[]{})})), \"[]\", \"eq\");\n        __t(\"mergeKLists([[2], [], [1]])\", () -> __LA(new Solution().mergeKLists(new ListNode[]{L(new int[]{2}), L(new int[]{}), L(new int[]{1})})), \"[1,2]\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "trapping-rain-water",
+   "title": "Trapping Rain Water",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/trapping-rain-water",
+   "pattern": "Two Pointers",
+   "pattern_slug": "two-pointers",
+   "companies": {
+    "NVIDIA": {
+     "window": "3mo",
+     "freq": 73.7
+    }
+   },
+   "blind75": false,
+   "summary": "Bar heights are given left to right, each bar 1 unit wide. Return how many units of rain water are trapped between the bars.",
+   "example": "[4,2,0,3,2,5] → 9",
+   "idea": "Two pointers with leftMax/rightMax; move the side with the smaller max and add max − height. O(1) space.",
+   "topics": "Array, Two Pointers, Dynamic Programming, Stack, Monotonic Stack",
+   "tests": [
+    [
+     "trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])",
+     "6"
+    ],
+    [
+     "trap([4, 2, 0, 3, 2, 5])",
+     "9"
+    ],
+    [
+     "trap([1, 2, 3])",
+     "0"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def trap(self, height: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int trap(int[] height) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])', lambda: (Solution().trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])), '6', 'eq')\n_t('trap([4, 2, 0, 3, 2, 5])', lambda: (Solution().trap([4, 2, 0, 3, 2, 5])), '9', 'eq')\n_t('trap([1, 2, 3])', lambda: (Solution().trap([1, 2, 3])), '0', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1])\", () -> (new Solution().trap(new int[]{0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1})), \"6\", \"eq\");\n        __t(\"trap([4, 2, 0, 3, 2, 5])\", () -> (new Solution().trap(new int[]{4, 2, 0, 3, 2, 5})), \"9\", \"eq\");\n        __t(\"trap([1, 2, 3])\", () -> (new Solution().trap(new int[]{1, 2, 3})), \"0\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "maximum-product-subarray",
+   "title": "Maximum Product Subarray",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/maximum-product-subarray",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {
+    "LinkedIn": {
+     "window": "3mo",
+     "freq": 71.4
+    }
+   },
+   "blind75": true,
+   "summary": "Return the largest product of any non-empty contiguous subarray.",
+   "example": "[-2,3,-4] → 24",
+   "idea": "Track both curMax and curMin (a negative swaps them); answer = max curMax seen.",
+   "topics": "Array, Dynamic Programming",
+   "tests": [
+    [
+     "maxProduct([2, 3, -2, 4])",
+     "6"
+    ],
+    [
+     "maxProduct([-2, 0, -1])",
+     "0"
+    ],
+    [
+     "maxProduct([-2, 3, -4])",
+     "24"
+    ],
+    [
+     "maxProduct([-2])",
+     "-2"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def maxProduct(self, nums: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int maxProduct(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('maxProduct([2, 3, -2, 4])', lambda: (Solution().maxProduct([2, 3, -2, 4])), '6', 'eq')\n_t('maxProduct([-2, 0, -1])', lambda: (Solution().maxProduct([-2, 0, -1])), '0', 'eq')\n_t('maxProduct([-2, 3, -4])', lambda: (Solution().maxProduct([-2, 3, -4])), '24', 'eq')\n_t('maxProduct([-2])', lambda: (Solution().maxProduct([-2])), '-2', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"maxProduct([2, 3, -2, 4])\", () -> (new Solution().maxProduct(new int[]{2, 3, -2, 4})), \"6\", \"eq\");\n        __t(\"maxProduct([-2, 0, -1])\", () -> (new Solution().maxProduct(new int[]{-2, 0, -1})), \"0\", \"eq\");\n        __t(\"maxProduct([-2, 3, -4])\", () -> (new Solution().maxProduct(new int[]{-2, 3, -4})), \"24\", \"eq\");\n        __t(\"maxProduct([-2])\", () -> (new Solution().maxProduct(new int[]{-2})), \"-2\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "shortest-word-distance-ii",
+   "title": "Shortest Word Distance II",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/shortest-word-distance-ii",
+   "pattern": "Design",
+   "pattern_slug": "design",
+   "companies": {
+    "LinkedIn": {
+     "window": "3mo",
+     "freq": 71.4
+    }
+   },
+   "blind75": false,
+   "summary": "Design a class built once from a word list and then asked many times: shortest(word1, word2) returns the smallest index distance between the two (different) words.",
+   "example": "[a, b, c, a, d, b]: shortest(a, b) = 1, shortest(c, d) = 2",
+   "idea": "Preprocess word → sorted index list; per query, two-pointer walk over both lists advancing the smaller.",
+   "topics": "Array, Hash Table, Two Pointers, String, Design",
+   "tests": [
+    [
+     "[\"WordDistance\", \"shortest\", \"shortest\", \"shortest\"]  [[[\"a\", \"b\", \"c\", \"a\", \"d\", \"b\"]], [\"a\", \"b\"], [\"c\", \"d\"], [\"d\", \"a\"]]",
+     "[null,1,2,1]"
+    ],
+    [
+     "[\"WordDistance\", \"shortest\", \"shortest\"]  [[[\"practice\", \"makes\", \"perfect\", \"coding\", \"makes\"]], [\"coding\", \"practice\"], [\"makes\", \"coding\"]]",
+     "[null,3,1]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class WordDistance:\n\n    def __init__(self, wordsDict: List[str]):\n        pass\n\n    def shortest(self, word1: str, word2: str) -> int:\n        pass\n",
+   "java_starter": "class WordDistance {\n\n    public WordDistance(String[] wordsDict) {\n\n    }\n\n    public int shortest(String word1, String word2) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('[\"WordDistance\", \"shortest\", \"shortest\", \"shortest\"]  [[[\"a\", \"b\", \"c\", \"a\", \"d\", \"b\"]], [\"a\", \"b\"], [\"c\", \"d\"], [\"d\", \"a\"]]', lambda: _ops(WordDistance, ['WordDistance', 'shortest', 'shortest', 'shortest'], [[['a', 'b', 'c', 'a', 'd', 'b']], ['a', 'b'], ['c', 'd'], ['d', 'a']]), '[null,1,2,1]', 'eq')\n_t('[\"WordDistance\", \"shortest\", \"shortest\"]  [[[\"practice\", \"makes\", \"perfect\", \"coding\", \"makes\"]], [\"coding\", \"practice\"], [\"makes\", \"coding\"]]', lambda: _ops(WordDistance, ['WordDistance', 'shortest', 'shortest'], [[['practice', 'makes', 'perfect', 'coding', 'makes']], ['coding', 'practice'], ['makes', 'coding']]), '[null,3,1]', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"[\\\"WordDistance\\\", \\\"shortest\\\", \\\"shortest\\\", \\\"shortest\\\"]  [[[\\\"a\\\", \\\"b\\\", \\\"c\\\", \\\"a\\\", \\\"d\\\", \\\"b\\\"]], [\\\"a\\\", \\\"b\\\"], [\\\"c\\\", \\\"d\\\"], [\\\"d\\\", \\\"a\\\"]]\", () -> { List<Object> out = new ArrayList<>(); WordDistance o = new WordDistance(new String[]{\"a\", \"b\", \"c\", \"a\", \"d\", \"b\"}); out.add(null); out.add(o.shortest(\"a\", \"b\")); out.add(o.shortest(\"c\", \"d\")); out.add(o.shortest(\"d\", \"a\")); return out; }, \"[null,1,2,1]\", \"eq\");\n        __t(\"[\\\"WordDistance\\\", \\\"shortest\\\", \\\"shortest\\\"]  [[[\\\"practice\\\", \\\"makes\\\", \\\"perfect\\\", \\\"coding\\\", \\\"makes\\\"]], [\\\"coding\\\", \\\"practice\\\"], [\\\"makes\\\", \\\"coding\\\"]]\", () -> { List<Object> out = new ArrayList<>(); WordDistance o = new WordDistance(new String[]{\"practice\", \"makes\", \"perfect\", \"coding\", \"makes\"}); out.add(null); out.add(o.shortest(\"coding\", \"practice\")); out.add(o.shortest(\"makes\", \"coding\")); return out; }, \"[null,3,1]\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "closest-binary-search-tree-value-ii",
+   "title": "Closest Binary Search Tree Value II",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/closest-binary-search-tree-value-ii",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {
+    "LinkedIn": {
+     "window": "3mo",
+     "freq": 61.8
+    }
+   },
+   "blind75": false,
+   "summary": "Given a BST, a target (a decimal) and k, return the k values in the tree closest to the target, in any order.",
+   "example": "tree [4,2,5,1,3], target 3.71, k = 2 → [3,4]",
+   "idea": "Inorder walk keeping a size-k deque (drop the farther end): O(n). Predecessor/successor stacks: O(log n + k).",
+   "topics": "Two Pointers, Stack, Tree, Depth-First Search, Binary Search Tree, Heap (Priority Queue), Binary Tree",
+   "tests": [
+    [
+     "closestKValues([4, 2, 5, 1, 3], 3.714286, 2)",
+     "[3,4]"
+    ],
+    [
+     "closestKValues([1], 0.0, 1)",
+     "[1]"
+    ],
+    [
+     "closestKValues([8, 4, 12, 2, 6, 10, 14], 9.2, 3)",
+     "[8,10,12]"
+    ]
+   ],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def closestKValues(self, root: Optional[TreeNode], target: float, k: int) -> List[int]:\n        pass\n",
+   "java_starter": "class Solution {\n    public List<Integer> closestKValues(TreeNode root, double target, int k) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('closestKValues([4, 2, 5, 1, 3], 3.714286, 2)', lambda: (Solution().closestKValues(T([4, 2, 5, 1, 3]), 3.714286, 2)), '[3,4]', 'sort')\n_t('closestKValues([1], 0.0, 1)', lambda: (Solution().closestKValues(T([1]), 0.0, 1)), '[1]', 'sort')\n_t('closestKValues([8, 4, 12, 2, 6, 10, 14], 9.2, 3)', lambda: (Solution().closestKValues(T([8, 4, 12, 2, 6, 10, 14]), 9.2, 3)), '[8,10,12]', 'sort')\n",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n@@JHELPERS@@\n    static TreeNode T(Integer[] a) {\n        if (a.length == 0 || a[0] == null) return null;\n        TreeNode root = new TreeNode(a[0]); List<TreeNode> q = new ArrayList<>(); q.add(root); int i = 1, qi = 0;\n        while (i < a.length) {\n            TreeNode n = q.get(qi++);\n            if (i < a.length && a[i] != null) { n.left = new TreeNode(a[i]); q.add(n.left); } i++;\n            if (i < a.length && a[i] != null) { n.right = new TreeNode(a[i]); q.add(n.right); } i++;\n        }\n        return root;\n    }\n    public static void main(String[] args) {\n        __t(\"closestKValues([4, 2, 5, 1, 3], 3.714286, 2)\", () -> (new Solution().closestKValues(T(new Integer[]{4, 2, 5, 1, 3}), 3.714286, 2)), \"[3,4]\", \"sort\");\n        __t(\"closestKValues([1], 0.0, 1)\", () -> (new Solution().closestKValues(T(new Integer[]{1}), 0.0, 1)), \"[1]\", \"sort\");\n        __t(\"closestKValues([8, 4, 12, 2, 6, 10, 14], 9.2, 3)\", () -> (new Solution().closestKValues(T(new Integer[]{8, 4, 12, 2, 6, 10, 14}), 9.2, 3)), \"[8,10,12]\", \"sort\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "kth-largest-element-in-an-array",
+   "title": "Kth Largest Element in an Array",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/kth-largest-element-in-an-array",
+   "pattern": "Heap",
+   "pattern_slug": "heap",
+   "companies": {
+    "LinkedIn": {
+     "window": "3mo",
+     "freq": 61.8
+    }
+   },
+   "blind75": false,
+   "summary": "Return the k-th largest element in the array (in sorted order, not the k-th distinct value). Try to beat a full sort.",
+   "example": "[3,2,1,5,6,4], k = 2 → 5",
+   "idea": "Min-heap of size k: O(n log k). Quickselect: O(n) average.",
+   "topics": "Array, Divide and Conquer, Sorting, Heap (Priority Queue), Quickselect",
+   "tests": [
+    [
+     "findKthLargest([3, 2, 1, 5, 6, 4], 2)",
+     "5"
+    ],
+    [
+     "findKthLargest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4)",
+     "4"
+    ],
+    [
+     "findKthLargest([1], 1)",
+     "1"
+    ],
+    [
+     "findKthLargest([-1, -1], 2)",
+     "-1"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def findKthLargest(self, nums: List[int], k: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int findKthLargest(int[] nums, int k) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('findKthLargest([3, 2, 1, 5, 6, 4], 2)', lambda: (Solution().findKthLargest([3, 2, 1, 5, 6, 4], 2)), '5', 'eq')\n_t('findKthLargest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4)', lambda: (Solution().findKthLargest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4)), '4', 'eq')\n_t('findKthLargest([1], 1)', lambda: (Solution().findKthLargest([1], 1)), '1', 'eq')\n_t('findKthLargest([-1, -1], 2)', lambda: (Solution().findKthLargest([-1, -1], 2)), '-1', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"findKthLargest([3, 2, 1, 5, 6, 4], 2)\", () -> (new Solution().findKthLargest(new int[]{3, 2, 1, 5, 6, 4}, 2)), \"5\", \"eq\");\n        __t(\"findKthLargest([3, 2, 3, 1, 2, 4, 5, 5, 6], 4)\", () -> (new Solution().findKthLargest(new int[]{3, 2, 3, 1, 2, 4, 5, 5, 6}, 4)), \"4\", \"eq\");\n        __t(\"findKthLargest([1], 1)\", () -> (new Solution().findKthLargest(new int[]{1}, 1)), \"1\", \"eq\");\n        __t(\"findKthLargest([-1, -1], 2)\", () -> (new Solution().findKthLargest(new int[]{-1, -1}, 2)), \"-1\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "maximum-depth-of-binary-tree",
+   "title": "Maximum Depth of Binary Tree",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/maximum-depth-of-binary-tree",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {
+    "LinkedIn": {
+     "window": "3mo",
+     "freq": 61.8
+    }
+   },
+   "blind75": true,
+   "summary": "Return the number of nodes on the longest path from the root down to a leaf.",
+   "example": "[3,9,20,null,null,15,7] → 3",
+   "idea": "1 + max(depth(left), depth(right)); or count BFS levels.",
+   "topics": "Tree, Depth-First Search, Breadth-First Search, Binary Tree",
+   "tests": [
+    [
+     "maxDepth([3, 9, 20, null, null, 15, 7])",
+     "3"
+    ],
+    [
+     "maxDepth([])",
+     "0"
+    ],
+    [
+     "maxDepth([1, null, 2])",
+     "2"
+    ]
+   ],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def maxDepth(self, root: Optional[TreeNode]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int maxDepth(TreeNode root) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('maxDepth([3, 9, 20, null, null, 15, 7])', lambda: (Solution().maxDepth(T([3, 9, 20, None, None, 15, 7]))), '3', 'eq')\n_t('maxDepth([])', lambda: (Solution().maxDepth(T([]))), '0', 'eq')\n_t('maxDepth([1, null, 2])', lambda: (Solution().maxDepth(T([1, None, 2]))), '2', 'eq')\n",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n@@JHELPERS@@\n    static TreeNode T(Integer[] a) {\n        if (a.length == 0 || a[0] == null) return null;\n        TreeNode root = new TreeNode(a[0]); List<TreeNode> q = new ArrayList<>(); q.add(root); int i = 1, qi = 0;\n        while (i < a.length) {\n            TreeNode n = q.get(qi++);\n            if (i < a.length && a[i] != null) { n.left = new TreeNode(a[i]); q.add(n.left); } i++;\n            if (i < a.length && a[i] != null) { n.right = new TreeNode(a[i]); q.add(n.right); } i++;\n        }\n        return root;\n    }\n    public static void main(String[] args) {\n        __t(\"maxDepth([3, 9, 20, null, null, 15, 7])\", () -> (new Solution().maxDepth(T(new Integer[]{3, 9, 20, null, null, 15, 7}))), \"3\", \"eq\");\n        __t(\"maxDepth([])\", () -> (new Solution().maxDepth(T(new Integer[]{}))), \"0\", \"eq\");\n        __t(\"maxDepth([1, null, 2])\", () -> (new Solution().maxDepth(T(new Integer[]{1, null, 2}))), \"2\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "second-minimum-node-in-a-binary-tree",
+   "title": "Second Minimum Node In a Binary Tree",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/second-minimum-node-in-a-binary-tree",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {
+    "LinkedIn": {
+     "window": "3mo",
+     "freq": 61.8
+    }
+   },
+   "blind75": false,
+   "summary": "In this special tree every node has 0 or 2 children, and a parent's value is the smaller of its children's values. Return the second smallest distinct value in the tree, or -1 if there isn't one.",
+   "example": "[2,2,5,null,null,5,7] → 5",
+   "idea": "Root is the minimum; DFS for the smallest value &gt; root.val, pruning below nodes already &gt; root.val.",
+   "topics": "Tree, Depth-First Search, Binary Tree",
+   "tests": [
+    [
+     "findSecondMinimumValue([2, 2, 5, null, null, 5, 7])",
+     "5"
+    ],
+    [
+     "findSecondMinimumValue([2, 2, 2])",
+     "-1"
+    ],
+    [
+     "findSecondMinimumValue([1, 1, 2, 1, 1, 2, 3])",
+     "2"
+    ]
+   ],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def findSecondMinimumValue(self, root: Optional[TreeNode]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int findSecondMinimumValue(TreeNode root) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('findSecondMinimumValue([2, 2, 5, null, null, 5, 7])', lambda: (Solution().findSecondMinimumValue(T([2, 2, 5, None, None, 5, 7]))), '5', 'eq')\n_t('findSecondMinimumValue([2, 2, 2])', lambda: (Solution().findSecondMinimumValue(T([2, 2, 2]))), '-1', 'eq')\n_t('findSecondMinimumValue([1, 1, 2, 1, 1, 2, 3])', lambda: (Solution().findSecondMinimumValue(T([1, 1, 2, 1, 1, 2, 3]))), '2', 'eq')\n",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n@@JHELPERS@@\n    static TreeNode T(Integer[] a) {\n        if (a.length == 0 || a[0] == null) return null;\n        TreeNode root = new TreeNode(a[0]); List<TreeNode> q = new ArrayList<>(); q.add(root); int i = 1, qi = 0;\n        while (i < a.length) {\n            TreeNode n = q.get(qi++);\n            if (i < a.length && a[i] != null) { n.left = new TreeNode(a[i]); q.add(n.left); } i++;\n            if (i < a.length && a[i] != null) { n.right = new TreeNode(a[i]); q.add(n.right); } i++;\n        }\n        return root;\n    }\n    public static void main(String[] args) {\n        __t(\"findSecondMinimumValue([2, 2, 5, null, null, 5, 7])\", () -> (new Solution().findSecondMinimumValue(T(new Integer[]{2, 2, 5, null, null, 5, 7}))), \"5\", \"eq\");\n        __t(\"findSecondMinimumValue([2, 2, 2])\", () -> (new Solution().findSecondMinimumValue(T(new Integer[]{2, 2, 2}))), \"-1\", \"eq\");\n        __t(\"findSecondMinimumValue([1, 1, 2, 1, 1, 2, 3])\", () -> (new Solution().findSecondMinimumValue(T(new Integer[]{1, 1, 2, 1, 1, 2, 3}))), \"2\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "restore-ip-addresses",
+   "title": "Restore IP Addresses",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/restore-ip-addresses",
+   "pattern": "Backtracking",
+   "pattern_slug": "backtracking",
+   "companies": {
+    "NVIDIA": {
+     "window": "6mo",
+     "freq": 93.6
+    }
+   },
+   "blind75": false,
+   "summary": "Insert three dots into a digit string to make valid IPv4 addresses. Each part must be 0–255 with no leading zeros, and every digit must be used. Return all possibilities in any order.",
+   "example": "\"0000\" → [\"0.0.0.0\"]",
+   "idea": "Backtrack into 4 parts of 1–3 digits; each ≤ 255 with no leading zeros; must use all digits.",
+   "topics": "String, Backtracking",
+   "tests": [
+    [
+     "restoreIpAddresses(\"25525511135\")",
+     "[\"255.255.11.135\",\"255.255.111.35\"]"
+    ],
+    [
+     "restoreIpAddresses(\"0000\")",
+     "[\"0.0.0.0\"]"
+    ],
+    [
+     "restoreIpAddresses(\"101023\")",
+     "[\"1.0.10.23\",\"1.0.102.3\",\"10.1.0.23\",\"10.10.2.3\",\"101.0.2.3\"]"
+    ],
+    [
+     "restoreIpAddresses(\"1111111111111\")",
+     "[]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def restoreIpAddresses(self, s: str) -> List[str]:\n        pass\n",
+   "java_starter": "class Solution {\n    public List<String> restoreIpAddresses(String s) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('restoreIpAddresses(\"25525511135\")', lambda: (Solution().restoreIpAddresses('25525511135')), '[\"255.255.11.135\",\"255.255.111.35\"]', 'sort')\n_t('restoreIpAddresses(\"0000\")', lambda: (Solution().restoreIpAddresses('0000')), '[\"0.0.0.0\"]', 'sort')\n_t('restoreIpAddresses(\"101023\")', lambda: (Solution().restoreIpAddresses('101023')), '[\"1.0.10.23\",\"1.0.102.3\",\"10.1.0.23\",\"10.10.2.3\",\"101.0.2.3\"]', 'sort')\n_t('restoreIpAddresses(\"1111111111111\")', lambda: (Solution().restoreIpAddresses('1111111111111')), '[]', 'sort')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"restoreIpAddresses(\\\"25525511135\\\")\", () -> (new Solution().restoreIpAddresses(\"25525511135\")), \"[\\\"255.255.11.135\\\",\\\"255.255.111.35\\\"]\", \"sort\");\n        __t(\"restoreIpAddresses(\\\"0000\\\")\", () -> (new Solution().restoreIpAddresses(\"0000\")), \"[\\\"0.0.0.0\\\"]\", \"sort\");\n        __t(\"restoreIpAddresses(\\\"101023\\\")\", () -> (new Solution().restoreIpAddresses(\"101023\")), \"[\\\"1.0.10.23\\\",\\\"1.0.102.3\\\",\\\"10.1.0.23\\\",\\\"10.10.2.3\\\",\\\"101.0.2.3\\\"]\", \"sort\");\n        __t(\"restoreIpAddresses(\\\"1111111111111\\\")\", () -> (new Solution().restoreIpAddresses(\"1111111111111\")), \"[]\", \"sort\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "koko-eating-bananas",
+   "title": "Koko Eating Bananas",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/koko-eating-bananas",
+   "pattern": "Binary Search",
+   "pattern_slug": "binary-search",
+   "companies": {
+    "NVIDIA": {
+     "window": "6mo",
+     "freq": 85.3
+    }
+   },
+   "blind75": false,
+   "summary": "Koko eats from one pile per hour, up to speed bananas from it, and finishes a pile before moving on (leftover time in that hour is wasted). Return the minimum integer speed that lets her finish all piles within h hours.",
+   "example": "piles [3,6,7,11], h = 8 → 4",
+   "idea": "Binary search the speed in [1, max(piles)]; feasible if Σ ceil(p / speed) ≤ h.",
+   "topics": "Array, Binary Search",
+   "tests": [
+    [
+     "minEatingSpeed([3, 6, 7, 11], 8)",
+     "4"
+    ],
+    [
+     "minEatingSpeed([30, 11, 23, 4, 20], 5)",
+     "30"
+    ],
+    [
+     "minEatingSpeed([30, 11, 23, 4, 20], 6)",
+     "23"
+    ],
+    [
+     "minEatingSpeed([1000000000], 2)",
+     "500000000"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def minEatingSpeed(self, piles: List[int], h: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int minEatingSpeed(int[] piles, int h) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('minEatingSpeed([3, 6, 7, 11], 8)', lambda: (Solution().minEatingSpeed([3, 6, 7, 11], 8)), '4', 'eq')\n_t('minEatingSpeed([30, 11, 23, 4, 20], 5)', lambda: (Solution().minEatingSpeed([30, 11, 23, 4, 20], 5)), '30', 'eq')\n_t('minEatingSpeed([30, 11, 23, 4, 20], 6)', lambda: (Solution().minEatingSpeed([30, 11, 23, 4, 20], 6)), '23', 'eq')\n_t('minEatingSpeed([1000000000], 2)', lambda: (Solution().minEatingSpeed([1000000000], 2)), '500000000', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"minEatingSpeed([3, 6, 7, 11], 8)\", () -> (new Solution().minEatingSpeed(new int[]{3, 6, 7, 11}, 8)), \"4\", \"eq\");\n        __t(\"minEatingSpeed([30, 11, 23, 4, 20], 5)\", () -> (new Solution().minEatingSpeed(new int[]{30, 11, 23, 4, 20}, 5)), \"30\", \"eq\");\n        __t(\"minEatingSpeed([30, 11, 23, 4, 20], 6)\", () -> (new Solution().minEatingSpeed(new int[]{30, 11, 23, 4, 20}, 6)), \"23\", \"eq\");\n        __t(\"minEatingSpeed([1000000000], 2)\", () -> (new Solution().minEatingSpeed(new int[]{1000000000}, 2)), \"500000000\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "network-delay-time",
+   "title": "Network Delay Time",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/network-delay-time",
+   "pattern": "Graphs",
+   "pattern_slug": "graphs",
+   "companies": {
+    "NVIDIA": {
+     "window": "6mo",
+     "freq": 85.3
+    }
+   },
+   "blind75": false,
+   "summary": "A directed graph has n nodes (1 … n) and travel times [u, v, w]. A signal starts at node k. Return how long until every node has received it, or -1 if some node never does.",
+   "example": "times [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2 → 2",
+   "idea": "Dijkstra from k with a min-heap; answer = max distance, or −1 if any node is unreachable.",
+   "topics": "Depth-First Search, Breadth-First Search, Graph Theory, Heap (Priority Queue), Shortest Path, Dijkstra's Algorithm",
+   "tests": [
+    [
+     "networkDelayTime([[2, 1, 1], [2, 3, 1], [3, 4, 1]], 4, 2)",
+     "2"
+    ],
+    [
+     "networkDelayTime([[1, 2, 1]], 2, 1)",
+     "1"
+    ],
+    [
+     "networkDelayTime([[1, 2, 1]], 2, 2)",
+     "-1"
+    ],
+    [
+     "networkDelayTime([[1, 2, 5], [1, 3, 1], [3, 2, 1]], 3, 1)",
+     "2"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def networkDelayTime(self, times: List[List[int]], n: int, k: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int networkDelayTime(int[][] times, int n, int k) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('networkDelayTime([[2, 1, 1], [2, 3, 1], [3, 4, 1]], 4, 2)', lambda: (Solution().networkDelayTime([[2, 1, 1], [2, 3, 1], [3, 4, 1]], 4, 2)), '2', 'eq')\n_t('networkDelayTime([[1, 2, 1]], 2, 1)', lambda: (Solution().networkDelayTime([[1, 2, 1]], 2, 1)), '1', 'eq')\n_t('networkDelayTime([[1, 2, 1]], 2, 2)', lambda: (Solution().networkDelayTime([[1, 2, 1]], 2, 2)), '-1', 'eq')\n_t('networkDelayTime([[1, 2, 5], [1, 3, 1], [3, 2, 1]], 3, 1)', lambda: (Solution().networkDelayTime([[1, 2, 5], [1, 3, 1], [3, 2, 1]], 3, 1)), '2', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"networkDelayTime([[2, 1, 1], [2, 3, 1], [3, 4, 1]], 4, 2)\", () -> (new Solution().networkDelayTime(new int[][]{{2, 1, 1}, {2, 3, 1}, {3, 4, 1}}, 4, 2)), \"2\", \"eq\");\n        __t(\"networkDelayTime([[1, 2, 1]], 2, 1)\", () -> (new Solution().networkDelayTime(new int[][]{{1, 2, 1}}, 2, 1)), \"1\", \"eq\");\n        __t(\"networkDelayTime([[1, 2, 1]], 2, 2)\", () -> (new Solution().networkDelayTime(new int[][]{{1, 2, 1}}, 2, 2)), \"-1\", \"eq\");\n        __t(\"networkDelayTime([[1, 2, 5], [1, 3, 1], [3, 2, 1]], 3, 1)\", () -> (new Solution().networkDelayTime(new int[][]{{1, 2, 5}, {1, 3, 1}, {3, 2, 1}}, 3, 1)), \"2\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "copy-list-with-random-pointer",
+   "title": "Copy List with Random Pointer",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/copy-list-with-random-pointer",
+   "pattern": "Linked List",
+   "pattern_slug": "linked-list",
+   "companies": {
+    "NVIDIA": {
+     "window": "6mo",
+     "freq": 73.7
+    }
+   },
+   "blind75": false,
+   "summary": "Each node of a linked list has next and an extra random pointer (to any node, or null). Return a deep copy, where the new nodes point only to other new nodes.",
+   "example": "[[7,null],[13,0],[11,4],[10,2],[1,0]]  (value, index that random points to) → an identical, separate list",
+   "idea": "Map old → new in two passes; or interleave copies (A→A'→B→B') then split for O(1) space.",
+   "topics": "Hash Table, Linked List",
+   "tests": [
+    [
+     "[[7,null],[13,0],[11,4],[10,2],[1,0]]",
+     "[[[7,null],[13,0],[11,4],[10,2],[1,0]],true]"
+    ],
+    [
+     "[[1,1],[2,1]]",
+     "[[[1,1],[2,1]],true]"
+    ],
+    [
+     "empty list",
+     "[]"
+    ]
+   ],
+   "provided": [
+    "Node"
+   ],
+   "py_starter": "# Node is provided:\n#   class Node:\n#       def __init__(self, x: int, next: 'Node' = None, random: 'Node' = None)\n\nclass Solution:\n    def copyRandomList(self, head: 'Optional[Node]') -> 'Optional[Node]':\n        pass\n",
+   "java_starter": "/*\n// Node is provided:\nclass Node {\n    int val;\n    Node next;\n    Node random;\n    Node(int val) { this.val = val; }\n}\n*/\nclass Solution {\n    public Node copyRandomList(Node head) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@\nclass Node:\n    def __init__(self, x: int, next: 'Node' = None, random: 'Node' = None):\n        self.val = int(x)\n        self.next = next\n        self.random = random\n",
+   "py_post": "@@PYHELPERS@@\n\ndef RL(pairs):\n    nodes = [Node(v) for v, _ in pairs]\n    for i, n in enumerate(nodes):\n        n.next = nodes[i + 1] if i + 1 < len(nodes) else None\n        r = pairs[i][1]\n        n.random = nodes[r] if r is not None else None\n    return nodes[0] if nodes else None\ndef RA(head):\n    nodes, n = [], head\n    while n and len(nodes) < 100000:\n        nodes.append(n); n = n.next\n    idx = {id(x): i for i, x in enumerate(nodes)}\n    return [[x.val, idx.get(id(x.random)) if x.random else None] for x in nodes]\ndef no_shared(a, b):\n    seen, n = set(), a\n    while n: seen.add(id(n)); n = n.next\n    n = b\n    while n:\n        if id(n) in seen: return False\n        n = n.next\n    return True\n\ndef _f0():\n    h = RL([[7,None],[13,0],[11,4],[10,2],[1,0]])\n    c = Solution().copyRandomList(h)\n    got = [RA(c), no_shared(h, c)]\n    return got\n_t('[[7,null],[13,0],[11,4],[10,2],[1,0]]', _f0, '[[[7,null],[13,0],[11,4],[10,2],[1,0]],true]', 'eq')\ndef _f1():\n    h = RL([[1,1],[2,1]])\n    c = Solution().copyRandomList(h)\n    got = [RA(c), no_shared(h, c)]\n    return got\n_t('[[1,1],[2,1]]', _f1, '[[[1,1],[2,1]],true]', 'eq')\ndef _f2():\n    got = RA(Solution().copyRandomList(None))\n    return got\n_t('empty list', _f2, '[]', 'eq')\n",
+   "java_post": "\nclass Node {\n    int val; Node next; Node random;\n    Node(int val) { this.val = val; }\n}\n\npublic class Main {\n@@JHELPERS@@\n    static Node RL(Integer[][] pairs) {\n        Node[] nodes = new Node[pairs.length];\n        for (int i = 0; i < pairs.length; i++) nodes[i] = new Node(pairs[i][0]);\n        for (int i = 0; i < pairs.length; i++) { nodes[i].next = i + 1 < pairs.length ? nodes[i + 1] : null; nodes[i].random = pairs[i][1] == null ? null : nodes[pairs[i][1]]; }\n        return pairs.length == 0 ? null : nodes[0];\n    }\n    static List<Object> RA(Node head) {\n        List<Node> nodes = new ArrayList<>(); for (Node n = head; n != null && nodes.size() < 100000; n = n.next) nodes.add(n);\n        IdentityHashMap<Node, Integer> idx = new IdentityHashMap<>(); for (int i = 0; i < nodes.size(); i++) idx.put(nodes.get(i), i);\n        List<Object> r = new ArrayList<>();\n        for (Node n : nodes) r.add(Arrays.asList(n.val, n.random == null ? null : idx.get(n.random)));\n        return r;\n    }\n    static boolean noShared(Node a, Node b) {\n        Set<Node> seen = Collections.newSetFromMap(new IdentityHashMap<>());\n        for (Node n = a; n != null; n = n.next) seen.add(n);\n        for (Node n = b; n != null; n = n.next) if (seen.contains(n)) return false;\n        return true;\n    }\n    public static void main(String[] args) {\n        __t(\"[[7,null],[13,0],[11,4],[10,2],[1,0]]\", () -> { Object got; Node h = RL(new Integer[][]{{7,null},{13,0},{11,4},{10,2},{1,0}}); Node c = new Solution().copyRandomList(h); got = Arrays.asList(RA(c), noShared(h, c)); return got; }, \"[[[7,null],[13,0],[11,4],[10,2],[1,0]],true]\", \"eq\");\n        __t(\"[[1,1],[2,1]]\", () -> { Object got; Node h = RL(new Integer[][]{{1,1},{2,1}}); Node c = new Solution().copyRandomList(h); got = Arrays.asList(RA(c), noShared(h, c)); return got; }, \"[[[1,1],[2,1]],true]\", \"eq\");\n        __t(\"empty list\", () -> { Object got; got = RA(new Solution().copyRandomList(null)); return got; }, \"[]\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "design-circular-queue",
+   "title": "Design Circular Queue",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/design-circular-queue",
+   "pattern": "Design",
+   "pattern_slug": "design",
+   "companies": {
+    "NVIDIA": {
+     "window": "6mo",
+     "freq": 73.7
+    }
+   },
+   "blind75": false,
+   "summary": "Implement a fixed-size circular queue: enQueue(x) and deQueue() return whether they succeeded. Front() and Rear() return -1 when empty. Also isEmpty() and isFull().",
+   "example": "size 3: enQueue 1,2,3 → true, enQueue 4 → false, Rear() = 3, deQueue() → true, enQueue 4 → true, Rear() = 4",
+   "idea": "Fixed array + head index + count; tail = (head + count) % capacity.",
+   "topics": "Array, Linked List, Design, Queue",
+   "tests": [
+    [
+     "[\"MyCircularQueue\", \"enQueue\", \"enQueue\", \"enQueue\", \"enQueue\", \"Rear\", \"isFull\", \"deQueue\", \"enQueue\", \"Rear\", \"Front\"]  [[3], [1], [2], [3], [4], [], [], [], [4], [], []]",
+     "[null,true,true,true,false,3,true,true,true,4,2]"
+    ],
+    [
+     "[\"MyCircularQueue\", \"Front\", \"Rear\", \"deQueue\", \"isEmpty\", \"enQueue\", \"isEmpty\", \"isFull\"]  [[1], [], [], [], [], [7], [], []]",
+     "[null,-1,-1,false,true,true,false,true]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class MyCircularQueue:\n\n    def __init__(self, k: int):\n        pass\n\n    def enQueue(self, value: int) -> bool:\n        pass\n\n    def deQueue(self) -> bool:\n        pass\n\n    def Front(self) -> int:\n        pass\n\n    def Rear(self) -> int:\n        pass\n\n    def isEmpty(self) -> bool:\n        pass\n\n    def isFull(self) -> bool:\n        pass\n",
+   "java_starter": "class MyCircularQueue {\n\n    public MyCircularQueue(int k) {\n\n    }\n\n    public boolean enQueue(int value) {\n\n    }\n\n    public boolean deQueue() {\n\n    }\n\n    public int Front() {\n\n    }\n\n    public int Rear() {\n\n    }\n\n    public boolean isEmpty() {\n\n    }\n\n    public boolean isFull() {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('[\"MyCircularQueue\", \"enQueue\", \"enQueue\", \"enQueue\", \"enQueue\", \"Rear\", \"isFull\", \"deQueue\", \"enQueue\", \"Rear\", \"Front\"]  [[3], [1], [2], [3], [4], [], [], [], [4], [], []]', lambda: _ops(MyCircularQueue, ['MyCircularQueue', 'enQueue', 'enQueue', 'enQueue', 'enQueue', 'Rear', 'isFull', 'deQueue', 'enQueue', 'Rear', 'Front'], [[3], [1], [2], [3], [4], [], [], [], [4], [], []]), '[null,true,true,true,false,3,true,true,true,4,2]', 'eq')\n_t('[\"MyCircularQueue\", \"Front\", \"Rear\", \"deQueue\", \"isEmpty\", \"enQueue\", \"isEmpty\", \"isFull\"]  [[1], [], [], [], [], [7], [], []]', lambda: _ops(MyCircularQueue, ['MyCircularQueue', 'Front', 'Rear', 'deQueue', 'isEmpty', 'enQueue', 'isEmpty', 'isFull'], [[1], [], [], [], [], [7], [], []]), '[null,-1,-1,false,true,true,false,true]', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"[\\\"MyCircularQueue\\\", \\\"enQueue\\\", \\\"enQueue\\\", \\\"enQueue\\\", \\\"enQueue\\\", \\\"Rear\\\", \\\"isFull\\\", \\\"deQueue\\\", \\\"enQueue\\\", \\\"Rear\\\", \\\"Front\\\"]  [[3], [1], [2], [3], [4], [], [], [], [4], [], []]\", () -> { List<Object> out = new ArrayList<>(); MyCircularQueue o = new MyCircularQueue(3); out.add(null); out.add(o.enQueue(1)); out.add(o.enQueue(2)); out.add(o.enQueue(3)); out.add(o.enQueue(4)); out.add(o.Rear()); out.add(o.isFull()); out.add(o.deQueue()); out.add(o.enQueue(4)); out.add(o.Rear()); out.add(o.Front()); return out; }, \"[null,true,true,true,false,3,true,true,true,4,2]\", \"eq\");\n        __t(\"[\\\"MyCircularQueue\\\", \\\"Front\\\", \\\"Rear\\\", \\\"deQueue\\\", \\\"isEmpty\\\", \\\"enQueue\\\", \\\"isEmpty\\\", \\\"isFull\\\"]  [[1], [], [], [], [], [7], [], []]\", () -> { List<Object> out = new ArrayList<>(); MyCircularQueue o = new MyCircularQueue(1); out.add(null); out.add(o.Front()); out.add(o.Rear()); out.add(o.deQueue()); out.add(o.isEmpty()); out.add(o.enQueue(7)); out.add(o.isEmpty()); out.add(o.isFull()); return out; }, \"[null,-1,-1,false,true,true,false,true]\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "linked-list-cycle",
+   "title": "Linked List Cycle",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/linked-list-cycle",
+   "pattern": "Linked List",
+   "pattern_slug": "linked-list",
+   "companies": {
+    "NVIDIA": {
+     "window": "6mo",
+     "freq": 73.7
+    }
+   },
+   "blind75": true,
+   "summary": "Return whether the linked list contains a cycle. Try O(1) extra memory.",
+   "example": "3 → 2 → 0 → -4 → (back to 2) → true",
+   "idea": "Floyd: slow moves 1, fast moves 2; they meet iff there is a cycle.",
+   "topics": "Hash Table, Linked List, Two Pointers, Floyd's Cycle Finding Algorithm",
+   "tests": [
+    [
+     "hasCycle([[3, 2, 0, -4], 1])",
+     "true"
+    ],
+    [
+     "hasCycle([[1, 2], 0])",
+     "true"
+    ],
+    [
+     "hasCycle([[1], -1])",
+     "false"
+    ],
+    [
+     "hasCycle([[], -1])",
+     "false"
+    ],
+    [
+     "hasCycle([[1, 2, 3, 4, 5], -1])",
+     "false"
+    ]
+   ],
+   "provided": [
+    "ListNode"
+   ],
+   "py_starter": "class Solution:\n    def hasCycle(self, head: Optional[ListNode]) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean hasCycle(ListNode head) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('hasCycle([[3, 2, 0, -4], 1])', lambda: (Solution().hasCycle(LC([3, 2, 0, -4], 1))), 'true', 'eq')\n_t('hasCycle([[1, 2], 0])', lambda: (Solution().hasCycle(LC([1, 2], 0))), 'true', 'eq')\n_t('hasCycle([[1], -1])', lambda: (Solution().hasCycle(LC([1], -1))), 'false', 'eq')\n_t('hasCycle([[], -1])', lambda: (Solution().hasCycle(LC([], -1))), 'false', 'eq')\n_t('hasCycle([[1, 2, 3, 4, 5], -1])', lambda: (Solution().hasCycle(LC([1, 2, 3, 4, 5], -1))), 'false', 'eq')\n",
+   "java_post": "\nclass ListNode {\n    int val; ListNode next;\n    ListNode() {}\n    ListNode(int val) { this.val = val; }\n    ListNode(int val, ListNode next) { this.val = val; this.next = next; }\n}\n\npublic class Main {\n@@JHELPERS@@\n    static ListNode L(int[] a) { ListNode d = new ListNode(0), c = d; for (int v : a) { c.next = new ListNode(v); c = c.next; } return d.next; }\n    static ListNode LC(int[] a, int pos) {\n        ListNode h = L(a);\n        if (pos >= 0 && h != null) { ListNode tail = h, target = null; int i = 0; for (ListNode n = h; n != null; n = n.next, i++) { if (i == pos) target = n; tail = n; } tail.next = target; }\n        return h;\n    }\n    public static void main(String[] args) {\n        __t(\"hasCycle([[3, 2, 0, -4], 1])\", () -> (new Solution().hasCycle(LC(new int[]{3, 2, 0, -4}, 1))), \"true\", \"eq\");\n        __t(\"hasCycle([[1, 2], 0])\", () -> (new Solution().hasCycle(LC(new int[]{1, 2}, 0))), \"true\", \"eq\");\n        __t(\"hasCycle([[1], -1])\", () -> (new Solution().hasCycle(LC(new int[]{1}, -1))), \"false\", \"eq\");\n        __t(\"hasCycle([[], -1])\", () -> (new Solution().hasCycle(LC(new int[]{}, -1))), \"false\", \"eq\");\n        __t(\"hasCycle([[1, 2, 3, 4, 5], -1])\", () -> (new Solution().hasCycle(LC(new int[]{1, 2, 3, 4, 5}, -1))), \"false\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "longest-substring-without-repeating-characters",
+   "title": "Longest Substring Without Repeating Characters",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/longest-substring-without-repeating-characters",
+   "pattern": "Sliding Window",
+   "pattern_slug": "sliding-window",
+   "companies": {
+    "NVIDIA": {
+     "window": "6mo",
+     "freq": 73.7
+    }
+   },
+   "blind75": true,
+   "summary": "Return the length of the longest substring that has no repeated characters.",
+   "example": "\"abcabcbb\" → 3 (\"abc\")",
+   "idea": "Sliding window with last-seen index map; left = max(left, last[c] + 1).",
+   "topics": "Hash Table, String, Sliding Window",
+   "tests": [
+    [
+     "lengthOfLongestSubstring(\"abcabcbb\")",
+     "3"
+    ],
+    [
+     "lengthOfLongestSubstring(\"bbbbb\")",
+     "1"
+    ],
+    [
+     "lengthOfLongestSubstring(\"pwwkew\")",
+     "3"
+    ],
+    [
+     "lengthOfLongestSubstring(\"\")",
+     "0"
+    ],
+    [
+     "lengthOfLongestSubstring(\"abba\")",
+     "2"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def lengthOfLongestSubstring(self, s: str) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int lengthOfLongestSubstring(String s) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('lengthOfLongestSubstring(\"abcabcbb\")', lambda: (Solution().lengthOfLongestSubstring('abcabcbb')), '3', 'eq')\n_t('lengthOfLongestSubstring(\"bbbbb\")', lambda: (Solution().lengthOfLongestSubstring('bbbbb')), '1', 'eq')\n_t('lengthOfLongestSubstring(\"pwwkew\")', lambda: (Solution().lengthOfLongestSubstring('pwwkew')), '3', 'eq')\n_t('lengthOfLongestSubstring(\"\")', lambda: (Solution().lengthOfLongestSubstring('')), '0', 'eq')\n_t('lengthOfLongestSubstring(\"abba\")', lambda: (Solution().lengthOfLongestSubstring('abba')), '2', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"lengthOfLongestSubstring(\\\"abcabcbb\\\")\", () -> (new Solution().lengthOfLongestSubstring(\"abcabcbb\")), \"3\", \"eq\");\n        __t(\"lengthOfLongestSubstring(\\\"bbbbb\\\")\", () -> (new Solution().lengthOfLongestSubstring(\"bbbbb\")), \"1\", \"eq\");\n        __t(\"lengthOfLongestSubstring(\\\"pwwkew\\\")\", () -> (new Solution().lengthOfLongestSubstring(\"pwwkew\")), \"3\", \"eq\");\n        __t(\"lengthOfLongestSubstring(\\\"\\\")\", () -> (new Solution().lengthOfLongestSubstring(\"\")), \"0\", \"eq\");\n        __t(\"lengthOfLongestSubstring(\\\"abba\\\")\", () -> (new Solution().lengthOfLongestSubstring(\"abba\")), \"2\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "rotate-image",
+   "title": "Rotate Image",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/rotate-image",
+   "pattern": "Matrix",
+   "pattern_slug": "matrix",
+   "companies": {
+    "NVIDIA": {
+     "window": "6mo",
+     "freq": 73.7
+    }
+   },
+   "blind75": true,
+   "summary": "Rotate an n×n matrix 90° clockwise in place, without allocating another matrix.",
+   "example": "[[1,2],[3,4]] → [[3,1],[4,2]]",
+   "idea": "Transpose, then reverse each row (clockwise rotation in place).",
+   "topics": "Array, Math, Matrix",
+   "tests": [
+    [
+     "[[1,2,3],[4,5,6],[7,8,9]]",
+     "[[7,4,1],[8,5,2],[9,6,3]]"
+    ],
+    [
+     "[[1,2],[3,4]]",
+     "[[3,1],[4,2]]"
+    ],
+    [
+     "[[1]]",
+     "[[1]]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def rotate(self, matrix: List[List[int]]) -> None:\n        \"\"\"Rotate matrix in place; return nothing.\"\"\"\n        pass\n",
+   "java_starter": "class Solution {\n    public void rotate(int[][] matrix) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\ndef _f0():\n    m = [[1,2,3],[4,5,6],[7,8,9]]\n    Solution().rotate(m)\n    got = m\n    return got\n_t('[[1,2,3],[4,5,6],[7,8,9]]', _f0, '[[7,4,1],[8,5,2],[9,6,3]]', 'eq')\ndef _f1():\n    m = [[1,2],[3,4]]\n    Solution().rotate(m)\n    got = m\n    return got\n_t('[[1,2],[3,4]]', _f1, '[[3,1],[4,2]]', 'eq')\ndef _f2():\n    m = [[1]]\n    Solution().rotate(m)\n    got = m\n    return got\n_t('[[1]]', _f2, '[[1]]', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"[[1,2,3],[4,5,6],[7,8,9]]\", () -> { Object got; int[][] m = {{1,2,3},{4,5,6},{7,8,9}}; new Solution().rotate(m); got = m; return got; }, \"[[7,4,1],[8,5,2],[9,6,3]]\", \"eq\");\n        __t(\"[[1,2],[3,4]]\", () -> { Object got; int[][] m = {{1,2},{3,4}}; new Solution().rotate(m); got = m; return got; }, \"[[3,1],[4,2]]\", \"eq\");\n        __t(\"[[1]]\", () -> { Object got; int[][] m = {{1}}; new Solution().rotate(m); got = m; return got; }, \"[[1]]\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "sliding-window-maximum",
+   "title": "Sliding Window Maximum",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/sliding-window-maximum",
+   "pattern": "Sliding Window",
+   "pattern_slug": "sliding-window",
+   "companies": {
+    "NVIDIA": {
+     "window": "6mo",
+     "freq": 73.7
+    }
+   },
+   "blind75": false,
+   "summary": "A window of size k slides from left to right across the array. Return the maximum of each window position.",
+   "example": "[1,3,-1,-3,5,3,6,7], k = 3 → [3,3,5,5,6,7]",
+   "idea": "Monotonic deque of indices with decreasing values; drop the front when it leaves the window. O(n).",
+   "topics": "Array, Queue, Sliding Window, Heap (Priority Queue), Monotonic Queue, Range Minimum/Maximum Query",
+   "tests": [
+    [
+     "maxSlidingWindow([1, 3, -1, -3, 5, 3, 6, 7], 3)",
+     "[3,3,5,5,6,7]"
+    ],
+    [
+     "maxSlidingWindow([1], 1)",
+     "[1]"
+    ],
+    [
+     "maxSlidingWindow([9, 8, 7], 2)",
+     "[9,8]"
+    ],
+    [
+     "maxSlidingWindow([1, -1], 1)",
+     "[1,-1]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def maxSlidingWindow(self, nums: List[int], k: int) -> List[int]:\n        pass\n",
+   "java_starter": "class Solution {\n    public int[] maxSlidingWindow(int[] nums, int k) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('maxSlidingWindow([1, 3, -1, -3, 5, 3, 6, 7], 3)', lambda: (Solution().maxSlidingWindow([1, 3, -1, -3, 5, 3, 6, 7], 3)), '[3,3,5,5,6,7]', 'eq')\n_t('maxSlidingWindow([1], 1)', lambda: (Solution().maxSlidingWindow([1], 1)), '[1]', 'eq')\n_t('maxSlidingWindow([9, 8, 7], 2)', lambda: (Solution().maxSlidingWindow([9, 8, 7], 2)), '[9,8]', 'eq')\n_t('maxSlidingWindow([1, -1], 1)', lambda: (Solution().maxSlidingWindow([1, -1], 1)), '[1,-1]', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"maxSlidingWindow([1, 3, -1, -3, 5, 3, 6, 7], 3)\", () -> (new Solution().maxSlidingWindow(new int[]{1, 3, -1, -3, 5, 3, 6, 7}, 3)), \"[3,3,5,5,6,7]\", \"eq\");\n        __t(\"maxSlidingWindow([1], 1)\", () -> (new Solution().maxSlidingWindow(new int[]{1}, 1)), \"[1]\", \"eq\");\n        __t(\"maxSlidingWindow([9, 8, 7], 2)\", () -> (new Solution().maxSlidingWindow(new int[]{9, 8, 7}, 2)), \"[9,8]\", \"eq\");\n        __t(\"maxSlidingWindow([1, -1], 1)\", () -> (new Solution().maxSlidingWindow(new int[]{1, -1}, 1)), \"[1,-1]\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "two-sum",
+   "title": "Two Sum",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/two-sum",
+   "pattern": "Arrays & Hashing",
+   "pattern_slug": "arrays-hashing",
+   "companies": {
+    "NVIDIA": {
+     "window": "6mo",
+     "freq": 73.7
+    }
+   },
+   "blind75": true,
+   "summary": "Return the indices of the two numbers that add up to target. Exactly one answer exists, and you can't use the same element twice.",
+   "example": "[2,7,11,15], target 9 → [0,1]",
+   "idea": "One pass with a map value → index; look up target − x before inserting x.",
+   "topics": "Array, Hash Table",
+   "tests": [
+    [
+     "twoSum([2, 7, 11, 15], 9)",
+     "[0,1]"
+    ],
+    [
+     "twoSum([3, 2, 4], 6)",
+     "[1,2]"
+    ],
+    [
+     "twoSum([3, 3], 6)",
+     "[0,1]"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        pass\n",
+   "java_starter": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('twoSum([2, 7, 11, 15], 9)', lambda: (Solution().twoSum([2, 7, 11, 15], 9)), '[0,1]', 'sort')\n_t('twoSum([3, 2, 4], 6)', lambda: (Solution().twoSum([3, 2, 4], 6)), '[1,2]', 'sort')\n_t('twoSum([3, 3], 6)', lambda: (Solution().twoSum([3, 3], 6)), '[0,1]', 'sort')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"twoSum([2, 7, 11, 15], 9)\", () -> (new Solution().twoSum(new int[]{2, 7, 11, 15}, 9)), \"[0,1]\", \"sort\");\n        __t(\"twoSum([3, 2, 4], 6)\", () -> (new Solution().twoSum(new int[]{3, 2, 4}, 6)), \"[1,2]\", \"sort\");\n        __t(\"twoSum([3, 3], 6)\", () -> (new Solution().twoSum(new int[]{3, 3}, 6)), \"[0,1]\", \"sort\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "max-points-on-a-line",
+   "title": "Max Points on a Line",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/max-points-on-a-line",
+   "pattern": "Math & Bits",
+   "pattern_slug": "math-bits",
+   "companies": {
+    "LinkedIn": {
+     "window": "6mo",
+     "freq": 61.8
+    }
+   },
+   "blind75": false,
+   "summary": "Given distinct points on a plane, return the largest number of them that lie on one straight line.",
+   "example": "[[1,1],[2,2],[3,3]] → 3",
+   "idea": "For each point, count slopes to the others as reduced (dy/g, dx/g) with normalized sign. O(n²).",
+   "topics": "Array, Hash Table, Math, Geometry, Euclidean Algorithm, Greatest Common Divisor",
+   "tests": [
+    [
+     "maxPoints([[1, 1], [2, 2], [3, 3]])",
+     "3"
+    ],
+    [
+     "maxPoints([[1, 1], [3, 2], [5, 3], [4, 1], [2, 3], [1, 4]])",
+     "4"
+    ],
+    [
+     "maxPoints([[0, 0]])",
+     "1"
+    ],
+    [
+     "maxPoints([[0, 0], [1, 1], [0, 1], [0, 2]])",
+     "3"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def maxPoints(self, points: List[List[int]]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int maxPoints(int[][] points) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('maxPoints([[1, 1], [2, 2], [3, 3]])', lambda: (Solution().maxPoints([[1, 1], [2, 2], [3, 3]])), '3', 'eq')\n_t('maxPoints([[1, 1], [3, 2], [5, 3], [4, 1], [2, 3], [1, 4]])', lambda: (Solution().maxPoints([[1, 1], [3, 2], [5, 3], [4, 1], [2, 3], [1, 4]])), '4', 'eq')\n_t('maxPoints([[0, 0]])', lambda: (Solution().maxPoints([[0, 0]])), '1', 'eq')\n_t('maxPoints([[0, 0], [1, 1], [0, 1], [0, 2]])', lambda: (Solution().maxPoints([[0, 0], [1, 1], [0, 1], [0, 2]])), '3', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"maxPoints([[1, 1], [2, 2], [3, 3]])\", () -> (new Solution().maxPoints(new int[][]{{1, 1}, {2, 2}, {3, 3}})), \"3\", \"eq\");\n        __t(\"maxPoints([[1, 1], [3, 2], [5, 3], [4, 1], [2, 3], [1, 4]])\", () -> (new Solution().maxPoints(new int[][]{{1, 1}, {3, 2}, {5, 3}, {4, 1}, {2, 3}, {1, 4}})), \"4\", \"eq\");\n        __t(\"maxPoints([[0, 0]])\", () -> (new Solution().maxPoints(new int[][]{{0, 0}})), \"1\", \"eq\");\n        __t(\"maxPoints([[0, 0], [1, 1], [0, 1], [0, 2]])\", () -> (new Solution().maxPoints(new int[][]{{0, 0}, {1, 1}, {0, 1}, {0, 2}})), \"3\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "maximize-sum-of-weights-after-edge-removals",
+   "title": "Maximize Sum of Weights after Edge Removals",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/maximize-sum-of-weights-after-edge-removals",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {
+    "LinkedIn": {
+     "window": "6mo",
+     "freq": 61.8
+    }
+   },
+   "blind75": false,
+   "summary": "You get a weighted tree as an edge list [u, v, w]. Remove edges so every node has at most k remaining edges, and return the largest possible total weight of the edges you keep.",
+   "example": "edges [[0,1,4],[0,2,2],[2,3,12],[2,4,6]], k = 2 → 22 (drop the weight-2 edge)",
+   "idea": "Tree DP: each node keeps ≤ k edges. For each child, gain = w + dp[child][keepParent] − dp[child][dropParent]; take the top positive gains (k, or k−1 if the parent edge is kept).",
+   "topics": "Dynamic Programming, Tree, Depth-First Search, Sorting",
+   "tests": [
+    [
+     "maximizeSumOfWeights([[0, 1, 4], [0, 2, 2], [2, 3, 12], [2, 4, 6]], 2)",
+     "22"
+    ],
+    [
+     "maximizeSumOfWeights([[0, 1, 5], [1, 2, 10], [0, 3, 15], [3, 4, 20], [3, 5, 5], [0, 6, 10]], 3)",
+     "65"
+    ],
+    [
+     "maximizeSumOfWeights([[0, 1, 1], [0, 2, 2], [0, 3, 3]], 1)",
+     "3"
+    ],
+    [
+     "maximizeSumOfWeights([[0, 1, 3], [1, 2, 4], [2, 3, 5], [1, 4, 6]], 1)",
+     "11"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def maximizeSumOfWeights(self, edges: List[List[int]], k: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public long maximizeSumOfWeights(int[][] edges, int k) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('maximizeSumOfWeights([[0, 1, 4], [0, 2, 2], [2, 3, 12], [2, 4, 6]], 2)', lambda: (Solution().maximizeSumOfWeights([[0, 1, 4], [0, 2, 2], [2, 3, 12], [2, 4, 6]], 2)), '22', 'eq')\n_t('maximizeSumOfWeights([[0, 1, 5], [1, 2, 10], [0, 3, 15], [3, 4, 20], [3, 5, 5], [0, 6, 10]], 3)', lambda: (Solution().maximizeSumOfWeights([[0, 1, 5], [1, 2, 10], [0, 3, 15], [3, 4, 20], [3, 5, 5], [0, 6, 10]], 3)), '65', 'eq')\n_t('maximizeSumOfWeights([[0, 1, 1], [0, 2, 2], [0, 3, 3]], 1)', lambda: (Solution().maximizeSumOfWeights([[0, 1, 1], [0, 2, 2], [0, 3, 3]], 1)), '3', 'eq')\n_t('maximizeSumOfWeights([[0, 1, 3], [1, 2, 4], [2, 3, 5], [1, 4, 6]], 1)', lambda: (Solution().maximizeSumOfWeights([[0, 1, 3], [1, 2, 4], [2, 3, 5], [1, 4, 6]], 1)), '11', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"maximizeSumOfWeights([[0, 1, 4], [0, 2, 2], [2, 3, 12], [2, 4, 6]], 2)\", () -> (new Solution().maximizeSumOfWeights(new int[][]{{0, 1, 4}, {0, 2, 2}, {2, 3, 12}, {2, 4, 6}}, 2)), \"22\", \"eq\");\n        __t(\"maximizeSumOfWeights([[0, 1, 5], [1, 2, 10], [0, 3, 15], [3, 4, 20], [3, 5, 5], [0, 6, 10]], 3)\", () -> (new Solution().maximizeSumOfWeights(new int[][]{{0, 1, 5}, {1, 2, 10}, {0, 3, 15}, {3, 4, 20}, {3, 5, 5}, {0, 6, 10}}, 3)), \"65\", \"eq\");\n        __t(\"maximizeSumOfWeights([[0, 1, 1], [0, 2, 2], [0, 3, 3]], 1)\", () -> (new Solution().maximizeSumOfWeights(new int[][]{{0, 1, 1}, {0, 2, 2}, {0, 3, 3}}, 1)), \"3\", \"eq\");\n        __t(\"maximizeSumOfWeights([[0, 1, 3], [1, 2, 4], [2, 3, 5], [1, 4, 6]], 1)\", () -> (new Solution().maximizeSumOfWeights(new int[][]{{0, 1, 3}, {1, 2, 4}, {2, 3, 5}, {1, 4, 6}}, 1)), \"11\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "maximum-number-of-occurrences-of-a-substring",
+   "title": "Maximum Number of Occurrences of a Substring",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/maximum-number-of-occurrences-of-a-substring",
+   "pattern": "Sliding Window",
+   "pattern_slug": "sliding-window",
+   "companies": {
+    "LinkedIn": {
+     "window": "6mo",
+     "freq": 61.8
+    }
+   },
+   "blind75": false,
+   "summary": "Among substrings with between minSize and maxSize characters and at most maxLetters distinct letters, return the highest number of times any one of them occurs (occurrences may overlap).",
+   "example": "\"aababcaab\", maxLetters 2, minSize 3, maxSize 4 → 2 (\"aab\")",
+   "idea": "Only minSize matters (a longer match contains a minSize one). Slide a minSize window, check distinct letters ≤ maxLetters, count in a map.",
+   "topics": "Hash Table, String, Sliding Window",
+   "tests": [
+    [
+     "maxFreq(\"aababcaab\", 2, 3, 4)",
+     "2"
+    ],
+    [
+     "maxFreq(\"aaaa\", 1, 3, 3)",
+     "2"
+    ],
+    [
+     "maxFreq(\"abcde\", 2, 3, 3)",
+     "0"
+    ]
+   ],
+   "provided": [],
+   "py_starter": "class Solution:\n    def maxFreq(self, s: str, maxLetters: int, minSize: int, maxSize: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int maxFreq(String s, int maxLetters, int minSize, int maxSize) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "@@PYHELPERS@@\n_t('maxFreq(\"aababcaab\", 2, 3, 4)', lambda: (Solution().maxFreq('aababcaab', 2, 3, 4)), '2', 'eq')\n_t('maxFreq(\"aaaa\", 1, 3, 3)', lambda: (Solution().maxFreq('aaaa', 1, 3, 3)), '2', 'eq')\n_t('maxFreq(\"abcde\", 2, 3, 3)', lambda: (Solution().maxFreq('abcde', 2, 3, 3)), '0', 'eq')\n",
+   "java_post": "\npublic class Main {\n@@JHELPERS@@    public static void main(String[] args) {\n        __t(\"maxFreq(\\\"aababcaab\\\", 2, 3, 4)\", () -> (new Solution().maxFreq(\"aababcaab\", 2, 3, 4)), \"2\", \"eq\");\n        __t(\"maxFreq(\\\"aaaa\\\", 1, 3, 3)\", () -> (new Solution().maxFreq(\"aaaa\", 1, 3, 3)), \"2\", \"eq\");\n        __t(\"maxFreq(\\\"abcde\\\", 2, 3, 3)\", () -> (new Solution().maxFreq(\"abcde\", 2, 3, 3)), \"0\", \"eq\");\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "contains-duplicate",
+   "title": "Contains Duplicate",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/contains-duplicate",
+   "pattern": "Arrays & Hashing",
+   "pattern_slug": "arrays-hashing",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return true if any value appears at least twice.",
+   "example": "[1,2,3,1] → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def containsDuplicate(self, nums: List[int]) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean containsDuplicate(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "product-of-array-except-self",
+   "title": "Product of Array Except Self",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/product-of-array-except-self",
+   "pattern": "Arrays & Hashing",
+   "pattern_slug": "arrays-hashing",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return an array where each position holds the product of every other element. No division; O(n).",
+   "example": "[1,2,3,4] → [24,12,8,6]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def productExceptSelf(self, nums: List[int]) -> List[int]:\n        pass\n",
+   "java_starter": "class Solution {\n    public int[] productExceptSelf(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "find-minimum-in-rotated-sorted-array",
+   "title": "Find Minimum in Rotated Sorted Array",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/find-minimum-in-rotated-sorted-array",
+   "pattern": "Binary Search",
+   "pattern_slug": "binary-search",
+   "companies": {},
+   "blind75": true,
+   "summary": "A sorted array of distinct values was rotated at an unknown pivot. Find the minimum in O(log n).",
+   "example": "[4,5,6,7,0,1,2] → 0",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def findMin(self, nums: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int findMin(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "search-in-rotated-sorted-array",
+   "title": "Search in Rotated Sorted Array",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/search-in-rotated-sorted-array",
+   "pattern": "Binary Search",
+   "pattern_slug": "binary-search",
+   "companies": {},
+   "blind75": true,
+   "summary": "Search a rotated sorted array of distinct values for target. Return its index, or -1, in O(log n).",
+   "example": "[4,5,6,7,0,1,2], target 0 → 4",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def search(self, nums: List[int], target: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int search(int[] nums, int target) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "3sum",
+   "title": "3Sum",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/3sum",
+   "pattern": "Two Pointers",
+   "pattern_slug": "two-pointers",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return all unique triplets that sum to zero.",
+   "example": "[-1,0,1,2,-1,-4] → [[-1,-1,2],[-1,0,1]]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def threeSum(self, nums: List[int]) -> List[List[int]]:\n        pass\n",
+   "java_starter": "class Solution {\n    public List<List<Integer>> threeSum(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "container-with-most-water",
+   "title": "Container With Most Water",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/container-with-most-water",
+   "pattern": "Two Pointers",
+   "pattern_slug": "two-pointers",
+   "companies": {},
+   "blind75": true,
+   "summary": "Pick two vertical lines that, together with the x-axis, hold the most water. Return that area.",
+   "example": "[1,8,6,2,5,4,8,3,7] → 49",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def maxArea(self, height: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int maxArea(int[] height) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "sum-of-two-integers",
+   "title": "Sum of Two Integers",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/sum-of-two-integers",
+   "pattern": "Math & Bits",
+   "pattern_slug": "math-bits",
+   "companies": {},
+   "blind75": true,
+   "summary": "Add two integers without using + or −.",
+   "example": "a = 2, b = 3 → 5",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def getSum(self, a: int, b: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int getSum(int a, int b) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "number-of-1-bits",
+   "title": "Number of 1 Bits",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/number-of-1-bits",
+   "pattern": "Math & Bits",
+   "pattern_slug": "math-bits",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return how many 1 bits a number has.",
+   "example": "11 (binary 1011) → 3",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def hammingWeight(self, n: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int hammingWeight(int n) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "counting-bits",
+   "title": "Counting Bits",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/counting-bits",
+   "pattern": "Math & Bits",
+   "pattern_slug": "math-bits",
+   "companies": {},
+   "blind75": true,
+   "summary": "For every i from 0 to n, count the 1 bits in i.",
+   "example": "n = 5 → [0,1,1,2,1,2]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def countBits(self, n: int) -> List[int]:\n        pass\n",
+   "java_starter": "class Solution {\n    public int[] countBits(int n) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "missing-number",
+   "title": "Missing Number",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/missing-number",
+   "pattern": "Math & Bits",
+   "pattern_slug": "math-bits",
+   "companies": {},
+   "blind75": true,
+   "summary": "The array holds n distinct numbers from 0 … n. Return the missing one.",
+   "example": "[3,0,1] → 2",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def missingNumber(self, nums: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int missingNumber(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "reverse-bits",
+   "title": "Reverse Bits",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/reverse-bits",
+   "pattern": "Math & Bits",
+   "pattern_slug": "math-bits",
+   "companies": {},
+   "blind75": true,
+   "summary": "Reverse the bits of a 32-bit unsigned integer.",
+   "example": "binary 000…1011 → 1101…000",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def reverseBits(self, n: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int reverseBits(int n) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "climbing-stairs",
+   "title": "Climbing Stairs",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/climbing-stairs",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {},
+   "blind75": true,
+   "summary": "Each step you climb 1 or 2 stairs. In how many distinct ways can you reach the top of n stairs?",
+   "example": "n = 3 → 3",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def climbStairs(self, n: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int climbStairs(int n) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "coin-change",
+   "title": "Coin Change",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/coin-change",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the fewest coins that add up to amount, or -1 if impossible. Coins can be reused.",
+   "example": "coins [1,2,5], amount 11 → 3",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def coinChange(self, coins: List[int], amount: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int coinChange(int[] coins, int amount) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "longest-increasing-subsequence",
+   "title": "Longest Increasing Subsequence",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/longest-increasing-subsequence",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the length of the longest strictly increasing subsequence.",
+   "example": "[10,9,2,5,3,7,101,18] → 4",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def lengthOfLIS(self, nums: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int lengthOfLIS(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "longest-common-subsequence",
+   "title": "Longest Common Subsequence",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/longest-common-subsequence",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the length of the longest subsequence common to both strings.",
+   "example": "\"abcde\", \"ace\" → 3",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def longestCommonSubsequence(self, text1: str, text2: str) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int longestCommonSubsequence(String text1, String text2) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "word-break",
+   "title": "Word Break",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/word-break",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return whether s can be split into a sequence of dictionary words (words can be reused).",
+   "example": "\"leetcode\", [leet, code] → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def wordBreak(self, s: str, wordDict: List[str]) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean wordBreak(String s, List<String> wordDict) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "combination-sum-iv",
+   "title": "Combination Sum IV",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/combination-sum-iv",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {},
+   "blind75": true,
+   "summary": "Count the ordered sequences of nums (with reuse) that add up to target.",
+   "example": "nums [1,2,3], target 4 → 7",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def combinationSum4(self, nums: List[int], target: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int combinationSum4(int[] nums, int target) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "house-robber",
+   "title": "House Robber",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/house-robber",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {},
+   "blind75": true,
+   "summary": "Pick houses to rob for the maximum total, without robbing two adjacent houses.",
+   "example": "[2,7,9,3,1] → 12",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def rob(self, nums: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int rob(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "house-robber-ii",
+   "title": "House Robber II",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/house-robber-ii",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {},
+   "blind75": true,
+   "summary": "Same as House Robber, but the houses are in a circle, so the first and last are adjacent.",
+   "example": "[2,3,2] → 3",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def rob(self, nums: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int rob(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "decode-ways",
+   "title": "Decode Ways",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/decode-ways",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {},
+   "blind75": true,
+   "summary": "Letters map to numbers (A = 1 … Z = 26). Count the ways to decode a digit string.",
+   "example": "\"226\" → 3",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def numDecodings(self, s: str) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int numDecodings(String s) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "unique-paths",
+   "title": "Unique Paths",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/unique-paths",
+   "pattern": "Dynamic Programming",
+   "pattern_slug": "dynamic-programming",
+   "companies": {},
+   "blind75": true,
+   "summary": "A robot on an m×n grid moves only right or down. Count the paths from the top-left to the bottom-right.",
+   "example": "m = 3, n = 7 → 28",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def uniquePaths(self, m: int, n: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int uniquePaths(int m, int n) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "jump-game",
+   "title": "Jump Game",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/jump-game",
+   "pattern": "Greedy",
+   "pattern_slug": "greedy",
+   "companies": {},
+   "blind75": true,
+   "summary": "nums[i] is the furthest you may jump forward from index i. Can you reach the last index?",
+   "example": "[2,3,1,1,4] → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def canJump(self, nums: List[int]) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean canJump(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "clone-graph",
+   "title": "Clone Graph",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/clone-graph",
+   "pattern": "Graphs",
+   "pattern_slug": "graphs",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return a deep copy of a connected undirected graph, given one of its nodes.",
+   "example": "adjacency [[2,4],[1,3],[2,4],[1,3]] → a copy with the same structure",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def cloneGraph(self, node: Optional['Node']) -> Optional['Node']:\n        pass\n",
+   "java_starter": "class Solution {\n    public Node cloneGraph(Node node) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "course-schedule",
+   "title": "Course Schedule",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/course-schedule",
+   "pattern": "Graphs",
+   "pattern_slug": "graphs",
+   "companies": {},
+   "blind75": true,
+   "summary": "Given prerequisite pairs, can every course be finished? (Equivalently: is the directed graph free of cycles?)",
+   "example": "2 courses, [[1,0]] → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean canFinish(int numCourses, int[][] prerequisites) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "pacific-atlantic-water-flow",
+   "title": "Pacific Atlantic Water Flow",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/pacific-atlantic-water-flow",
+   "pattern": "Graphs",
+   "pattern_slug": "graphs",
+   "companies": {},
+   "blind75": true,
+   "summary": "Water flows to neighbouring cells of equal or lower height. Return the cells that can reach both the Pacific (top/left edges) and the Atlantic (bottom/right edges).",
+   "example": "a height grid → the list of [row, col] cells",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def pacificAtlantic(self, heights: List[List[int]]) -> List[List[int]]:\n        pass\n",
+   "java_starter": "class Solution {\n    public List<List<Integer>> pacificAtlantic(int[][] heights) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "longest-consecutive-sequence",
+   "title": "Longest Consecutive Sequence",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/longest-consecutive-sequence",
+   "pattern": "Arrays & Hashing",
+   "pattern_slug": "arrays-hashing",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the length of the longest run of consecutive integers (values can be in any order), in O(n).",
+   "example": "[100,4,200,1,3,2] → 4",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def longestConsecutive(self, nums: List[int]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int longestConsecutive(int[] nums) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "alien-dictionary",
+   "title": "Alien Dictionary",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/alien-dictionary",
+   "pattern": "Graphs",
+   "pattern_slug": "graphs",
+   "companies": {},
+   "blind75": true,
+   "summary": "Words are sorted in an unknown alphabet. Derive one valid letter order, or \"\" if the input is inconsistent.",
+   "example": "[wrt, wrf, er, ett, rftt] → \"wertf\"",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def alienOrder(self, words: List[str]) -> str:\n        pass\n",
+   "java_starter": "class Solution {\n    public String alienOrder(String[] words) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "graph-valid-tree",
+   "title": "Graph Valid Tree",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/graph-valid-tree",
+   "pattern": "Graphs",
+   "pattern_slug": "graphs",
+   "companies": {},
+   "blind75": true,
+   "summary": "Given n nodes and undirected edges, return whether they form a valid tree (connected, no cycles).",
+   "example": "n = 5, [[0,1],[0,2],[0,3],[1,4]] → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def validTree(self, n: int, edges: List[List[int]]) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean validTree(int n, int[][] edges) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "number-of-connected-components-in-an-undirected-graph",
+   "title": "Number of Connected Components in an Undirected Graph",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph",
+   "pattern": "Graphs",
+   "pattern_slug": "graphs",
+   "companies": {},
+   "blind75": true,
+   "summary": "Count the connected components of an undirected graph with n nodes.",
+   "example": "n = 5, [[0,1],[1,2],[3,4]] → 2",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def countComponents(self, n: int, edges: List[List[int]]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int countComponents(int n, int[][] edges) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "insert-interval",
+   "title": "Insert Interval",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/insert-interval",
+   "pattern": "Intervals",
+   "pattern_slug": "intervals",
+   "companies": {},
+   "blind75": true,
+   "summary": "Insert a new interval into a sorted list of non-overlapping intervals, merging where needed.",
+   "example": "[[1,3],[6,9]] + [2,5] → [[1,5],[6,9]]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def insert(self, intervals: List[List[int]], newInterval: List[int]) -> List[List[int]]:\n        pass\n",
+   "java_starter": "class Solution {\n    public int[][] insert(int[][] intervals, int[] newInterval) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "merge-intervals",
+   "title": "Merge Intervals",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/merge-intervals",
+   "pattern": "Intervals",
+   "pattern_slug": "intervals",
+   "companies": {},
+   "blind75": true,
+   "summary": "Merge all overlapping intervals.",
+   "example": "[[1,3],[2,6],[8,10],[15,18]] → [[1,6],[8,10],[15,18]]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def merge(self, intervals: List[List[int]]) -> List[List[int]]:\n        pass\n",
+   "java_starter": "class Solution {\n    public int[][] merge(int[][] intervals) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "non-overlapping-intervals",
+   "title": "Non-overlapping Intervals",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/non-overlapping-intervals",
+   "pattern": "Intervals",
+   "pattern_slug": "intervals",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the fewest intervals to remove so that the rest don't overlap.",
+   "example": "[[1,2],[2,3],[3,4],[1,3]] → 1",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int eraseOverlapIntervals(int[][] intervals) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "meeting-rooms",
+   "title": "Meeting Rooms",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/meeting-rooms",
+   "pattern": "Intervals",
+   "pattern_slug": "intervals",
+   "companies": {},
+   "blind75": true,
+   "summary": "Can one person attend every meeting (no overlaps)?",
+   "example": "[[0,30],[5,10],[15,20]] → false",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def canAttendMeetings(self, intervals: List[List[int]]) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean canAttendMeetings(int[][] intervals) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "meeting-rooms-ii",
+   "title": "Meeting Rooms II",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/meeting-rooms-ii",
+   "pattern": "Intervals",
+   "pattern_slug": "intervals",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the minimum number of rooms needed to hold all meetings.",
+   "example": "[[0,30],[5,10],[15,20]] → 2",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def minMeetingRooms(self, intervals: List[List[int]]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int minMeetingRooms(int[][] intervals) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "reverse-linked-list",
+   "title": "Reverse Linked List",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/reverse-linked-list",
+   "pattern": "Linked List",
+   "pattern_slug": "linked-list",
+   "companies": {},
+   "blind75": true,
+   "summary": "Reverse a singly linked list.",
+   "example": "1 → 2 → 3 → 3 → 2 → 1",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "ListNode"
+   ],
+   "py_starter": "class Solution:\n    def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:\n        pass\n",
+   "java_starter": "class Solution {\n    public ListNode reverseList(ListNode head) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass ListNode {\n    int val; ListNode next;\n    ListNode() {}\n    ListNode(int val) { this.val = val; }\n    ListNode(int val, ListNode next) { this.val = val; this.next = next; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "merge-two-sorted-lists",
+   "title": "Merge Two Sorted Lists",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/merge-two-sorted-lists",
+   "pattern": "Linked List",
+   "pattern_slug": "linked-list",
+   "companies": {},
+   "blind75": true,
+   "summary": "Merge two sorted linked lists into one sorted list.",
+   "example": "[1,2,4] + [1,3,4] → [1,1,2,3,4,4]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "ListNode"
+   ],
+   "py_starter": "class Solution:\n    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:\n        pass\n",
+   "java_starter": "class Solution {\n    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass ListNode {\n    int val; ListNode next;\n    ListNode() {}\n    ListNode(int val) { this.val = val; }\n    ListNode(int val, ListNode next) { this.val = val; this.next = next; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "remove-nth-node-from-end-of-list",
+   "title": "Remove Nth Node From End of List",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/remove-nth-node-from-end-of-list",
+   "pattern": "Linked List",
+   "pattern_slug": "linked-list",
+   "companies": {},
+   "blind75": true,
+   "summary": "Remove the n-th node from the end of the list, ideally in one pass.",
+   "example": "[1,2,3,4,5], n = 2 → [1,2,3,5]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "ListNode"
+   ],
+   "py_starter": "class Solution:\n    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:\n        pass\n",
+   "java_starter": "class Solution {\n    public ListNode removeNthFromEnd(ListNode head, int n) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass ListNode {\n    int val; ListNode next;\n    ListNode() {}\n    ListNode(int val) { this.val = val; }\n    ListNode(int val, ListNode next) { this.val = val; this.next = next; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "reorder-list",
+   "title": "Reorder List",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/reorder-list",
+   "pattern": "Linked List",
+   "pattern_slug": "linked-list",
+   "companies": {},
+   "blind75": true,
+   "summary": "Reorder L0 → L1 → … → Ln into L0 → Ln → L1 → Ln−1 → … in place.",
+   "example": "[1,2,3,4] → [1,4,2,3]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "ListNode"
+   ],
+   "py_starter": "class Solution:\n    def reorderList(self, head: Optional[ListNode]) -> None:\n        pass\n",
+   "java_starter": "class Solution {\n    public void reorderList(ListNode head) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass ListNode {\n    int val; ListNode next;\n    ListNode() {}\n    ListNode(int val) { this.val = val; }\n    ListNode(int val, ListNode next) { this.val = val; this.next = next; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "set-matrix-zeroes",
+   "title": "Set Matrix Zeroes",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/set-matrix-zeroes",
+   "pattern": "Matrix",
+   "pattern_slug": "matrix",
+   "companies": {},
+   "blind75": true,
+   "summary": "If a cell is 0, set its whole row and column to 0, in place.",
+   "example": "[[1,1,1],[1,0,1],[1,1,1]] → [[1,0,1],[0,0,0],[1,0,1]]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def setZeroes(self, matrix: List[List[int]]) -> None:\n        pass\n",
+   "java_starter": "class Solution {\n    public void setZeroes(int[][] matrix) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "spiral-matrix",
+   "title": "Spiral Matrix",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/spiral-matrix",
+   "pattern": "Matrix",
+   "pattern_slug": "matrix",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the matrix's elements in clockwise spiral order.",
+   "example": "[[1,2,3],[4,5,6],[7,8,9]] → [1,2,3,6,9,8,7,4,5]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def spiralOrder(self, matrix: List[List[int]]) -> List[int]:\n        pass\n",
+   "java_starter": "class Solution {\n    public List<Integer> spiralOrder(int[][] matrix) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "word-search",
+   "title": "Word Search",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/word-search",
+   "pattern": "Backtracking",
+   "pattern_slug": "backtracking",
+   "companies": {},
+   "blind75": true,
+   "summary": "Can the word be spelled by moving between adjacent cells, using each cell at most once?",
+   "example": "grid with ABCE/SFCS/ADEE, \"ABCCED\" → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def exist(self, board: List[List[str]], word: str) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean exist(char[][] board, String word) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "longest-repeating-character-replacement",
+   "title": "Longest Repeating Character Replacement",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/longest-repeating-character-replacement",
+   "pattern": "Sliding Window",
+   "pattern_slug": "sliding-window",
+   "companies": {},
+   "blind75": true,
+   "summary": "You may change up to k characters. Return the longest substring that can then consist of one repeated letter.",
+   "example": "\"AABABBA\", k = 1 → 4",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def characterReplacement(self, s: str, k: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int characterReplacement(String s, int k) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "minimum-window-substring",
+   "title": "Minimum Window Substring",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/minimum-window-substring",
+   "pattern": "Sliding Window",
+   "pattern_slug": "sliding-window",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the shortest substring of s that contains every character of t (with multiplicity), or \"\".",
+   "example": "s = \"ADOBECODEBANC\", t = \"ABC\" → \"BANC\"",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def minWindow(self, s: str, t: str) -> str:\n        pass\n",
+   "java_starter": "class Solution {\n    public String minWindow(String s, String t) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "valid-anagram",
+   "title": "Valid Anagram",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/valid-anagram",
+   "pattern": "Arrays & Hashing",
+   "pattern_slug": "arrays-hashing",
+   "companies": {},
+   "blind75": true,
+   "summary": "Are the two strings anagrams of each other?",
+   "example": "\"anagram\", \"nagaram\" → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean isAnagram(String s, String t) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "valid-palindrome",
+   "title": "Valid Palindrome",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/valid-palindrome",
+   "pattern": "Two Pointers",
+   "pattern_slug": "two-pointers",
+   "companies": {},
+   "blind75": true,
+   "summary": "Ignoring case and non-alphanumeric characters, is the string a palindrome?",
+   "example": "\"A man, a plan, a canal: Panama\" → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def isPalindrome(self, s: str) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean isPalindrome(String s) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "longest-palindromic-substring",
+   "title": "Longest Palindromic Substring",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/longest-palindromic-substring",
+   "pattern": "Strings",
+   "pattern_slug": "strings",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the longest substring that reads the same forwards and backwards.",
+   "example": "\"babad\" → \"bab\" (or \"aba\")",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def longestPalindrome(self, s: str) -> str:\n        pass\n",
+   "java_starter": "class Solution {\n    public String longestPalindrome(String s) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "palindromic-substrings",
+   "title": "Palindromic Substrings",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/palindromic-substrings",
+   "pattern": "Strings",
+   "pattern_slug": "strings",
+   "companies": {},
+   "blind75": true,
+   "summary": "Count the substrings that are palindromes.",
+   "example": "\"aaa\" → 6",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def countSubstrings(self, s: str) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int countSubstrings(String s) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "encode-and-decode-strings",
+   "title": "Encode and Decode Strings",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/encode-and-decode-strings",
+   "pattern": "Strings",
+   "pattern_slug": "strings",
+   "companies": {},
+   "blind75": true,
+   "summary": "Design encode(list of strings) → one string, and decode(string) → the original list. Strings may contain any characters.",
+   "example": "[\"lint\",\"code\"] → encode → decode → [\"lint\",\"code\"]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Codec:\n\n    def encode(self, strs: List[str]) -> str:\n        pass\n\n    def decode(self, s: str) -> List[str]:\n        pass\n",
+   "java_starter": "public class Codec {\n\n    public String encode(List<String> strs) {\n\n    }\n\n    public List<String> decode(String s) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "same-tree",
+   "title": "Same Tree",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/same-tree",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {},
+   "blind75": true,
+   "summary": "Are two binary trees identical in shape and values?",
+   "example": "[1,2,3] and [1,2,3] → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def isSameTree(self, p: Optional[TreeNode], q: Optional[TreeNode]) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean isSameTree(TreeNode p, TreeNode q) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "invert-binary-tree",
+   "title": "Invert Binary Tree",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/invert-binary-tree",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {},
+   "blind75": true,
+   "summary": "Mirror the tree (swap every node's left and right children).",
+   "example": "[4,2,7,1,3,6,9] → [4,7,2,9,6,3,1]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:\n        pass\n",
+   "java_starter": "class Solution {\n    public TreeNode invertTree(TreeNode root) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "binary-tree-maximum-path-sum",
+   "title": "Binary Tree Maximum Path Sum",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/binary-tree-maximum-path-sum",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {},
+   "blind75": true,
+   "summary": "A path is any sequence of connected nodes. Return the maximum path sum.",
+   "example": "[-10,9,20,null,null,15,7] → 42",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def maxPathSum(self, root: Optional[TreeNode]) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int maxPathSum(TreeNode root) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "binary-tree-level-order-traversal",
+   "title": "Binary Tree Level Order Traversal",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/binary-tree-level-order-traversal",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the node values level by level, left to right.",
+   "example": "[3,9,20,null,null,15,7] → [[3],[9,20],[15,7]]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:\n        pass\n",
+   "java_starter": "class Solution {\n    public List<List<Integer>> levelOrder(TreeNode root) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "serialize-and-deserialize-binary-tree",
+   "title": "Serialize and Deserialize Binary Tree",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/serialize-and-deserialize-binary-tree",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {},
+   "blind75": true,
+   "summary": "Design a way to turn a binary tree into a string and back.",
+   "example": "[1,2,3,null,null,4,5] → string → the same tree",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Codec:\n\n    def serialize(self, root: Optional[TreeNode]) -> str:\n        pass\n\n    def deserialize(self, data: str) -> Optional[TreeNode]:\n        pass\n",
+   "java_starter": "public class Codec {\n\n    public String serialize(TreeNode root) {\n\n    }\n\n    public TreeNode deserialize(String data) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "subtree-of-another-tree",
+   "title": "Subtree of Another Tree",
+   "d": "Easy",
+   "link": "https://leetcode.com/problems/subtree-of-another-tree",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {},
+   "blind75": true,
+   "summary": "Is subRoot identical to some subtree of root?",
+   "example": "root [3,4,5,1,2], subRoot [4,1,2] → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def isSubtree(self, root: Optional[TreeNode], subRoot: Optional[TreeNode]) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean isSubtree(TreeNode root, TreeNode subRoot) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "construct-binary-tree-from-preorder-and-inorder-traversal",
+   "title": "Construct Binary Tree from Preorder and Inorder Traversal",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {},
+   "blind75": true,
+   "summary": "Rebuild the tree from its preorder and inorder sequences (values are unique).",
+   "example": "pre [3,9,20,15,7], in [9,3,15,20,7] → [3,9,20,null,null,15,7]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def buildTree(self, preorder: List[int], inorder: List[int]) -> Optional[TreeNode]:\n        pass\n",
+   "java_starter": "class Solution {\n    public TreeNode buildTree(int[] preorder, int[] inorder) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "validate-binary-search-tree",
+   "title": "Validate Binary Search Tree",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/validate-binary-search-tree",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {},
+   "blind75": true,
+   "summary": "Is the tree a valid BST (left subtree < node < right subtree, recursively)?",
+   "example": "[5,1,4,null,null,3,6] → false",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def isValidBST(self, root: Optional[TreeNode]) -> bool:\n        pass\n",
+   "java_starter": "class Solution {\n    public boolean isValidBST(TreeNode root) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "kth-smallest-element-in-a-bst",
+   "title": "Kth Smallest Element in a BST",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/kth-smallest-element-in-a-bst",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the k-th smallest value in a BST.",
+   "example": "[3,1,4,null,2], k = 1 → 1",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:\n        pass\n",
+   "java_starter": "class Solution {\n    public int kthSmallest(TreeNode root, int k) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "lowest-common-ancestor-of-a-binary-search-tree",
+   "title": "Lowest Common Ancestor of a Binary Search Tree",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree",
+   "pattern": "Trees",
+   "pattern_slug": "trees",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return the lowest node that has both p and q as descendants (a node counts as its own descendant).",
+   "example": "[6,2,8,0,4,7,9], p = 2, q = 8 → 6",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [
+    "TreeNode"
+   ],
+   "py_starter": "class Solution:\n    def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':\n        pass\n",
+   "java_starter": "class Solution {\n    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\nclass TreeNode {\n    int val; TreeNode left; TreeNode right;\n    TreeNode() {}\n    TreeNode(int val) { this.val = val; }\n    TreeNode(int val, TreeNode left, TreeNode right) { this.val = val; this.left = left; this.right = right; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "implement-trie-prefix-tree",
+   "title": "Implement Trie (Prefix Tree)",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/implement-trie-prefix-tree",
+   "pattern": "Tries",
+   "pattern_slug": "tries",
+   "companies": {},
+   "blind75": true,
+   "summary": "Implement insert(word), search(word) and startsWith(prefix).",
+   "example": "insert apple; search apple → true; search app → false; startsWith app → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Trie:\n\n    def __init__(self):\n        pass\n\n    def insert(self, word: str) -> None:\n        pass\n\n    def search(self, word: str) -> bool:\n        pass\n\n    def startsWith(self, prefix: str) -> bool:\n        pass\n",
+   "java_starter": "class Trie {\n\n    public Trie() {\n\n    }\n\n    public void insert(String word) {\n\n    }\n\n    public boolean search(String word) {\n\n    }\n\n    public boolean startsWith(String prefix) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "design-add-and-search-words-data-structure",
+   "title": "Design Add and Search Words Data Structure",
+   "d": "Medium",
+   "link": "https://leetcode.com/problems/design-add-and-search-words-data-structure",
+   "pattern": "Tries",
+   "pattern_slug": "tries",
+   "companies": {},
+   "blind75": true,
+   "summary": "Like a trie, but search patterns may contain '.', which matches any letter.",
+   "example": "add bad, dad; search \".ad\" → true",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class WordDictionary:\n\n    def __init__(self):\n        pass\n\n    def addWord(self, word: str) -> None:\n        pass\n\n    def search(self, word: str) -> bool:\n        pass\n",
+   "java_starter": "class WordDictionary {\n\n    public WordDictionary() {\n\n    }\n\n    public void addWord(String word) {\n\n    }\n\n    public boolean search(String word) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "word-search-ii",
+   "title": "Word Search II",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/word-search-ii",
+   "pattern": "Tries",
+   "pattern_slug": "tries",
+   "companies": {},
+   "blind75": true,
+   "summary": "Return every dictionary word that can be traced in the letter grid.",
+   "example": "grid + [oath, pea, eat, rain] → [eat, oath]",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class Solution:\n    def findWords(self, board: List[List[str]], words: List[str]) -> List[str]:\n        pass\n",
+   "java_starter": "class Solution {\n    public List<String> findWords(char[][] board, String[] words) {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  },
+  {
+   "slug": "find-median-from-data-stream",
+   "title": "Find Median from Data Stream",
+   "d": "Hard",
+   "link": "https://leetcode.com/problems/find-median-from-data-stream",
+   "pattern": "Heap",
+   "pattern_slug": "heap",
+   "companies": {},
+   "blind75": true,
+   "summary": "Support addNum(x) and findMedian() over a growing stream of numbers.",
+   "example": "add 1, add 2 → 1.5; add 3 → 2.0",
+   "idea": "",
+   "topics": "",
+   "tests": [],
+   "provided": [],
+   "py_starter": "class MedianFinder:\n\n    def __init__(self):\n        pass\n\n    def addNum(self, num: int) -> None:\n        pass\n\n    def findMedian(self) -> float:\n        pass\n",
+   "java_starter": "class MedianFinder {\n\n    public MedianFinder() {\n\n    }\n\n    public void addNum(int num) {\n\n    }\n\n    public double findMedian() {\n\n    }\n}\n",
+   "py_pre": "@@PYPRELUDE@@",
+   "py_post": "",
+   "java_post": "\npublic class Main {\n    public static void main(String[] args) {\n@@JUSERMAIN@@    }\n}\n"
+  }
+ ]
+}

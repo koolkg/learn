@@ -1,0 +1,144 @@
+{
+  "order": [
+    "Arrays & Hashing",
+    "Two Pointers",
+    "Sliding Window",
+    "Binary Search",
+    "Stack",
+    "Linked List",
+    "Trees",
+    "Tries",
+    "Graphs",
+    "Heap",
+    "Intervals",
+    "Backtracking",
+    "Dynamic Programming",
+    "Greedy",
+    "Matrix",
+    "Strings",
+    "Math & Bits",
+    "Design",
+    "Concurrency",
+    "SQL",
+    "Other"
+  ],
+  "topic_map": [
+    [
+      "Database",
+      "SQL"
+    ],
+    [
+      "Concurrency",
+      "Concurrency"
+    ],
+    [
+      "Design",
+      "Design"
+    ],
+    [
+      "Trie",
+      "Tries"
+    ],
+    [
+      "Sliding Window",
+      "Sliding Window"
+    ],
+    [
+      "Heap (Priority Queue)",
+      "Heap"
+    ],
+    [
+      "Backtracking",
+      "Backtracking"
+    ],
+    [
+      "Dynamic Programming",
+      "Dynamic Programming"
+    ],
+    [
+      "Binary Search",
+      "Binary Search"
+    ],
+    [
+      "Linked List",
+      "Linked List"
+    ],
+    [
+      "Tree",
+      "Trees"
+    ],
+    [
+      "Binary Tree",
+      "Trees"
+    ],
+    [
+      "Graph Theory",
+      "Graphs"
+    ],
+    [
+      "Graph",
+      "Graphs"
+    ],
+    [
+      "Union-Find",
+      "Graphs"
+    ],
+    [
+      "Breadth-First Search",
+      "Graphs"
+    ],
+    [
+      "Depth-First Search",
+      "Graphs"
+    ],
+    [
+      "Topological Sort",
+      "Graphs"
+    ],
+    [
+      "Monotonic Stack",
+      "Stack"
+    ],
+    [
+      "Stack",
+      "Stack"
+    ],
+    [
+      "Two Pointers",
+      "Two Pointers"
+    ],
+    [
+      "Greedy",
+      "Greedy"
+    ],
+    [
+      "Matrix",
+      "Matrix"
+    ],
+    [
+      "Bit Manipulation",
+      "Math & Bits"
+    ],
+    [
+      "Math",
+      "Math & Bits"
+    ],
+    [
+      "String",
+      "Strings"
+    ],
+    [
+      "Hash Table",
+      "Arrays & Hashing"
+    ],
+    [
+      "Prefix Sum",
+      "Arrays & Hashing"
+    ],
+    [
+      "Array",
+      "Arrays & Hashing"
+    ]
+  ],
+  "_note": "topic_map is used for problems that have no pattern in content/problems.json: the first matching LeetCode topic wins."
+}

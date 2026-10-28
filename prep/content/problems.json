@@ -1,0 +1,3542 @@
+{
+  "3sum": {
+    "title": "3Sum",
+    "difficulty": "Medium",
+    "pattern": "Two Pointers",
+    "summary": "Return all unique triplets that sum to zero.",
+    "example": "[-1,0,1,2,-1,-4] → [[-1,-1,2],[-1,0,1]]",
+    "signature": {
+      "python": "def threeSum(self, nums: List[int]) -> List[List[int]]:",
+      "java": "public List<List<Integer>> threeSum(int[] nums)"
+    }
+  },
+  "alien-dictionary": {
+    "title": "Alien Dictionary",
+    "difficulty": "Hard",
+    "pattern": "Graphs",
+    "summary": "Words are sorted in an unknown alphabet. Derive one valid letter order, or \"\" if the input is inconsistent.",
+    "example": "[wrt, wrf, er, ett, rftt] → \"wertf\"",
+    "signature": {
+      "python": "def alienOrder(self, words: List[str]) -> str:",
+      "java": "public String alienOrder(String[] words)"
+    }
+  },
+  "best-time-to-buy-and-sell-stock": {
+    "title": "Best Time to Buy and Sell Stock",
+    "difficulty": "Easy",
+    "pattern": "Sliding Window",
+    "summary": "prices[i] is a stock's price on day i. Buy on one day and sell on a later day. Return the maximum profit, or 0 if you can't profit.",
+    "example": "[7,1,5,3,6,4] → 5 (buy at 1, sell at 6)",
+    "idea": "Track the minimum price so far; best = max(best, price − min).",
+    "spec": {
+      "kind": "method",
+      "name": "maxProfit",
+      "py": "def maxProfit(self, prices: List[int]) -> int:",
+      "java": "public int maxProfit(int[] prices)",
+      "ptypes": [
+        "int[]"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              7,
+              1,
+              5,
+              3,
+              6,
+              4
+            ]
+          ],
+          5
+        ],
+        [
+          [
+            [
+              7,
+              6,
+              4,
+              3,
+              1
+            ]
+          ],
+          0
+        ],
+        [
+          [
+            [
+              2,
+              4,
+              1
+            ]
+          ],
+          2
+        ],
+        [
+          [
+            [
+              3
+            ]
+          ],
+          0
+        ]
+      ]
+    }
+  },
+  "binary-tree-level-order-traversal": {
+    "title": "Binary Tree Level Order Traversal",
+    "difficulty": "Medium",
+    "pattern": "Trees",
+    "summary": "Return the node values level by level, left to right.",
+    "example": "[3,9,20,null,null,15,7] → [[3],[9,20],[15,7]]",
+    "signature": {
+      "python": "def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:",
+      "java": "public List<List<Integer>> levelOrder(TreeNode root)"
+    }
+  },
+  "binary-tree-maximum-path-sum": {
+    "title": "Binary Tree Maximum Path Sum",
+    "difficulty": "Hard",
+    "pattern": "Trees",
+    "summary": "A path is any sequence of connected nodes. Return the maximum path sum.",
+    "example": "[-10,9,20,null,null,15,7] → 42",
+    "signature": {
+      "python": "def maxPathSum(self, root: Optional[TreeNode]) -> int:",
+      "java": "public int maxPathSum(TreeNode root)"
+    }
+  },
+  "bulb-switcher": {
+    "title": "Bulb Switcher",
+    "difficulty": "Medium",
+    "pattern": "Math & Bits",
+    "summary": "n bulbs start off. On round i (1 … n) you toggle every i-th bulb. How many bulbs are on after n rounds?",
+    "example": "n = 10 → 3 (bulbs 1, 4 and 9)",
+    "idea": "Bulb i stays on iff it has an odd number of divisors, i.e. is a perfect square → floor(sqrt(n)).",
+    "spec": {
+      "kind": "method",
+      "name": "bulbSwitch",
+      "py": "def bulbSwitch(self, n: int) -> int:",
+      "java": "public int bulbSwitch(int n)",
+      "ptypes": [
+        "int"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            0
+          ],
+          0
+        ],
+        [
+          [
+            1
+          ],
+          1
+        ],
+        [
+          [
+            3
+          ],
+          1
+        ],
+        [
+          [
+            10
+          ],
+          3
+        ],
+        [
+          [
+            1000
+          ],
+          31
+        ]
+      ]
+    }
+  },
+  "can-place-flowers": {
+    "title": "Can Place Flowers",
+    "difficulty": "Easy",
+    "pattern": "Greedy",
+    "summary": "A flowerbed is an array of 0 (empty) and 1 (planted). Flowers can't be planted in adjacent plots. Return whether n more flowers can be planted.",
+    "example": "flowerbed [0,0,1,0,0], n = 2 → true (plant at both ends)",
+    "idea": "Greedy: plant whenever the current, left and right plots are empty (out of bounds = empty).",
+    "spec": {
+      "kind": "method",
+      "name": "canPlaceFlowers",
+      "py": "def canPlaceFlowers(self, flowerbed: List[int], n: int) -> bool:",
+      "java": "public boolean canPlaceFlowers(int[] flowerbed, int n)",
+      "ptypes": [
+        "int[]",
+        "int"
+      ],
+      "rtype": "bool",
+      "tests": [
+        [
+          [
+            [
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            1
+          ],
+          true
+        ],
+        [
+          [
+            [
+              1,
+              0,
+              0,
+              0,
+              1
+            ],
+            2
+          ],
+          false
+        ],
+        [
+          [
+            [
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            2
+          ],
+          true
+        ],
+        [
+          [
+            [
+              0
+            ],
+            1
+          ],
+          true
+        ],
+        [
+          [
+            [
+              1,
+              0,
+              1
+            ],
+            1
+          ],
+          false
+        ]
+      ]
+    }
+  },
+  "climbing-stairs": {
+    "title": "Climbing Stairs",
+    "difficulty": "Easy",
+    "pattern": "Dynamic Programming",
+    "summary": "Each step you climb 1 or 2 stairs. In how many distinct ways can you reach the top of n stairs?",
+    "example": "n = 3 → 3",
+    "signature": {
+      "python": "def climbStairs(self, n: int) -> int:",
+      "java": "public int climbStairs(int n)"
+    }
+  },
+  "clone-graph": {
+    "title": "Clone Graph",
+    "difficulty": "Medium",
+    "pattern": "Graphs",
+    "summary": "Return a deep copy of a connected undirected graph, given one of its nodes.",
+    "example": "adjacency [[2,4],[1,3],[2,4],[1,3]] → a copy with the same structure",
+    "signature": {
+      "python": "def cloneGraph(self, node: Optional['Node']) -> Optional['Node']:",
+      "java": "public Node cloneGraph(Node node)"
+    }
+  },
+  "closest-binary-search-tree-value-ii": {
+    "title": "Closest Binary Search Tree Value II",
+    "difficulty": "Hard",
+    "pattern": "Trees",
+    "summary": "Given a BST, a target (a decimal) and k, return the k values in the tree closest to the target, in any order.",
+    "example": "tree [4,2,5,1,3], target 3.71, k = 2 → [3,4]",
+    "idea": "Inorder walk keeping a size-k deque (drop the farther end): O(n). Predecessor/successor stacks: O(log n + k).",
+    "spec": {
+      "kind": "method",
+      "name": "closestKValues",
+      "mode": "sort",
+      "provided": [
+        "TreeNode"
+      ],
+      "py": "def closestKValues(self, root: Optional[TreeNode], target: float, k: int) -> List[int]:",
+      "java": "public List<Integer> closestKValues(TreeNode root, double target, int k)",
+      "ptypes": [
+        "tree",
+        "double",
+        "int"
+      ],
+      "rtype": "list<int>",
+      "tests": [
+        [
+          [
+            [
+              4,
+              2,
+              5,
+              1,
+              3
+            ],
+            3.714286,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            [
+              1
+            ],
+            0.0,
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        [
+          [
+            [
+              8,
+              4,
+              12,
+              2,
+              6,
+              10,
+              14
+            ],
+            9.2,
+            3
+          ],
+          [
+            8,
+            10,
+            12
+          ]
+        ]
+      ]
+    }
+  },
+  "coin-change": {
+    "title": "Coin Change",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "Return the fewest coins that add up to amount, or -1 if impossible. Coins can be reused.",
+    "example": "coins [1,2,5], amount 11 → 3",
+    "signature": {
+      "python": "def coinChange(self, coins: List[int], amount: int) -> int:",
+      "java": "public int coinChange(int[] coins, int amount)"
+    }
+  },
+  "combination-sum-iv": {
+    "title": "Combination Sum IV",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "Count the ordered sequences of nums (with reuse) that add up to target.",
+    "example": "nums [1,2,3], target 4 → 7",
+    "signature": {
+      "python": "def combinationSum4(self, nums: List[int], target: int) -> int:",
+      "java": "public int combinationSum4(int[] nums, int target)"
+    }
+  },
+  "construct-binary-tree-from-preorder-and-inorder-traversal": {
+    "title": "Construct Binary Tree from Preorder and Inorder Traversal",
+    "difficulty": "Medium",
+    "pattern": "Trees",
+    "summary": "Rebuild the tree from its preorder and inorder sequences (values are unique).",
+    "example": "pre [3,9,20,15,7], in [9,3,15,20,7] → [3,9,20,null,null,15,7]",
+    "signature": {
+      "python": "def buildTree(self, preorder: List[int], inorder: List[int]) -> Optional[TreeNode]:",
+      "java": "public TreeNode buildTree(int[] preorder, int[] inorder)"
+    }
+  },
+  "container-with-most-water": {
+    "title": "Container With Most Water",
+    "difficulty": "Medium",
+    "pattern": "Two Pointers",
+    "summary": "Pick two vertical lines that, together with the x-axis, hold the most water. Return that area.",
+    "example": "[1,8,6,2,5,4,8,3,7] → 49",
+    "signature": {
+      "python": "def maxArea(self, height: List[int]) -> int:",
+      "java": "public int maxArea(int[] height)"
+    }
+  },
+  "contains-duplicate": {
+    "title": "Contains Duplicate",
+    "difficulty": "Easy",
+    "pattern": "Arrays & Hashing",
+    "summary": "Return true if any value appears at least twice.",
+    "example": "[1,2,3,1] → true",
+    "signature": {
+      "python": "def containsDuplicate(self, nums: List[int]) -> bool:",
+      "java": "public boolean containsDuplicate(int[] nums)"
+    }
+  },
+  "copy-list-with-random-pointer": {
+    "title": "Copy List with Random Pointer",
+    "difficulty": "Medium",
+    "pattern": "Linked List",
+    "summary": "Each node of a linked list has next and an extra random pointer (to any node, or null). Return a deep copy, where the new nodes point only to other new nodes.",
+    "example": "[[7,null],[13,0],[11,4],[10,2],[1,0]]  (value, index that random points to) → an identical, separate list",
+    "idea": "Map old → new in two passes; or interleave copies (A→A'→B→B') then split for O(1) space.",
+    "spec": {
+      "kind": "custom",
+      "provided": [
+        "RandomNode"
+      ],
+      "py_starter": "# Node is provided:\n#   class Node:\n#       def __init__(self, x: int, next: 'Node' = None, random: 'Node' = None)\n\nclass Solution:\n    def copyRandomList(self, head: 'Optional[Node]') -> 'Optional[Node]':\n        pass\n",
+      "java_starter": "/*\n// Node is provided:\nclass Node {\n    int val;\n    Node next;\n    Node random;\n    Node(int val) { this.val = val; }\n}\n*/\nclass Solution {\n    public Node copyRandomList(Node head) {\n\n    }\n}\n",
+      "tests": [
+        [
+          "[[7,null],[13,0],[11,4],[10,2],[1,0]]",
+          "h = RL([[7,None],[13,0],[11,4],[10,2],[1,0]])\nc = Solution().copyRandomList(h)\ngot = [RA(c), no_shared(h, c)]",
+          "Node h = RL(new Integer[][]{{7,null},{13,0},{11,4},{10,2},{1,0}});\nNode c = new Solution().copyRandomList(h);\ngot = Arrays.asList(RA(c), noShared(h, c));",
+          [
+            [
+              [
+                7,
+                null
+              ],
+              [
+                13,
+                0
+              ],
+              [
+                11,
+                4
+              ],
+              [
+                10,
+                2
+              ],
+              [
+                1,
+                0
+              ]
+            ],
+            true
+          ]
+        ],
+        [
+          "[[1,1],[2,1]]",
+          "h = RL([[1,1],[2,1]])\nc = Solution().copyRandomList(h)\ngot = [RA(c), no_shared(h, c)]",
+          "Node h = RL(new Integer[][]{{1,1},{2,1}});\nNode c = new Solution().copyRandomList(h);\ngot = Arrays.asList(RA(c), noShared(h, c));",
+          [
+            [
+              [
+                1,
+                1
+              ],
+              [
+                2,
+                1
+              ]
+            ],
+            true
+          ]
+        ],
+        [
+          "empty list",
+          "got = RA(Solution().copyRandomList(None))",
+          "got = RA(new Solution().copyRandomList(null));",
+          []
+        ]
+      ]
+    }
+  },
+  "counting-bits": {
+    "title": "Counting Bits",
+    "difficulty": "Easy",
+    "pattern": "Math & Bits",
+    "summary": "For every i from 0 to n, count the 1 bits in i.",
+    "example": "n = 5 → [0,1,1,2,1,2]",
+    "signature": {
+      "python": "def countBits(self, n: int) -> List[int]:",
+      "java": "public int[] countBits(int n)"
+    }
+  },
+  "course-schedule": {
+    "title": "Course Schedule",
+    "difficulty": "Medium",
+    "pattern": "Graphs",
+    "summary": "Given prerequisite pairs, can every course be finished? (Equivalently: is the directed graph free of cycles?)",
+    "example": "2 courses, [[1,0]] → true",
+    "signature": {
+      "python": "def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:",
+      "java": "public boolean canFinish(int numCourses, int[][] prerequisites)"
+    }
+  },
+  "decode-string": {
+    "title": "Decode String",
+    "difficulty": "Medium",
+    "pattern": "Stack",
+    "summary": "Expand an encoded string where k[s] means s repeated k times. Encodings can be nested and k can have several digits.",
+    "example": "\"2[x3[y]]z\" → \"xyyyxyyyz\"",
+    "idea": "Stack of (repeat count, string so far); on ']' pop and append current × count. Handle multi-digit counts.",
+    "spec": {
+      "kind": "method",
+      "name": "decodeString",
+      "py": "def decodeString(self, s: str) -> str:",
+      "java": "public String decodeString(String s)",
+      "ptypes": [
+        "str"
+      ],
+      "rtype": "str",
+      "tests": [
+        [
+          [
+            "3[a]2[bc]"
+          ],
+          "aaabcbc"
+        ],
+        [
+          [
+            "2[x3[y]]z"
+          ],
+          "xyyyxyyyz"
+        ],
+        [
+          [
+            "10[a]"
+          ],
+          "aaaaaaaaaa"
+        ],
+        [
+          [
+            "ab"
+          ],
+          "ab"
+        ]
+      ]
+    }
+  },
+  "decode-ways": {
+    "title": "Decode Ways",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "Letters map to numbers (A = 1 … Z = 26). Count the ways to decode a digit string.",
+    "example": "\"226\" → 3",
+    "signature": {
+      "python": "def numDecodings(self, s: str) -> int:",
+      "java": "public int numDecodings(String s)"
+    }
+  },
+  "design-add-and-search-words-data-structure": {
+    "title": "Design Add and Search Words Data Structure",
+    "difficulty": "Medium",
+    "pattern": "Tries",
+    "summary": "Like a trie, but search patterns may contain '.', which matches any letter.",
+    "example": "add bad, dad; search \".ad\" → true",
+    "starters": {
+      "python": "class WordDictionary:\n\n    def __init__(self):\n        pass\n\n    def addWord(self, word: str) -> None:\n        pass\n\n    def search(self, word: str) -> bool:\n        pass\n",
+      "java": "class WordDictionary {\n\n    public WordDictionary() {\n\n    }\n\n    public void addWord(String word) {\n\n    }\n\n    public boolean search(String word) {\n\n    }\n}\n"
+    }
+  },
+  "design-circular-queue": {
+    "title": "Design Circular Queue",
+    "difficulty": "Medium",
+    "pattern": "Design",
+    "summary": "Implement a fixed-size circular queue: enQueue(x) and deQueue() return whether they succeeded. Front() and Rear() return -1 when empty. Also isEmpty() and isFull().",
+    "example": "size 3: enQueue 1,2,3 → true, enQueue 4 → false, Rear() = 3, deQueue() → true, enQueue 4 → true, Rear() = 4",
+    "idea": "Fixed array + head index + count; tail = (head + count) % capacity.",
+    "spec": {
+      "kind": "ops",
+      "cls": "MyCircularQueue",
+      "ctor": [
+        "int"
+      ],
+      "methods": {
+        "enQueue": [
+          [
+            "int"
+          ],
+          "bool"
+        ],
+        "deQueue": [
+          [],
+          "bool"
+        ],
+        "Front": [
+          [],
+          "int"
+        ],
+        "Rear": [
+          [],
+          "int"
+        ],
+        "isEmpty": [
+          [],
+          "bool"
+        ],
+        "isFull": [
+          [],
+          "bool"
+        ]
+      },
+      "tests": [
+        [
+          [
+            "MyCircularQueue",
+            "enQueue",
+            "enQueue",
+            "enQueue",
+            "enQueue",
+            "Rear",
+            "isFull",
+            "deQueue",
+            "enQueue",
+            "Rear",
+            "Front"
+          ],
+          [
+            [
+              3
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ],
+            [],
+            [],
+            [],
+            [
+              4
+            ],
+            [],
+            []
+          ],
+          [
+            null,
+            true,
+            true,
+            true,
+            false,
+            3,
+            true,
+            true,
+            true,
+            4,
+            2
+          ]
+        ],
+        [
+          [
+            "MyCircularQueue",
+            "Front",
+            "Rear",
+            "deQueue",
+            "isEmpty",
+            "enQueue",
+            "isEmpty",
+            "isFull"
+          ],
+          [
+            [
+              1
+            ],
+            [],
+            [],
+            [],
+            [],
+            [
+              7
+            ],
+            [],
+            []
+          ],
+          [
+            null,
+            -1,
+            -1,
+            false,
+            true,
+            true,
+            false,
+            true
+          ]
+        ]
+      ]
+    }
+  },
+  "encode-and-decode-strings": {
+    "title": "Encode and Decode Strings",
+    "difficulty": "Medium",
+    "pattern": "Strings",
+    "summary": "Design encode(list of strings) → one string, and decode(string) → the original list. Strings may contain any characters.",
+    "example": "[\"lint\",\"code\"] → encode → decode → [\"lint\",\"code\"]",
+    "starters": {
+      "python": "class Codec:\n\n    def encode(self, strs: List[str]) -> str:\n        pass\n\n    def decode(self, s: str) -> List[str]:\n        pass\n",
+      "java": "public class Codec {\n\n    public String encode(List<String> strs) {\n\n    }\n\n    public List<String> decode(String s) {\n\n    }\n}\n"
+    }
+  },
+  "find-first-and-last-position-of-element-in-sorted-array": {
+    "title": "Find First and Last Position of Element in Sorted Array",
+    "difficulty": "Medium",
+    "pattern": "Binary Search",
+    "summary": "In an ascending array, return [first index, last index] of target, or [-1,-1] if it's absent, in O(log n).",
+    "example": "[5,7,7,8,8,10], target 8 → [3,4]",
+    "idea": "Two binary searches: first index ≥ target and first index &gt; target (minus 1).",
+    "spec": {
+      "kind": "method",
+      "name": "searchRange",
+      "py": "def searchRange(self, nums: List[int], target: int) -> List[int]:",
+      "java": "public int[] searchRange(int[] nums, int target)",
+      "ptypes": [
+        "int[]",
+        "int"
+      ],
+      "rtype": "int[]",
+      "tests": [
+        [
+          [
+            [
+              5,
+              7,
+              7,
+              8,
+              8,
+              10
+            ],
+            8
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            [
+              5,
+              7,
+              7,
+              8,
+              8,
+              10
+            ],
+            6
+          ],
+          [
+            -1,
+            -1
+          ]
+        ],
+        [
+          [
+            [],
+            0
+          ],
+          [
+            -1,
+            -1
+          ]
+        ],
+        [
+          [
+            [
+              2,
+              2
+            ],
+            2
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      ]
+    }
+  },
+  "find-k-pairs-with-smallest-sums": {
+    "title": "Find K Pairs with Smallest Sums",
+    "difficulty": "Medium",
+    "pattern": "Heap",
+    "summary": "Given two ascending arrays, form pairs (one element from each) and return the k pairs with the smallest sums.",
+    "example": "[1,7,11], [2,4,6], k = 3 → [[1,2],[1,4],[1,6]]",
+    "idea": "Min-heap seeded with (nums1[i]+nums2[0], i, 0) for i &lt; k; pop k times, each time push (i, j+1).",
+    "spec": {
+      "kind": "method",
+      "name": "kSmallestPairs",
+      "mode": "sort",
+      "py": "def kSmallestPairs(self, nums1: List[int], nums2: List[int], k: int) -> List[List[int]]:",
+      "java": "public List<List<Integer>> kSmallestPairs(int[] nums1, int[] nums2, int k)",
+      "ptypes": [
+        "int[]",
+        "int[]",
+        "int"
+      ],
+      "rtype": "list<list<int>>",
+      "tests": [
+        [
+          [
+            [
+              1,
+              7,
+              11
+            ],
+            [
+              2,
+              4,
+              6
+            ],
+            3
+          ],
+          [
+            [
+              1,
+              2
+            ],
+            [
+              1,
+              4
+            ],
+            [
+              1,
+              6
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              1,
+              2
+            ],
+            [
+              3
+            ],
+            2
+          ],
+          [
+            [
+              1,
+              3
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              1,
+              1,
+              2
+            ],
+            [
+              1,
+              2,
+              3
+            ],
+            2
+          ],
+          [
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        ]
+      ]
+    }
+  },
+  "find-median-from-data-stream": {
+    "title": "Find Median from Data Stream",
+    "difficulty": "Hard",
+    "pattern": "Heap",
+    "summary": "Support addNum(x) and findMedian() over a growing stream of numbers.",
+    "example": "add 1, add 2 → 1.5; add 3 → 2.0",
+    "starters": {
+      "python": "class MedianFinder:\n\n    def __init__(self):\n        pass\n\n    def addNum(self, num: int) -> None:\n        pass\n\n    def findMedian(self) -> float:\n        pass\n",
+      "java": "class MedianFinder {\n\n    public MedianFinder() {\n\n    }\n\n    public void addNum(int num) {\n\n    }\n\n    public double findMedian() {\n\n    }\n}\n"
+    }
+  },
+  "find-minimum-in-rotated-sorted-array": {
+    "title": "Find Minimum in Rotated Sorted Array",
+    "difficulty": "Medium",
+    "pattern": "Binary Search",
+    "summary": "A sorted array of distinct values was rotated at an unknown pivot. Find the minimum in O(log n).",
+    "example": "[4,5,6,7,0,1,2] → 0",
+    "signature": {
+      "python": "def findMin(self, nums: List[int]) -> int:",
+      "java": "public int findMin(int[] nums)"
+    }
+  },
+  "graph-valid-tree": {
+    "title": "Graph Valid Tree",
+    "difficulty": "Medium",
+    "pattern": "Graphs",
+    "summary": "Given n nodes and undirected edges, return whether they form a valid tree (connected, no cycles).",
+    "example": "n = 5, [[0,1],[0,2],[0,3],[1,4]] → true",
+    "signature": {
+      "python": "def validTree(self, n: int, edges: List[List[int]]) -> bool:",
+      "java": "public boolean validTree(int n, int[][] edges)"
+    }
+  },
+  "group-anagrams": {
+    "title": "Group Anagrams",
+    "difficulty": "Medium",
+    "pattern": "Arrays & Hashing",
+    "summary": "Group words that are anagrams of each other (same letters, different order). Groups and the words inside them can be in any order.",
+    "example": "[eat, tea, tan, ate, nat, bat] → [[eat, tea, ate], [tan, nat], [bat]]",
+    "idea": "Key = sorted word (or 26-count signature) → map key to list of words.",
+    "spec": {
+      "kind": "method",
+      "name": "groupAnagrams",
+      "mode": "sortinner",
+      "py": "def groupAnagrams(self, strs: List[str]) -> List[List[str]]:",
+      "java": "public List<List<String>> groupAnagrams(String[] strs)",
+      "ptypes": [
+        "str[]"
+      ],
+      "rtype": "list<list<str>>",
+      "tests": [
+        [
+          [
+            [
+              "eat",
+              "tea",
+              "tan",
+              "ate",
+              "nat",
+              "bat"
+            ]
+          ],
+          [
+            [
+              "bat"
+            ],
+            [
+              "nat",
+              "tan"
+            ],
+            [
+              "ate",
+              "eat",
+              "tea"
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              ""
+            ]
+          ],
+          [
+            [
+              ""
+            ]
+          ]
+        ],
+        [
+          [
+            [
+              "a"
+            ]
+          ],
+          [
+            [
+              "a"
+            ]
+          ]
+        ]
+      ]
+    }
+  },
+  "house-robber": {
+    "title": "House Robber",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "Pick houses to rob for the maximum total, without robbing two adjacent houses.",
+    "example": "[2,7,9,3,1] → 12",
+    "signature": {
+      "python": "def rob(self, nums: List[int]) -> int:",
+      "java": "public int rob(int[] nums)"
+    }
+  },
+  "house-robber-ii": {
+    "title": "House Robber II",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "Same as House Robber, but the houses are in a circle, so the first and last are adjacent.",
+    "example": "[2,3,2] → 3",
+    "signature": {
+      "python": "def rob(self, nums: List[int]) -> int:",
+      "java": "public int rob(int[] nums)"
+    }
+  },
+  "implement-trie-prefix-tree": {
+    "title": "Implement Trie (Prefix Tree)",
+    "difficulty": "Medium",
+    "pattern": "Tries",
+    "summary": "Implement insert(word), search(word) and startsWith(prefix).",
+    "example": "insert apple; search apple → true; search app → false; startsWith app → true",
+    "starters": {
+      "python": "class Trie:\n\n    def __init__(self):\n        pass\n\n    def insert(self, word: str) -> None:\n        pass\n\n    def search(self, word: str) -> bool:\n        pass\n\n    def startsWith(self, prefix: str) -> bool:\n        pass\n",
+      "java": "class Trie {\n\n    public Trie() {\n\n    }\n\n    public void insert(String word) {\n\n    }\n\n    public boolean search(String word) {\n\n    }\n\n    public boolean startsWith(String prefix) {\n\n    }\n}\n"
+    }
+  },
+  "insert-delete-getrandom-o1-duplicates-allowed": {
+    "title": "Insert Delete GetRandom O(1) - Duplicates allowed",
+    "difficulty": "Hard",
+    "pattern": "Design",
+    "summary": "Design a multiset with average O(1) insert(val), remove(val) and getRandom(). insert returns true if val was not already present. remove deletes one copy and returns true if val was present. getRandom returns an element with probability proportional to how many copies it has.",
+    "example": "insert 1 → true, insert 1 → false, insert 2 → true, getRandom → 1 with prob 2/3",
+    "idea": "ArrayList of values + map val → Set of indices; remove by swapping with the last element and fixing its index set.",
+    "spec": {
+      "kind": "custom",
+      "py_starter": "class RandomizedCollection:\n\n    def __init__(self):\n        pass\n\n    def insert(self, val: int) -> bool:\n        pass\n\n    def remove(self, val: int) -> bool:\n        pass\n\n    def getRandom(self) -> int:\n        pass\n",
+      "java_starter": "class RandomizedCollection {\n\n    public RandomizedCollection() {\n\n    }\n\n    public boolean insert(int val) {\n\n    }\n\n    public boolean remove(int val) {\n\n    }\n\n    public int getRandom() {\n\n    }\n}\n",
+      "tests": [
+        [
+          "insert 1, 1, 2; remove 1; getRandom ∈ {1,2}; remove 1, 1; getRandom",
+          "c = RandomizedCollection()\ngot = [c.insert(1), c.insert(1), c.insert(2), c.remove(1), c.getRandom() in (1, 2), c.remove(1), c.remove(1), c.getRandom()]",
+          "RandomizedCollection c = new RandomizedCollection();\nint r1;\ngot = Arrays.asList(c.insert(1), c.insert(1), c.insert(2), c.remove(1), ((r1 = c.getRandom()) == 1 || r1 == 2), c.remove(1), c.remove(1), c.getRandom());",
+          [
+            true,
+            false,
+            true,
+            true,
+            true,
+            true,
+            false,
+            2
+          ]
+        ],
+        [
+          "insert 1, 1, 2 → getRandom returns 1 about 2/3 of the time",
+          "c = RandomizedCollection()\nc.insert(1); c.insert(1); c.insert(2)\nshare = sum(c.getRandom() == 1 for _ in range(3000)) / 3000\ngot = 0.58 < share < 0.75",
+          "RandomizedCollection c = new RandomizedCollection();\nc.insert(1); c.insert(1); c.insert(2);\nint ones = 0;\nfor (int i = 0; i < 3000; i++) if (c.getRandom() == 1) ones++;\ngot = ones / 3000.0 > 0.58 && ones / 3000.0 < 0.75;",
+          true
+        ]
+      ]
+    }
+  },
+  "insert-interval": {
+    "title": "Insert Interval",
+    "difficulty": "Medium",
+    "pattern": "Intervals",
+    "summary": "Insert a new interval into a sorted list of non-overlapping intervals, merging where needed.",
+    "example": "[[1,3],[6,9]] + [2,5] → [[1,5],[6,9]]",
+    "signature": {
+      "python": "def insert(self, intervals: List[List[int]], newInterval: List[int]) -> List[List[int]]:",
+      "java": "public int[][] insert(int[][] intervals, int[] newInterval)"
+    }
+  },
+  "invert-binary-tree": {
+    "title": "Invert Binary Tree",
+    "difficulty": "Easy",
+    "pattern": "Trees",
+    "summary": "Mirror the tree (swap every node's left and right children).",
+    "example": "[4,2,7,1,3,6,9] → [4,7,2,9,6,3,1]",
+    "signature": {
+      "python": "def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:",
+      "java": "public TreeNode invertTree(TreeNode root)"
+    }
+  },
+  "jump-game": {
+    "title": "Jump Game",
+    "difficulty": "Medium",
+    "pattern": "Greedy",
+    "summary": "nums[i] is the furthest you may jump forward from index i. Can you reach the last index?",
+    "example": "[2,3,1,1,4] → true",
+    "signature": {
+      "python": "def canJump(self, nums: List[int]) -> bool:",
+      "java": "public boolean canJump(int[] nums)"
+    }
+  },
+  "koko-eating-bananas": {
+    "title": "Koko Eating Bananas",
+    "difficulty": "Medium",
+    "pattern": "Binary Search",
+    "summary": "Koko eats from one pile per hour, up to speed bananas from it, and finishes a pile before moving on (leftover time in that hour is wasted). Return the minimum integer speed that lets her finish all piles within h hours.",
+    "example": "piles [3,6,7,11], h = 8 → 4",
+    "idea": "Binary search the speed in [1, max(piles)]; feasible if Σ ceil(p / speed) ≤ h.",
+    "spec": {
+      "kind": "method",
+      "name": "minEatingSpeed",
+      "py": "def minEatingSpeed(self, piles: List[int], h: int) -> int:",
+      "java": "public int minEatingSpeed(int[] piles, int h)",
+      "ptypes": [
+        "int[]",
+        "int"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              3,
+              6,
+              7,
+              11
+            ],
+            8
+          ],
+          4
+        ],
+        [
+          [
+            [
+              30,
+              11,
+              23,
+              4,
+              20
+            ],
+            5
+          ],
+          30
+        ],
+        [
+          [
+            [
+              30,
+              11,
+              23,
+              4,
+              20
+            ],
+            6
+          ],
+          23
+        ],
+        [
+          [
+            [
+              1000000000
+            ],
+            2
+          ],
+          500000000
+        ]
+      ]
+    }
+  },
+  "kth-largest-element-in-an-array": {
+    "title": "Kth Largest Element in an Array",
+    "difficulty": "Medium",
+    "pattern": "Heap",
+    "summary": "Return the k-th largest element in the array (in sorted order, not the k-th distinct value). Try to beat a full sort.",
+    "example": "[3,2,1,5,6,4], k = 2 → 5",
+    "idea": "Min-heap of size k: O(n log k). Quickselect: O(n) average.",
+    "spec": {
+      "kind": "method",
+      "name": "findKthLargest",
+      "py": "def findKthLargest(self, nums: List[int], k: int) -> int:",
+      "java": "public int findKthLargest(int[] nums, int k)",
+      "ptypes": [
+        "int[]",
+        "int"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              3,
+              2,
+              1,
+              5,
+              6,
+              4
+            ],
+            2
+          ],
+          5
+        ],
+        [
+          [
+            [
+              3,
+              2,
+              3,
+              1,
+              2,
+              4,
+              5,
+              5,
+              6
+            ],
+            4
+          ],
+          4
+        ],
+        [
+          [
+            [
+              1
+            ],
+            1
+          ],
+          1
+        ],
+        [
+          [
+            [
+              -1,
+              -1
+            ],
+            2
+          ],
+          -1
+        ]
+      ]
+    }
+  },
+  "kth-smallest-element-in-a-bst": {
+    "title": "Kth Smallest Element in a BST",
+    "difficulty": "Medium",
+    "pattern": "Trees",
+    "summary": "Return the k-th smallest value in a BST.",
+    "example": "[3,1,4,null,2], k = 1 → 1",
+    "signature": {
+      "python": "def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:",
+      "java": "public int kthSmallest(TreeNode root, int k)"
+    }
+  },
+  "letter-combinations-of-a-phone-number": {
+    "title": "Letter Combinations of a Phone Number",
+    "difficulty": "Medium",
+    "pattern": "Backtracking",
+    "summary": "Each digit 2–9 maps to letters as on a phone keypad (2 → abc, …, 7 → pqrs, 9 → wxyz). Return every letter string the digit string could represent, in any order. An empty input gives an empty list.",
+    "example": "\"23\" → [ad, ae, af, bd, be, bf, cd, ce, cf]",
+    "idea": "Backtrack digit by digit, append each mapped letter, undo.",
+    "spec": {
+      "kind": "method",
+      "name": "letterCombinations",
+      "mode": "sort",
+      "py": "def letterCombinations(self, digits: str) -> List[str]:",
+      "java": "public List<String> letterCombinations(String digits)",
+      "ptypes": [
+        "str"
+      ],
+      "rtype": "list<str>",
+      "tests": [
+        [
+          [
+            "23"
+          ],
+          [
+            "ad",
+            "ae",
+            "af",
+            "bd",
+            "be",
+            "bf",
+            "cd",
+            "ce",
+            "cf"
+          ]
+        ],
+        [
+          [
+            ""
+          ],
+          []
+        ],
+        [
+          [
+            "7"
+          ],
+          [
+            "p",
+            "q",
+            "r",
+            "s"
+          ]
+        ]
+      ]
+    }
+  },
+  "linked-list-cycle": {
+    "title": "Linked List Cycle",
+    "difficulty": "Easy",
+    "pattern": "Linked List",
+    "summary": "Return whether the linked list contains a cycle. Try O(1) extra memory.",
+    "example": "3 → 2 → 0 → -4 → (back to 2) → true",
+    "idea": "Floyd: slow moves 1, fast moves 2; they meet iff there is a cycle.",
+    "spec": {
+      "kind": "method",
+      "name": "hasCycle",
+      "provided": [
+        "ListNode"
+      ],
+      "py": "def hasCycle(self, head: Optional[ListNode]) -> bool:",
+      "java": "public boolean hasCycle(ListNode head)",
+      "ptypes": [
+        "cyclelist"
+      ],
+      "rtype": "bool",
+      "tests": [
+        [
+          [
+            [
+              [
+                3,
+                2,
+                0,
+                -4
+              ],
+              1
+            ]
+          ],
+          true
+        ],
+        [
+          [
+            [
+              [
+                1,
+                2
+              ],
+              0
+            ]
+          ],
+          true
+        ],
+        [
+          [
+            [
+              [
+                1
+              ],
+              -1
+            ]
+          ],
+          false
+        ],
+        [
+          [
+            [
+              [],
+              -1
+            ]
+          ],
+          false
+        ],
+        [
+          [
+            [
+              [
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              -1
+            ]
+          ],
+          false
+        ]
+      ]
+    }
+  },
+  "longest-common-subsequence": {
+    "title": "Longest Common Subsequence",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "Return the length of the longest subsequence common to both strings.",
+    "example": "\"abcde\", \"ace\" → 3",
+    "signature": {
+      "python": "def longestCommonSubsequence(self, text1: str, text2: str) -> int:",
+      "java": "public int longestCommonSubsequence(String text1, String text2)"
+    }
+  },
+  "longest-consecutive-sequence": {
+    "title": "Longest Consecutive Sequence",
+    "difficulty": "Medium",
+    "pattern": "Arrays & Hashing",
+    "summary": "Return the length of the longest run of consecutive integers (values can be in any order), in O(n).",
+    "example": "[100,4,200,1,3,2] → 4",
+    "signature": {
+      "python": "def longestConsecutive(self, nums: List[int]) -> int:",
+      "java": "public int longestConsecutive(int[] nums)"
+    }
+  },
+  "longest-increasing-subsequence": {
+    "title": "Longest Increasing Subsequence",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "Return the length of the longest strictly increasing subsequence.",
+    "example": "[10,9,2,5,3,7,101,18] → 4",
+    "signature": {
+      "python": "def lengthOfLIS(self, nums: List[int]) -> int:",
+      "java": "public int lengthOfLIS(int[] nums)"
+    }
+  },
+  "longest-palindromic-substring": {
+    "title": "Longest Palindromic Substring",
+    "difficulty": "Medium",
+    "pattern": "Strings",
+    "summary": "Return the longest substring that reads the same forwards and backwards.",
+    "example": "\"babad\" → \"bab\" (or \"aba\")",
+    "signature": {
+      "python": "def longestPalindrome(self, s: str) -> str:",
+      "java": "public String longestPalindrome(String s)"
+    }
+  },
+  "longest-repeating-character-replacement": {
+    "title": "Longest Repeating Character Replacement",
+    "difficulty": "Medium",
+    "pattern": "Sliding Window",
+    "summary": "You may change up to k characters. Return the longest substring that can then consist of one repeated letter.",
+    "example": "\"AABABBA\", k = 1 → 4",
+    "signature": {
+      "python": "def characterReplacement(self, s: str, k: int) -> int:",
+      "java": "public int characterReplacement(String s, int k)"
+    }
+  },
+  "longest-substring-without-repeating-characters": {
+    "title": "Longest Substring Without Repeating Characters",
+    "difficulty": "Medium",
+    "pattern": "Sliding Window",
+    "summary": "Return the length of the longest substring that has no repeated characters.",
+    "example": "\"abcabcbb\" → 3 (\"abc\")",
+    "idea": "Sliding window with last-seen index map; left = max(left, last[c] + 1).",
+    "spec": {
+      "kind": "method",
+      "name": "lengthOfLongestSubstring",
+      "py": "def lengthOfLongestSubstring(self, s: str) -> int:",
+      "java": "public int lengthOfLongestSubstring(String s)",
+      "ptypes": [
+        "str"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            "abcabcbb"
+          ],
+          3
+        ],
+        [
+          [
+            "bbbbb"
+          ],
+          1
+        ],
+        [
+          [
+            "pwwkew"
+          ],
+          3
+        ],
+        [
+          [
+            ""
+          ],
+          0
+        ],
+        [
+          [
+            "abba"
+          ],
+          2
+        ]
+      ]
+    }
+  },
+  "lowest-common-ancestor-of-a-binary-search-tree": {
+    "title": "Lowest Common Ancestor of a Binary Search Tree",
+    "difficulty": "Medium",
+    "pattern": "Trees",
+    "summary": "Return the lowest node that has both p and q as descendants (a node counts as its own descendant).",
+    "example": "[6,2,8,0,4,7,9], p = 2, q = 8 → 6",
+    "signature": {
+      "python": "def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':",
+      "java": "public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q)"
+    }
+  },
+  "lru-cache": {
+    "title": "LRU Cache",
+    "difficulty": "Medium",
+    "pattern": "Design",
+    "summary": "Design a fixed-capacity key-value cache with get(key) (returns -1 if missing) and put(key, value). When it's full, inserting a new key evicts the least recently used key. Both operations should be O(1).",
+    "example": "capacity 2: put(1,1), put(2,2), get(1)=1, put(3,3) evicts 2, get(2)=-1",
+    "idea": "HashMap + doubly linked list; move to front on get/put, evict from the tail. (LinkedHashMap with accessOrder is the shortcut.)",
+    "spec": {
+      "kind": "ops",
+      "cls": "LRUCache",
+      "ctor": [
+        "int"
+      ],
+      "methods": {
+        "get": [
+          [
+            "int"
+          ],
+          "int"
+        ],
+        "put": [
+          [
+            "int",
+            "int"
+          ],
+          "void"
+        ]
+      },
+      "tests": [
+        [
+          [
+            "LRUCache",
+            "put",
+            "put",
+            "get",
+            "put",
+            "get",
+            "put",
+            "get",
+            "get",
+            "get"
+          ],
+          [
+            [
+              2
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              1
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              2
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              1
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ],
+          [
+            null,
+            null,
+            null,
+            1,
+            null,
+            -1,
+            null,
+            -1,
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            "LRUCache",
+            "put",
+            "put",
+            "put",
+            "get",
+            "get"
+          ],
+          [
+            [
+              1
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              1,
+              20
+            ],
+            [
+              2,
+              30
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ]
+          ],
+          [
+            null,
+            null,
+            null,
+            null,
+            -1,
+            30
+          ]
+        ]
+      ]
+    }
+  },
+  "max-points-on-a-line": {
+    "title": "Max Points on a Line",
+    "difficulty": "Hard",
+    "pattern": "Math & Bits",
+    "summary": "Given distinct points on a plane, return the largest number of them that lie on one straight line.",
+    "example": "[[1,1],[2,2],[3,3]] → 3",
+    "idea": "For each point, count slopes to the others as reduced (dy/g, dx/g) with normalized sign. O(n²).",
+    "spec": {
+      "kind": "method",
+      "name": "maxPoints",
+      "py": "def maxPoints(self, points: List[List[int]]) -> int:",
+      "java": "public int maxPoints(int[][] points)",
+      "ptypes": [
+        "int[][]"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              [
+                1,
+                1
+              ],
+              [
+                2,
+                2
+              ],
+              [
+                3,
+                3
+              ]
+            ]
+          ],
+          3
+        ],
+        [
+          [
+            [
+              [
+                1,
+                1
+              ],
+              [
+                3,
+                2
+              ],
+              [
+                5,
+                3
+              ],
+              [
+                4,
+                1
+              ],
+              [
+                2,
+                3
+              ],
+              [
+                1,
+                4
+              ]
+            ]
+          ],
+          4
+        ],
+        [
+          [
+            [
+              [
+                0,
+                0
+              ]
+            ]
+          ],
+          1
+        ],
+        [
+          [
+            [
+              [
+                0,
+                0
+              ],
+              [
+                1,
+                1
+              ],
+              [
+                0,
+                1
+              ],
+              [
+                0,
+                2
+              ]
+            ]
+          ],
+          3
+        ]
+      ]
+    }
+  },
+  "max-stack": {
+    "title": "Max Stack",
+    "difficulty": "Hard",
+    "pattern": "Design",
+    "summary": "Design a stack that also supports finding and removing its maximum: push(x), pop(), top(), peekMax(), and popMax(). If several elements share the max, popMax removes the one closest to the top.",
+    "example": "push 5, push 1, push 5 → top()=5, popMax()=5, top()=1, peekMax()=5, pop()=1, top()=5",
+    "idea": "Doubly linked list for stack order + TreeMap&lt;val, Deque&lt;Node&gt;&gt; for max; popMax unlinks from the middle. O(log n).",
+    "spec": {
+      "kind": "ops",
+      "cls": "MaxStack",
+      "ctor": [],
+      "methods": {
+        "push": [
+          [
+            "int"
+          ],
+          "void"
+        ],
+        "pop": [
+          [],
+          "int"
+        ],
+        "top": [
+          [],
+          "int"
+        ],
+        "peekMax": [
+          [],
+          "int"
+        ],
+        "popMax": [
+          [],
+          "int"
+        ]
+      },
+      "tests": [
+        [
+          [
+            "MaxStack",
+            "push",
+            "push",
+            "push",
+            "top",
+            "popMax",
+            "top",
+            "peekMax",
+            "pop",
+            "top"
+          ],
+          [
+            [],
+            [
+              5
+            ],
+            [
+              1
+            ],
+            [
+              5
+            ],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+          ],
+          [
+            null,
+            null,
+            null,
+            null,
+            5,
+            5,
+            1,
+            5,
+            1,
+            5
+          ]
+        ],
+        [
+          [
+            "MaxStack",
+            "push",
+            "push",
+            "push",
+            "push",
+            "popMax",
+            "pop",
+            "pop",
+            "peekMax",
+            "top"
+          ],
+          [
+            [],
+            [
+              3
+            ],
+            [
+              1
+            ],
+            [
+              3
+            ],
+            [
+              2
+            ],
+            [],
+            [],
+            [],
+            [],
+            []
+          ],
+          [
+            null,
+            null,
+            null,
+            null,
+            null,
+            3,
+            2,
+            1,
+            3,
+            3
+          ]
+        ]
+      ]
+    }
+  },
+  "maximize-sum-of-weights-after-edge-removals": {
+    "title": "Maximize Sum of Weights after Edge Removals",
+    "difficulty": "Hard",
+    "pattern": "Dynamic Programming",
+    "summary": "You get a weighted tree as an edge list [u, v, w]. Remove edges so every node has at most k remaining edges, and return the largest possible total weight of the edges you keep.",
+    "example": "edges [[0,1,4],[0,2,2],[2,3,12],[2,4,6]], k = 2 → 22 (drop the weight-2 edge)",
+    "idea": "Tree DP: each node keeps ≤ k edges. For each child, gain = w + dp[child][keepParent] − dp[child][dropParent]; take the top positive gains (k, or k−1 if the parent edge is kept).",
+    "spec": {
+      "kind": "method",
+      "name": "maximizeSumOfWeights",
+      "py": "def maximizeSumOfWeights(self, edges: List[List[int]], k: int) -> int:",
+      "java": "public long maximizeSumOfWeights(int[][] edges, int k)",
+      "ptypes": [
+        "int[][]",
+        "int"
+      ],
+      "rtype": "long",
+      "tests": [
+        [
+          [
+            [
+              [
+                0,
+                1,
+                4
+              ],
+              [
+                0,
+                2,
+                2
+              ],
+              [
+                2,
+                3,
+                12
+              ],
+              [
+                2,
+                4,
+                6
+              ]
+            ],
+            2
+          ],
+          22
+        ],
+        [
+          [
+            [
+              [
+                0,
+                1,
+                5
+              ],
+              [
+                1,
+                2,
+                10
+              ],
+              [
+                0,
+                3,
+                15
+              ],
+              [
+                3,
+                4,
+                20
+              ],
+              [
+                3,
+                5,
+                5
+              ],
+              [
+                0,
+                6,
+                10
+              ]
+            ],
+            3
+          ],
+          65
+        ],
+        [
+          [
+            [
+              [
+                0,
+                1,
+                1
+              ],
+              [
+                0,
+                2,
+                2
+              ],
+              [
+                0,
+                3,
+                3
+              ]
+            ],
+            1
+          ],
+          3
+        ],
+        [
+          [
+            [
+              [
+                0,
+                1,
+                3
+              ],
+              [
+                1,
+                2,
+                4
+              ],
+              [
+                2,
+                3,
+                5
+              ],
+              [
+                1,
+                4,
+                6
+              ]
+            ],
+            1
+          ],
+          11
+        ]
+      ]
+    }
+  },
+  "maximum-depth-of-binary-tree": {
+    "title": "Maximum Depth of Binary Tree",
+    "difficulty": "Easy",
+    "pattern": "Trees",
+    "summary": "Return the number of nodes on the longest path from the root down to a leaf.",
+    "example": "[3,9,20,null,null,15,7] → 3",
+    "idea": "1 + max(depth(left), depth(right)); or count BFS levels.",
+    "spec": {
+      "kind": "method",
+      "name": "maxDepth",
+      "provided": [
+        "TreeNode"
+      ],
+      "py": "def maxDepth(self, root: Optional[TreeNode]) -> int:",
+      "java": "public int maxDepth(TreeNode root)",
+      "ptypes": [
+        "tree"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              3,
+              9,
+              20,
+              null,
+              null,
+              15,
+              7
+            ]
+          ],
+          3
+        ],
+        [
+          [
+            []
+          ],
+          0
+        ],
+        [
+          [
+            [
+              1,
+              null,
+              2
+            ]
+          ],
+          2
+        ]
+      ]
+    }
+  },
+  "maximum-number-of-occurrences-of-a-substring": {
+    "title": "Maximum Number of Occurrences of a Substring",
+    "difficulty": "Medium",
+    "pattern": "Sliding Window",
+    "summary": "Among substrings with between minSize and maxSize characters and at most maxLetters distinct letters, return the highest number of times any one of them occurs (occurrences may overlap).",
+    "example": "\"aababcaab\", maxLetters 2, minSize 3, maxSize 4 → 2 (\"aab\")",
+    "idea": "Only minSize matters (a longer match contains a minSize one). Slide a minSize window, check distinct letters ≤ maxLetters, count in a map.",
+    "spec": {
+      "kind": "method",
+      "name": "maxFreq",
+      "py": "def maxFreq(self, s: str, maxLetters: int, minSize: int, maxSize: int) -> int:",
+      "java": "public int maxFreq(String s, int maxLetters, int minSize, int maxSize)",
+      "ptypes": [
+        "str",
+        "int",
+        "int",
+        "int"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            "aababcaab",
+            2,
+            3,
+            4
+          ],
+          2
+        ],
+        [
+          [
+            "aaaa",
+            1,
+            3,
+            3
+          ],
+          2
+        ],
+        [
+          [
+            "abcde",
+            2,
+            3,
+            3
+          ],
+          0
+        ]
+      ]
+    }
+  },
+  "maximum-product-subarray": {
+    "title": "Maximum Product Subarray",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "Return the largest product of any non-empty contiguous subarray.",
+    "example": "[-2,3,-4] → 24",
+    "idea": "Track both curMax and curMin (a negative swaps them); answer = max curMax seen.",
+    "spec": {
+      "kind": "method",
+      "name": "maxProduct",
+      "py": "def maxProduct(self, nums: List[int]) -> int:",
+      "java": "public int maxProduct(int[] nums)",
+      "ptypes": [
+        "int[]"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              2,
+              3,
+              -2,
+              4
+            ]
+          ],
+          6
+        ],
+        [
+          [
+            [
+              -2,
+              0,
+              -1
+            ]
+          ],
+          0
+        ],
+        [
+          [
+            [
+              -2,
+              3,
+              -4
+            ]
+          ],
+          24
+        ],
+        [
+          [
+            [
+              -2
+            ]
+          ],
+          -2
+        ]
+      ]
+    }
+  },
+  "maximum-subarray": {
+    "title": "Maximum Subarray",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "Return the largest sum of any non-empty contiguous subarray.",
+    "example": "[-2,1,-3,4,-1,2,1,-5,4] → 6 (the subarray [4,-1,2,1])",
+    "idea": "Kadane: cur = max(x, cur + x); best = max(best, cur).",
+    "spec": {
+      "kind": "method",
+      "name": "maxSubArray",
+      "py": "def maxSubArray(self, nums: List[int]) -> int:",
+      "java": "public int maxSubArray(int[] nums)",
+      "ptypes": [
+        "int[]"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              -2,
+              1,
+              -3,
+              4,
+              -1,
+              2,
+              1,
+              -5,
+              4
+            ]
+          ],
+          6
+        ],
+        [
+          [
+            [
+              -3,
+              -1,
+              -2
+            ]
+          ],
+          -1
+        ],
+        [
+          [
+            [
+              5
+            ]
+          ],
+          5
+        ],
+        [
+          [
+            [
+              2,
+              -1,
+              2
+            ]
+          ],
+          3
+        ]
+      ]
+    }
+  },
+  "meeting-rooms": {
+    "title": "Meeting Rooms",
+    "difficulty": "Easy",
+    "pattern": "Intervals",
+    "summary": "Can one person attend every meeting (no overlaps)?",
+    "example": "[[0,30],[5,10],[15,20]] → false",
+    "signature": {
+      "python": "def canAttendMeetings(self, intervals: List[List[int]]) -> bool:",
+      "java": "public boolean canAttendMeetings(int[][] intervals)"
+    }
+  },
+  "meeting-rooms-ii": {
+    "title": "Meeting Rooms II",
+    "difficulty": "Medium",
+    "pattern": "Intervals",
+    "summary": "Return the minimum number of rooms needed to hold all meetings.",
+    "example": "[[0,30],[5,10],[15,20]] → 2",
+    "signature": {
+      "python": "def minMeetingRooms(self, intervals: List[List[int]]) -> int:",
+      "java": "public int minMeetingRooms(int[][] intervals)"
+    }
+  },
+  "merge-intervals": {
+    "title": "Merge Intervals",
+    "difficulty": "Medium",
+    "pattern": "Intervals",
+    "summary": "Merge all overlapping intervals.",
+    "example": "[[1,3],[2,6],[8,10],[15,18]] → [[1,6],[8,10],[15,18]]",
+    "signature": {
+      "python": "def merge(self, intervals: List[List[int]]) -> List[List[int]]:",
+      "java": "public int[][] merge(int[][] intervals)"
+    }
+  },
+  "merge-k-sorted-lists": {
+    "title": "Merge k Sorted Lists",
+    "difficulty": "Hard",
+    "pattern": "Linked List",
+    "summary": "Merge k sorted linked lists into one sorted linked list and return its head.",
+    "example": "[[1,4,5],[1,3,4],[2,6]] → [1,1,2,3,4,4,5,6]",
+    "idea": "Min-heap of list heads: O(N log k). Or divide and conquer, merging pairs.",
+    "spec": {
+      "kind": "method",
+      "name": "mergeKLists",
+      "provided": [
+        "ListNode"
+      ],
+      "py": "def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:",
+      "java": "public ListNode mergeKLists(ListNode[] lists)",
+      "ptypes": [
+        "list[]"
+      ],
+      "rtype": "list",
+      "tests": [
+        [
+          [
+            [
+              [
+                1,
+                4,
+                5
+              ],
+              [
+                1,
+                3,
+                4
+              ],
+              [
+                2,
+                6
+              ]
+            ]
+          ],
+          [
+            1,
+            1,
+            2,
+            3,
+            4,
+            4,
+            5,
+            6
+          ]
+        ],
+        [
+          [
+            []
+          ],
+          []
+        ],
+        [
+          [
+            [
+              []
+            ]
+          ],
+          []
+        ],
+        [
+          [
+            [
+              [
+                2
+              ],
+              [],
+              [
+                1
+              ]
+            ]
+          ],
+          [
+            1,
+            2
+          ]
+        ]
+      ]
+    }
+  },
+  "merge-two-sorted-lists": {
+    "title": "Merge Two Sorted Lists",
+    "difficulty": "Easy",
+    "pattern": "Linked List",
+    "summary": "Merge two sorted linked lists into one sorted list.",
+    "example": "[1,2,4] + [1,3,4] → [1,1,2,3,4,4]",
+    "signature": {
+      "python": "def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:",
+      "java": "public ListNode mergeTwoLists(ListNode list1, ListNode list2)"
+    }
+  },
+  "minimum-window-substring": {
+    "title": "Minimum Window Substring",
+    "difficulty": "Hard",
+    "pattern": "Sliding Window",
+    "summary": "Return the shortest substring of s that contains every character of t (with multiplicity), or \"\".",
+    "example": "s = \"ADOBECODEBANC\", t = \"ABC\" → \"BANC\"",
+    "signature": {
+      "python": "def minWindow(self, s: str, t: str) -> str:",
+      "java": "public String minWindow(String s, String t)"
+    }
+  },
+  "missing-number": {
+    "title": "Missing Number",
+    "difficulty": "Easy",
+    "pattern": "Math & Bits",
+    "summary": "The array holds n distinct numbers from 0 … n. Return the missing one.",
+    "example": "[3,0,1] → 2",
+    "signature": {
+      "python": "def missingNumber(self, nums: List[int]) -> int:",
+      "java": "public int missingNumber(int[] nums)"
+    }
+  },
+  "nested-list-weight-sum-ii": {
+    "title": "Nested List Weight Sum II",
+    "difficulty": "Medium",
+    "pattern": "Graphs",
+    "summary": "You get a nested list of integers. An integer's weight is maxDepth − depth + 1, so the deepest integers weigh 1 and top-level ones weigh the most. Return the sum of every integer times its weight.",
+    "example": "[[1,1],2,[1,1]] → 8   (the 1s weigh 1, the 2 weighs 2)",
+    "idea": "BFS level by level; keep a running sum of all integers seen so far and add it to the total at each level — deeper items get counted fewer times.",
+    "spec": {
+      "kind": "method",
+      "name": "depthSumInverse",
+      "provided": [
+        "NestedInteger"
+      ],
+      "py": "def depthSumInverse(self, nestedList: List[NestedInteger]) -> int:",
+      "java": "public int depthSumInverse(List<NestedInteger> nestedList)",
+      "ptypes": [
+        "nested"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              [
+                1,
+                1
+              ],
+              2,
+              [
+                1,
+                1
+              ]
+            ]
+          ],
+          8
+        ],
+        [
+          [
+            [
+              1,
+              [
+                4,
+                [
+                  6
+                ]
+              ]
+            ]
+          ],
+          17
+        ],
+        [
+          [
+            [
+              5
+            ]
+          ],
+          5
+        ],
+        [
+          [
+            [
+              [
+                [
+                  3
+                ]
+              ],
+              1
+            ]
+          ],
+          6
+        ]
+      ]
+    }
+  },
+  "network-delay-time": {
+    "title": "Network Delay Time",
+    "difficulty": "Medium",
+    "pattern": "Graphs",
+    "summary": "A directed graph has n nodes (1 … n) and travel times [u, v, w]. A signal starts at node k. Return how long until every node has received it, or -1 if some node never does.",
+    "example": "times [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2 → 2",
+    "idea": "Dijkstra from k with a min-heap; answer = max distance, or −1 if any node is unreachable.",
+    "spec": {
+      "kind": "method",
+      "name": "networkDelayTime",
+      "py": "def networkDelayTime(self, times: List[List[int]], n: int, k: int) -> int:",
+      "java": "public int networkDelayTime(int[][] times, int n, int k)",
+      "ptypes": [
+        "int[][]",
+        "int",
+        "int"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              [
+                2,
+                1,
+                1
+              ],
+              [
+                2,
+                3,
+                1
+              ],
+              [
+                3,
+                4,
+                1
+              ]
+            ],
+            4,
+            2
+          ],
+          2
+        ],
+        [
+          [
+            [
+              [
+                1,
+                2,
+                1
+              ]
+            ],
+            2,
+            1
+          ],
+          1
+        ],
+        [
+          [
+            [
+              [
+                1,
+                2,
+                1
+              ]
+            ],
+            2,
+            2
+          ],
+          -1
+        ],
+        [
+          [
+            [
+              [
+                1,
+                2,
+                5
+              ],
+              [
+                1,
+                3,
+                1
+              ],
+              [
+                3,
+                2,
+                1
+              ]
+            ],
+            3,
+            1
+          ],
+          2
+        ]
+      ]
+    }
+  },
+  "non-overlapping-intervals": {
+    "title": "Non-overlapping Intervals",
+    "difficulty": "Medium",
+    "pattern": "Intervals",
+    "summary": "Return the fewest intervals to remove so that the rest don't overlap.",
+    "example": "[[1,2],[2,3],[3,4],[1,3]] → 1",
+    "signature": {
+      "python": "def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:",
+      "java": "public int eraseOverlapIntervals(int[][] intervals)"
+    }
+  },
+  "number-of-1-bits": {
+    "title": "Number of 1 Bits",
+    "difficulty": "Easy",
+    "pattern": "Math & Bits",
+    "summary": "Return how many 1 bits a number has.",
+    "example": "11 (binary 1011) → 3",
+    "signature": {
+      "python": "def hammingWeight(self, n: int) -> int:",
+      "java": "public int hammingWeight(int n)"
+    }
+  },
+  "number-of-connected-components-in-an-undirected-graph": {
+    "title": "Number of Connected Components in an Undirected Graph",
+    "difficulty": "Medium",
+    "pattern": "Graphs",
+    "summary": "Count the connected components of an undirected graph with n nodes.",
+    "example": "n = 5, [[0,1],[1,2],[3,4]] → 2",
+    "signature": {
+      "python": "def countComponents(self, n: int, edges: List[List[int]]) -> int:",
+      "java": "public int countComponents(int n, int[][] edges)"
+    }
+  },
+  "number-of-islands": {
+    "title": "Number of Islands",
+    "difficulty": "Medium",
+    "pattern": "Graphs",
+    "summary": "Given a grid of '1' (land) and '0' (water), count the islands. Land cells belong to the same island when they touch up, down, left or right.",
+    "example": "[['1','1','0'],['0','1','0'],['1','0','1']] → 3",
+    "idea": "For each unvisited '1', count it and flood-fill (BFS/DFS) its island to mark visited. O(m·n).",
+    "spec": {
+      "kind": "method",
+      "name": "numIslands",
+      "py": "def numIslands(self, grid: List[List[str]]) -> int:",
+      "java": "public int numIslands(char[][] grid)",
+      "ptypes": [
+        "char[][]"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              [
+                "1",
+                "1",
+                "0"
+              ],
+              [
+                "0",
+                "1",
+                "0"
+              ],
+              [
+                "1",
+                "0",
+                "1"
+              ]
+            ]
+          ],
+          3
+        ],
+        [
+          [
+            [
+              [
+                "1",
+                "1"
+              ],
+              [
+                "1",
+                "1"
+              ]
+            ]
+          ],
+          1
+        ],
+        [
+          [
+            [
+              [
+                "0"
+              ]
+            ]
+          ],
+          0
+        ],
+        [
+          [
+            [
+              [
+                "1",
+                "0",
+                "1",
+                "0",
+                "1"
+              ]
+            ]
+          ],
+          3
+        ]
+      ]
+    }
+  },
+  "pacific-atlantic-water-flow": {
+    "title": "Pacific Atlantic Water Flow",
+    "difficulty": "Medium",
+    "pattern": "Graphs",
+    "summary": "Water flows to neighbouring cells of equal or lower height. Return the cells that can reach both the Pacific (top/left edges) and the Atlantic (bottom/right edges).",
+    "example": "a height grid → the list of [row, col] cells",
+    "signature": {
+      "python": "def pacificAtlantic(self, heights: List[List[int]]) -> List[List[int]]:",
+      "java": "public List<List<Integer>> pacificAtlantic(int[][] heights)"
+    }
+  },
+  "palindromic-substrings": {
+    "title": "Palindromic Substrings",
+    "difficulty": "Medium",
+    "pattern": "Strings",
+    "summary": "Count the substrings that are palindromes.",
+    "example": "\"aaa\" → 6",
+    "signature": {
+      "python": "def countSubstrings(self, s: str) -> int:",
+      "java": "public int countSubstrings(String s)"
+    }
+  },
+  "product-of-array-except-self": {
+    "title": "Product of Array Except Self",
+    "difficulty": "Medium",
+    "pattern": "Arrays & Hashing",
+    "summary": "Return an array where each position holds the product of every other element. No division; O(n).",
+    "example": "[1,2,3,4] → [24,12,8,6]",
+    "signature": {
+      "python": "def productExceptSelf(self, nums: List[int]) -> List[int]:",
+      "java": "public int[] productExceptSelf(int[] nums)"
+    }
+  },
+  "read-n-characters-given-read4-ii-call-multiple-times": {
+    "title": "Read N Characters Given read4 II - Call Multiple Times",
+    "difficulty": "Hard",
+    "pattern": "Design",
+    "summary": "You can only read a file through read4(buf4), which copies up to 4 characters into buf4 and returns how many it copied. Implement read(buf, n) that copies up to n characters into buf and returns the count. read may be called many times, so characters read4 fetched but you didn't return yet must be kept for the next call.",
+    "example": "file \"abc\": read(1) → \"a\", read(2) → \"bc\", read(1) → \"\"",
+    "idea": "Keep a 4-char buffer + pointer + count as fields across calls; drain the buffer first, call read4 when empty, stop at n or EOF.",
+    "spec": {
+      "kind": "custom",
+      "provided": [
+        "Read4"
+      ],
+      "py_starter": "# The read4 API is provided:\n#   def read4(buf4: List[str]) -> int   (fills buf4[0..3], returns count)\n\nclass Solution:\n    def read(self, buf: List[str], n: int) -> int:\n        pass\n",
+      "java_starter": "/**\n * The read4 API is provided by the parent class:\n *   int read4(char[] buf4)   // fills buf4[0..3], returns count\n */\npublic class Solution extends Reader4 {\n    public int read(char[] buf, int n) {\n\n    }\n}\n",
+      "tests": [
+        [
+          "file \"abc\", read(1), read(2), read(1)",
+          "got = read_calls(\"abc\", [1, 2, 1])",
+          "got = readCalls(\"abc\", new int[]{1, 2, 1});",
+          [
+            "a",
+            "bc",
+            ""
+          ]
+        ],
+        [
+          "file \"abcdefgh\", read(5), read(2), read(4)",
+          "got = read_calls(\"abcdefgh\", [5, 2, 4])",
+          "got = readCalls(\"abcdefgh\", new int[]{5, 2, 4});",
+          [
+            "abcde",
+            "fg",
+            "h"
+          ]
+        ],
+        [
+          "file \"\", read(1)",
+          "got = read_calls(\"\", [1])",
+          "got = readCalls(\"\", new int[]{1});",
+          [
+            ""
+          ]
+        ],
+        [
+          "file \"abcdef\", read(3), read(3), read(3)",
+          "got = read_calls(\"abcdef\", [3, 3, 3])",
+          "got = readCalls(\"abcdef\", new int[]{3, 3, 3});",
+          [
+            "abc",
+            "def",
+            ""
+          ]
+        ]
+      ]
+    }
+  },
+  "remove-nth-node-from-end-of-list": {
+    "title": "Remove Nth Node From End of List",
+    "difficulty": "Medium",
+    "pattern": "Linked List",
+    "summary": "Remove the n-th node from the end of the list, ideally in one pass.",
+    "example": "[1,2,3,4,5], n = 2 → [1,2,3,5]",
+    "signature": {
+      "python": "def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:",
+      "java": "public ListNode removeNthFromEnd(ListNode head, int n)"
+    }
+  },
+  "reorder-list": {
+    "title": "Reorder List",
+    "difficulty": "Medium",
+    "pattern": "Linked List",
+    "summary": "Reorder L0 → L1 → … → Ln into L0 → Ln → L1 → Ln−1 → … in place.",
+    "example": "[1,2,3,4] → [1,4,2,3]",
+    "signature": {
+      "python": "def reorderList(self, head: Optional[ListNode]) -> None:",
+      "java": "public void reorderList(ListNode head)"
+    }
+  },
+  "restore-ip-addresses": {
+    "title": "Restore IP Addresses",
+    "difficulty": "Medium",
+    "pattern": "Backtracking",
+    "summary": "Insert three dots into a digit string to make valid IPv4 addresses. Each part must be 0–255 with no leading zeros, and every digit must be used. Return all possibilities in any order.",
+    "example": "\"0000\" → [\"0.0.0.0\"]",
+    "idea": "Backtrack into 4 parts of 1–3 digits; each ≤ 255 with no leading zeros; must use all digits.",
+    "spec": {
+      "kind": "method",
+      "name": "restoreIpAddresses",
+      "mode": "sort",
+      "py": "def restoreIpAddresses(self, s: str) -> List[str]:",
+      "java": "public List<String> restoreIpAddresses(String s)",
+      "ptypes": [
+        "str"
+      ],
+      "rtype": "list<str>",
+      "tests": [
+        [
+          [
+            "25525511135"
+          ],
+          [
+            "255.255.11.135",
+            "255.255.111.35"
+          ]
+        ],
+        [
+          [
+            "0000"
+          ],
+          [
+            "0.0.0.0"
+          ]
+        ],
+        [
+          [
+            "101023"
+          ],
+          [
+            "1.0.10.23",
+            "1.0.102.3",
+            "10.1.0.23",
+            "10.10.2.3",
+            "101.0.2.3"
+          ]
+        ],
+        [
+          [
+            "1111111111111"
+          ],
+          []
+        ]
+      ]
+    }
+  },
+  "reverse-bits": {
+    "title": "Reverse Bits",
+    "difficulty": "Easy",
+    "pattern": "Math & Bits",
+    "summary": "Reverse the bits of a 32-bit unsigned integer.",
+    "example": "binary 000…1011 → 1101…000",
+    "signature": {
+      "python": "def reverseBits(self, n: int) -> int:",
+      "java": "public int reverseBits(int n)"
+    }
+  },
+  "reverse-linked-list": {
+    "title": "Reverse Linked List",
+    "difficulty": "Easy",
+    "pattern": "Linked List",
+    "summary": "Reverse a singly linked list.",
+    "example": "1 → 2 → 3 → 3 → 2 → 1",
+    "signature": {
+      "python": "def reverseList(self, head: Optional[ListNode]) -> Optional[ListNode]:",
+      "java": "public ListNode reverseList(ListNode head)"
+    }
+  },
+  "rotate-image": {
+    "title": "Rotate Image",
+    "difficulty": "Medium",
+    "pattern": "Matrix",
+    "summary": "Rotate an n×n matrix 90° clockwise in place, without allocating another matrix.",
+    "example": "[[1,2],[3,4]] → [[3,1],[4,2]]",
+    "idea": "Transpose, then reverse each row (clockwise rotation in place).",
+    "spec": {
+      "kind": "custom",
+      "py_starter": "class Solution:\n    def rotate(self, matrix: List[List[int]]) -> None:\n        \"\"\"Rotate matrix in place; return nothing.\"\"\"\n        pass\n",
+      "java_starter": "class Solution {\n    public void rotate(int[][] matrix) {\n\n    }\n}\n",
+      "tests": [
+        [
+          "[[1,2,3],[4,5,6],[7,8,9]]",
+          "m = [[1,2,3],[4,5,6],[7,8,9]]\nSolution().rotate(m)\ngot = m",
+          "int[][] m = {{1,2,3},{4,5,6},{7,8,9}};\nnew Solution().rotate(m);\ngot = m;",
+          [
+            [
+              7,
+              4,
+              1
+            ],
+            [
+              8,
+              5,
+              2
+            ],
+            [
+              9,
+              6,
+              3
+            ]
+          ]
+        ],
+        [
+          "[[1,2],[3,4]]",
+          "m = [[1,2],[3,4]]\nSolution().rotate(m)\ngot = m",
+          "int[][] m = {{1,2},{3,4}};\nnew Solution().rotate(m);\ngot = m;",
+          [
+            [
+              3,
+              1
+            ],
+            [
+              4,
+              2
+            ]
+          ]
+        ],
+        [
+          "[[1]]",
+          "m = [[1]]\nSolution().rotate(m)\ngot = m",
+          "int[][] m = {{1}};\nnew Solution().rotate(m);\ngot = m;",
+          [
+            [
+              1
+            ]
+          ]
+        ]
+      ]
+    }
+  },
+  "same-tree": {
+    "title": "Same Tree",
+    "difficulty": "Easy",
+    "pattern": "Trees",
+    "summary": "Are two binary trees identical in shape and values?",
+    "example": "[1,2,3] and [1,2,3] → true",
+    "signature": {
+      "python": "def isSameTree(self, p: Optional[TreeNode], q: Optional[TreeNode]) -> bool:",
+      "java": "public boolean isSameTree(TreeNode p, TreeNode q)"
+    }
+  },
+  "search-in-rotated-sorted-array": {
+    "title": "Search in Rotated Sorted Array",
+    "difficulty": "Medium",
+    "pattern": "Binary Search",
+    "summary": "Search a rotated sorted array of distinct values for target. Return its index, or -1, in O(log n).",
+    "example": "[4,5,6,7,0,1,2], target 0 → 4",
+    "signature": {
+      "python": "def search(self, nums: List[int], target: int) -> int:",
+      "java": "public int search(int[] nums, int target)"
+    }
+  },
+  "second-minimum-node-in-a-binary-tree": {
+    "title": "Second Minimum Node In a Binary Tree",
+    "difficulty": "Easy",
+    "pattern": "Trees",
+    "summary": "In this special tree every node has 0 or 2 children, and a parent's value is the smaller of its children's values. Return the second smallest distinct value in the tree, or -1 if there isn't one.",
+    "example": "[2,2,5,null,null,5,7] → 5",
+    "idea": "Root is the minimum; DFS for the smallest value &gt; root.val, pruning below nodes already &gt; root.val.",
+    "spec": {
+      "kind": "method",
+      "name": "findSecondMinimumValue",
+      "provided": [
+        "TreeNode"
+      ],
+      "py": "def findSecondMinimumValue(self, root: Optional[TreeNode]) -> int:",
+      "java": "public int findSecondMinimumValue(TreeNode root)",
+      "ptypes": [
+        "tree"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              2,
+              2,
+              5,
+              null,
+              null,
+              5,
+              7
+            ]
+          ],
+          5
+        ],
+        [
+          [
+            [
+              2,
+              2,
+              2
+            ]
+          ],
+          -1
+        ],
+        [
+          [
+            [
+              1,
+              1,
+              2,
+              1,
+              1,
+              2,
+              3
+            ]
+          ],
+          2
+        ]
+      ]
+    }
+  },
+  "serialize-and-deserialize-binary-tree": {
+    "title": "Serialize and Deserialize Binary Tree",
+    "difficulty": "Hard",
+    "pattern": "Trees",
+    "summary": "Design a way to turn a binary tree into a string and back.",
+    "example": "[1,2,3,null,null,4,5] → string → the same tree",
+    "starters": {
+      "python": "class Codec:\n\n    def serialize(self, root: Optional[TreeNode]) -> str:\n        pass\n\n    def deserialize(self, data: str) -> Optional[TreeNode]:\n        pass\n",
+      "java": "public class Codec {\n\n    public String serialize(TreeNode root) {\n\n    }\n\n    public TreeNode deserialize(String data) {\n\n    }\n}\n"
+    }
+  },
+  "set-matrix-zeroes": {
+    "title": "Set Matrix Zeroes",
+    "difficulty": "Medium",
+    "pattern": "Matrix",
+    "summary": "If a cell is 0, set its whole row and column to 0, in place.",
+    "example": "[[1,1,1],[1,0,1],[1,1,1]] → [[1,0,1],[0,0,0],[1,0,1]]",
+    "signature": {
+      "python": "def setZeroes(self, matrix: List[List[int]]) -> None:",
+      "java": "public void setZeroes(int[][] matrix)"
+    }
+  },
+  "shortest-word-distance-ii": {
+    "title": "Shortest Word Distance II",
+    "difficulty": "Medium",
+    "pattern": "Design",
+    "summary": "Design a class built once from a word list and then asked many times: shortest(word1, word2) returns the smallest index distance between the two (different) words.",
+    "example": "[a, b, c, a, d, b]: shortest(a, b) = 1, shortest(c, d) = 2",
+    "idea": "Preprocess word → sorted index list; per query, two-pointer walk over both lists advancing the smaller.",
+    "spec": {
+      "kind": "ops",
+      "cls": "WordDistance",
+      "ctor": [
+        "str[]"
+      ],
+      "methods": {
+        "shortest": [
+          [
+            "str",
+            "str"
+          ],
+          "int"
+        ]
+      },
+      "tests": [
+        [
+          [
+            "WordDistance",
+            "shortest",
+            "shortest",
+            "shortest"
+          ],
+          [
+            [
+              [
+                "a",
+                "b",
+                "c",
+                "a",
+                "d",
+                "b"
+              ]
+            ],
+            [
+              "a",
+              "b"
+            ],
+            [
+              "c",
+              "d"
+            ],
+            [
+              "d",
+              "a"
+            ]
+          ],
+          [
+            null,
+            1,
+            2,
+            1
+          ]
+        ],
+        [
+          [
+            "WordDistance",
+            "shortest",
+            "shortest"
+          ],
+          [
+            [
+              [
+                "practice",
+                "makes",
+                "perfect",
+                "coding",
+                "makes"
+              ]
+            ],
+            [
+              "coding",
+              "practice"
+            ],
+            [
+              "makes",
+              "coding"
+            ]
+          ],
+          [
+            null,
+            3,
+            1
+          ]
+        ]
+      ]
+    }
+  },
+  "sliding-window-maximum": {
+    "title": "Sliding Window Maximum",
+    "difficulty": "Hard",
+    "pattern": "Sliding Window",
+    "summary": "A window of size k slides from left to right across the array. Return the maximum of each window position.",
+    "example": "[1,3,-1,-3,5,3,6,7], k = 3 → [3,3,5,5,6,7]",
+    "idea": "Monotonic deque of indices with decreasing values; drop the front when it leaves the window. O(n).",
+    "spec": {
+      "kind": "method",
+      "name": "maxSlidingWindow",
+      "py": "def maxSlidingWindow(self, nums: List[int], k: int) -> List[int]:",
+      "java": "public int[] maxSlidingWindow(int[] nums, int k)",
+      "ptypes": [
+        "int[]",
+        "int"
+      ],
+      "rtype": "int[]",
+      "tests": [
+        [
+          [
+            [
+              1,
+              3,
+              -1,
+              -3,
+              5,
+              3,
+              6,
+              7
+            ],
+            3
+          ],
+          [
+            3,
+            3,
+            5,
+            5,
+            6,
+            7
+          ]
+        ],
+        [
+          [
+            [
+              1
+            ],
+            1
+          ],
+          [
+            1
+          ]
+        ],
+        [
+          [
+            [
+              9,
+              8,
+              7
+            ],
+            2
+          ],
+          [
+            9,
+            8
+          ]
+        ],
+        [
+          [
+            [
+              1,
+              -1
+            ],
+            1
+          ],
+          [
+            1,
+            -1
+          ]
+        ]
+      ]
+    }
+  },
+  "spiral-matrix": {
+    "title": "Spiral Matrix",
+    "difficulty": "Medium",
+    "pattern": "Matrix",
+    "summary": "Return the matrix's elements in clockwise spiral order.",
+    "example": "[[1,2,3],[4,5,6],[7,8,9]] → [1,2,3,6,9,8,7,4,5]",
+    "signature": {
+      "python": "def spiralOrder(self, matrix: List[List[int]]) -> List[int]:",
+      "java": "public List<Integer> spiralOrder(int[][] matrix)"
+    }
+  },
+  "subtree-of-another-tree": {
+    "title": "Subtree of Another Tree",
+    "difficulty": "Easy",
+    "pattern": "Trees",
+    "summary": "Is subRoot identical to some subtree of root?",
+    "example": "root [3,4,5,1,2], subRoot [4,1,2] → true",
+    "signature": {
+      "python": "def isSubtree(self, root: Optional[TreeNode], subRoot: Optional[TreeNode]) -> bool:",
+      "java": "public boolean isSubtree(TreeNode root, TreeNode subRoot)"
+    }
+  },
+  "sum-of-two-integers": {
+    "title": "Sum of Two Integers",
+    "difficulty": "Medium",
+    "pattern": "Math & Bits",
+    "summary": "Add two integers without using + or −.",
+    "example": "a = 2, b = 3 → 5",
+    "signature": {
+      "python": "def getSum(self, a: int, b: int) -> int:",
+      "java": "public int getSum(int a, int b)"
+    }
+  },
+  "top-k-frequent-elements": {
+    "title": "Top K Frequent Elements",
+    "difficulty": "Medium",
+    "pattern": "Heap",
+    "summary": "Return the k values that appear most often, in any order. The answer is guaranteed to be unique.",
+    "example": "[1,1,1,2,2,3], k = 2 → [1,2]",
+    "idea": "Count with a map, then bucket by frequency (O(n)) or keep a min-heap of size k.",
+    "spec": {
+      "kind": "method",
+      "name": "topKFrequent",
+      "mode": "sort",
+      "py": "def topKFrequent(self, nums: List[int], k: int) -> List[int]:",
+      "java": "public int[] topKFrequent(int[] nums, int k)",
+      "ptypes": [
+        "int[]",
+        "int"
+      ],
+      "rtype": "int[]",
+      "tests": [
+        [
+          [
+            [
+              1,
+              1,
+              1,
+              2,
+              2,
+              3
+            ],
+            2
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            [
+              4
+            ],
+            1
+          ],
+          [
+            4
+          ]
+        ],
+        [
+          [
+            [
+              5,
+              5,
+              6,
+              6,
+              6,
+              7
+            ],
+            1
+          ],
+          [
+            6
+          ]
+        ]
+      ]
+    }
+  },
+  "trapping-rain-water": {
+    "title": "Trapping Rain Water",
+    "difficulty": "Hard",
+    "pattern": "Two Pointers",
+    "summary": "Bar heights are given left to right, each bar 1 unit wide. Return how many units of rain water are trapped between the bars.",
+    "example": "[4,2,0,3,2,5] → 9",
+    "idea": "Two pointers with leftMax/rightMax; move the side with the smaller max and add max − height. O(1) space.",
+    "spec": {
+      "kind": "method",
+      "name": "trap",
+      "py": "def trap(self, height: List[int]) -> int:",
+      "java": "public int trap(int[] height)",
+      "ptypes": [
+        "int[]"
+      ],
+      "rtype": "int",
+      "tests": [
+        [
+          [
+            [
+              0,
+              1,
+              0,
+              2,
+              1,
+              0,
+              1,
+              3,
+              2,
+              1,
+              2,
+              1
+            ]
+          ],
+          6
+        ],
+        [
+          [
+            [
+              4,
+              2,
+              0,
+              3,
+              2,
+              5
+            ]
+          ],
+          9
+        ],
+        [
+          [
+            [
+              1,
+              2,
+              3
+            ]
+          ],
+          0
+        ]
+      ]
+    }
+  },
+  "two-sum": {
+    "title": "Two Sum",
+    "difficulty": "Easy",
+    "pattern": "Arrays & Hashing",
+    "summary": "Return the indices of the two numbers that add up to target. Exactly one answer exists, and you can't use the same element twice.",
+    "example": "[2,7,11,15], target 9 → [0,1]",
+    "idea": "One pass with a map value → index; look up target − x before inserting x.",
+    "spec": {
+      "kind": "method",
+      "name": "twoSum",
+      "mode": "sort",
+      "py": "def twoSum(self, nums: List[int], target: int) -> List[int]:",
+      "java": "public int[] twoSum(int[] nums, int target)",
+      "ptypes": [
+        "int[]",
+        "int"
+      ],
+      "rtype": "int[]",
+      "tests": [
+        [
+          [
+            [
+              2,
+              7,
+              11,
+              15
+            ],
+            9
+          ],
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          [
+            [
+              3,
+              2,
+              4
+            ],
+            6
+          ],
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            [
+              3,
+              3
+            ],
+            6
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      ]
+    }
+  },
+  "unique-paths": {
+    "title": "Unique Paths",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "A robot on an m×n grid moves only right or down. Count the paths from the top-left to the bottom-right.",
+    "example": "m = 3, n = 7 → 28",
+    "signature": {
+      "python": "def uniquePaths(self, m: int, n: int) -> int:",
+      "java": "public int uniquePaths(int m, int n)"
+    }
+  },
+  "valid-anagram": {
+    "title": "Valid Anagram",
+    "difficulty": "Easy",
+    "pattern": "Arrays & Hashing",
+    "summary": "Are the two strings anagrams of each other?",
+    "example": "\"anagram\", \"nagaram\" → true",
+    "signature": {
+      "python": "def isAnagram(self, s: str, t: str) -> bool:",
+      "java": "public boolean isAnagram(String s, String t)"
+    }
+  },
+  "valid-palindrome": {
+    "title": "Valid Palindrome",
+    "difficulty": "Easy",
+    "pattern": "Two Pointers",
+    "summary": "Ignoring case and non-alphanumeric characters, is the string a palindrome?",
+    "example": "\"A man, a plan, a canal: Panama\" → true",
+    "signature": {
+      "python": "def isPalindrome(self, s: str) -> bool:",
+      "java": "public boolean isPalindrome(String s)"
+    }
+  },
+  "valid-parentheses": {
+    "title": "Valid Parentheses",
+    "difficulty": "Easy",
+    "pattern": "Stack",
+    "summary": "A string contains only ()[]{}. Return whether every bracket is closed by the same type of bracket, in the correct order.",
+    "example": "\"{[]}\" → true,  \"([)]\" → false",
+    "idea": "Stack of open brackets; each closing bracket must match the top; stack empty at the end.",
+    "spec": {
+      "kind": "method",
+      "name": "isValid",
+      "py": "def isValid(self, s: str) -> bool:",
+      "java": "public boolean isValid(String s)",
+      "ptypes": [
+        "str"
+      ],
+      "rtype": "bool",
+      "tests": [
+        [
+          [
+            "()[]{}"
+          ],
+          true
+        ],
+        [
+          [
+            "(]"
+          ],
+          false
+        ],
+        [
+          [
+            "([)]"
+          ],
+          false
+        ],
+        [
+          [
+            "{[]}"
+          ],
+          true
+        ],
+        [
+          [
+            "("
+          ],
+          false
+        ],
+        [
+          [
+            "]"
+          ],
+          false
+        ]
+      ]
+    }
+  },
+  "validate-binary-search-tree": {
+    "title": "Validate Binary Search Tree",
+    "difficulty": "Medium",
+    "pattern": "Trees",
+    "summary": "Is the tree a valid BST (left subtree < node < right subtree, recursively)?",
+    "example": "[5,1,4,null,null,3,6] → false",
+    "signature": {
+      "python": "def isValidBST(self, root: Optional[TreeNode]) -> bool:",
+      "java": "public boolean isValidBST(TreeNode root)"
+    }
+  },
+  "word-break": {
+    "title": "Word Break",
+    "difficulty": "Medium",
+    "pattern": "Dynamic Programming",
+    "summary": "Return whether s can be split into a sequence of dictionary words (words can be reused).",
+    "example": "\"leetcode\", [leet, code] → true",
+    "signature": {
+      "python": "def wordBreak(self, s: str, wordDict: List[str]) -> bool:",
+      "java": "public boolean wordBreak(String s, List<String> wordDict)"
+    }
+  },
+  "word-search": {
+    "title": "Word Search",
+    "difficulty": "Medium",
+    "pattern": "Backtracking",
+    "summary": "Can the word be spelled by moving between adjacent cells, using each cell at most once?",
+    "example": "grid with ABCE/SFCS/ADEE, \"ABCCED\" → true",
+    "signature": {
+      "python": "def exist(self, board: List[List[str]], word: str) -> bool:",
+      "java": "public boolean exist(char[][] board, String word)"
+    }
+  },
+  "word-search-ii": {
+    "title": "Word Search II",
+    "difficulty": "Hard",
+    "pattern": "Tries",
+    "summary": "Return every dictionary word that can be traced in the letter grid.",
+    "example": "grid + [oath, pea, eat, rain] → [eat, oath]",
+    "starters": {
+      "python": "class Solution:\n    def findWords(self, board: List[List[str]], words: List[str]) -> List[str]:\n        pass\n",
+      "java": "class Solution {\n    public List<String> findWords(char[][] board, String[] words) {\n\n    }\n}\n"
+    }
+  }
+}
