@@ -1,0 +1,236 @@
+{
+  "_note": "Cards for the Data Structures and Algorithm Patterns sections. 'pattern' must match a name in patterns.json (it links problems and videos); 'group' picks the section; 'title' is the card heading (defaults to the pattern).",
+  "techniques": [
+    {
+      "pattern": "Arrays & Hashing",
+      "spot": [
+        "Need to look something up fast (seen before? how many?)",
+        "Counting, grouping, de-duplicating",
+        "Pair/complement questions (x and target − x)"
+      ],
+      "idea": "Trade memory for time: a HashMap/HashSet turns repeated O(n) scans into O(1) lookups. Prefix sums answer range-sum questions in O(1).",
+      "complexity": "O(n) time, O(n) space",
+      "template": "Map<Integer, Integer> count = new HashMap<Integer, Integer>();\nfor (int x : nums) {\n    count.put(x, count.getOrDefault(x, 0) + 1);\n}\n\n// prefix sums: sum of nums[i..j] = prefix[j + 1] - prefix[i]\nint[] prefix = new int[nums.length + 1];\nfor (int i = 0; i < nums.length; i++) prefix[i + 1] = prefix[i] + nums[i];",
+      "group": "Data Structures",
+      "title": "Arrays & Hash Maps"
+    },
+    {
+      "pattern": "Linked List",
+      "spot": [
+        "Reverse, reorder, merge lists",
+        "Cycle or middle node",
+        "Remove n-th from end"
+      ],
+      "idea": "Use a dummy head to avoid edge cases, fast/slow pointers for middle and cycles, and re-link pointers carefully (save next first).",
+      "complexity": "O(n) time, O(1) space",
+      "template": "// reverse\nListNode prev = null, cur = head;\nwhile (cur != null) {\n    ListNode next = cur.next;   // save before re-linking\n    cur.next = prev;\n    prev = cur;\n    cur = next;\n}\n// fast/slow: slow ends at the middle; they meet iff there's a cycle\nListNode slow = head, fast = head;\nwhile (fast != null && fast.next != null) { slow = slow.next; fast = fast.next.next; }",
+      "group": "Data Structures",
+      "title": "Linked Lists"
+    },
+    {
+      "pattern": "Stack",
+      "spot": [
+        "Matching pairs (brackets)",
+        "Most recent unfinished item (function calls, nested strings)",
+        "Next greater/smaller element → monotonic stack"
+      ],
+      "idea": "A stack remembers what's still open. A monotonic stack keeps elements in sorted order and pops the ones a new element 'beats'.",
+      "complexity": "O(n): each element pushed and popped once",
+      "template": "Deque<Integer> stack = new ArrayDeque<Integer>();   // indices, values decreasing\nint[] nextGreater = new int[nums.length];\nArrays.fill(nextGreater, -1);\nfor (int i = 0; i < nums.length; i++) {\n    while (!stack.isEmpty() && nums[stack.peek()] < nums[i]) {\n        nextGreater[stack.pop()] = nums[i];\n    }\n    stack.push(i);\n}",
+      "group": "Data Structures",
+      "title": "Stacks & Queues"
+    },
+    {
+      "pattern": "Heap",
+      "spot": [
+        "k largest / smallest / most frequent",
+        "Merge k sorted things",
+        "Repeatedly take the best next option (scheduling, Dijkstra)"
+      ],
+      "idea": "A PriorityQueue gives the min (or max) in O(1) and updates in O(log n). For 'top k', keep a heap of size k.",
+      "complexity": "O(n log k)",
+      "template": "// k largest: keep a MIN-heap of size k\nPriorityQueue<Integer> heap = new PriorityQueue<Integer>();\nfor (int x : nums) {\n    heap.offer(x);\n    if (heap.size() > k) heap.poll();    // drop the smallest\n}\n// heap.peek() is the k-th largest\n\nPriorityQueue<Integer> maxHeap = new PriorityQueue<Integer>(Collections.reverseOrder());",
+      "group": "Data Structures",
+      "title": "Heaps & Priority Queues"
+    },
+    {
+      "pattern": "Trees",
+      "spot": [
+        "Anything on a binary tree / BST",
+        "Depth, paths, ancestors, level order",
+        "BST → inorder is sorted"
+      ],
+      "idea": "Most tree problems are one recursive function: solve left, solve right, combine. Use BFS with a queue when the problem is about levels.",
+      "complexity": "O(n) time, O(height) recursion",
+      "template": "int dfs(TreeNode node) {\n    if (node == null) return 0;            // base case\n    int left = dfs(node.left);\n    int right = dfs(node.right);\n    return 1 + Math.max(left, right);      // combine (here: height)\n}\n\n// level order\nQueue<TreeNode> q = new ArrayDeque<TreeNode>();\nq.offer(root);\nwhile (!q.isEmpty()) {\n    int size = q.size();\n    for (int i = 0; i < size; i++) {\n        TreeNode n = q.poll();\n        if (n.left != null) q.offer(n.left);\n        if (n.right != null) q.offer(n.right);\n    }\n}",
+      "group": "Data Structures",
+      "title": "Trees & BSTs"
+    },
+    {
+      "pattern": "Tries",
+      "spot": [
+        "Many words + prefix queries",
+        "Autocomplete, word search in a grid",
+        "Wildcard matching over a dictionary"
+      ],
+      "idea": "A tree of characters: each path from the root spells a prefix. Lookups cost O(word length), independent of how many words are stored.",
+      "complexity": "O(L) per insert/search",
+      "template": "class TrieNode {\n    TrieNode[] next = new TrieNode[26];\n    boolean isWord;\n}\nvoid insert(TrieNode root, String word) {\n    TrieNode cur = root;\n    for (char c : word.toCharArray()) {\n        if (cur.next[c - 'a'] == null) cur.next[c - 'a'] = new TrieNode();\n        cur = cur.next[c - 'a'];\n    }\n    cur.isWord = true;\n}",
+      "group": "Data Structures",
+      "title": "Tries"
+    },
+    {
+      "pattern": "Graphs",
+      "spot": [
+        "Grids (islands, flood fill)",
+        "Dependencies / prerequisites → topological sort",
+        "Shortest path: BFS (unweighted), Dijkstra (weighted)",
+        "Connected components → DFS or Union-Find"
+      ],
+      "idea": "Model cells or items as nodes, then BFS/DFS with a visited set. Topological sort for ordering, Dijkstra with a heap for weighted shortest paths.",
+      "complexity": "O(V + E); Dijkstra O(E log V)",
+      "template": "int[][] dirs = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};\nboolean[][] seen = new boolean[rows][cols];\nQueue<int[]> q = new ArrayDeque<int[]>();\nq.offer(new int[]{sr, sc});\nseen[sr][sc] = true;\nwhile (!q.isEmpty()) {\n    int[] cur = q.poll();\n    for (int[] d : dirs) {\n        int r = cur[0] + d[0], c = cur[1] + d[1];\n        if (r < 0 || c < 0 || r >= rows || c >= cols || seen[r][c]) continue;\n        seen[r][c] = true;\n        q.offer(new int[]{r, c});\n    }\n}",
+      "group": "Data Structures",
+      "title": "Graphs"
+    },
+    {
+      "pattern": "Matrix",
+      "spot": [
+        "2-D grid transformations",
+        "Rotate, spiral, set zeroes"
+      ],
+      "idea": "Work layer by layer, or with index formulas. Rotate 90° clockwise = transpose + reverse each row.",
+      "complexity": "O(rows × cols)",
+      "template": "// rotate n×n clockwise in place\nfor (int i = 0; i < n; i++)\n    for (int j = i + 1; j < n; j++) { int t = m[i][j]; m[i][j] = m[j][i]; m[j][i] = t; }\nfor (int[] row : m)\n    for (int i = 0, j = n - 1; i < j; i++, j--) { int t = row[i]; row[i] = row[j]; row[j] = t; }",
+      "group": "Data Structures",
+      "title": "Matrices (2-D grids)"
+    },
+    {
+      "pattern": "Two Pointers",
+      "spot": [
+        "Sorted array, or you can sort it",
+        "Pairs/triplets with a target sum",
+        "Compare from both ends (palindromes, container)",
+        "In-place partition or merge"
+      ],
+      "idea": "Move two indices toward each other (or one fast, one slow). Each step discards options you can prove won't help, so the whole scan is O(n).",
+      "complexity": "O(n) after an O(n log n) sort if needed",
+      "template": "int left = 0, right = nums.length - 1;\nwhile (left < right) {\n    int sum = nums[left] + nums[right];\n    if (sum == target) { /* found */ left++; right--; }\n    else if (sum < target) left++;       // need a bigger sum\n    else right--;                        // need a smaller sum\n}",
+      "group": "Algorithm Patterns"
+    },
+    {
+      "pattern": "Sliding Window",
+      "spot": [
+        "Contiguous subarray / substring",
+        "Longest / shortest / count with a condition",
+        "\"At most k\" distinct, zeros, replacements"
+      ],
+      "idea": "Grow the window on the right; when it breaks the rule, shrink from the left until it's valid again. Every element enters and leaves once.",
+      "complexity": "O(n) time",
+      "template": "int left = 0, best = 0;\nMap<Character, Integer> inWindow = new HashMap<Character, Integer>();\nfor (int right = 0; right < s.length(); right++) {\n    char c = s.charAt(right);\n    inWindow.put(c, inWindow.getOrDefault(c, 0) + 1);\n    while (/* window is invalid */ inWindow.get(c) > 1) {\n        char out = s.charAt(left++);\n        inWindow.put(out, inWindow.get(out) - 1);\n    }\n    best = Math.max(best, right - left + 1);\n}",
+      "group": "Algorithm Patterns"
+    },
+    {
+      "pattern": "Binary Search",
+      "spot": [
+        "Sorted input",
+        "\"Minimum x such that…\" / \"maximum x such that…\"",
+        "Answer space is monotonic (Koko speed, capacity, days)"
+      ],
+      "idea": "Keep an invariant on [lo, hi) and halve it. Works on indices AND on the answer itself when a feasibility check is monotonic.",
+      "complexity": "O(log n), or O(n log range) on the answer",
+      "template": "// first index where condition(mid) is true (condition goes false...false, true...true)\nint lo = 0, hi = n;                 // hi = n means \"not found\"\nwhile (lo < hi) {\n    int mid = lo + (hi - lo) / 2;   // avoids int overflow\n    if (condition(mid)) hi = mid;\n    else lo = mid + 1;\n}\nreturn lo;",
+      "group": "Algorithm Patterns"
+    },
+    {
+      "pattern": "Intervals",
+      "spot": [
+        "Ranges [start, end]",
+        "Merge / insert / overlap / rooms needed"
+      ],
+      "idea": "Sort by start, then sweep: merge when the next start ≤ current end. For 'how many at once', sort starts and ends separately or use a min-heap of end times.",
+      "complexity": "O(n log n)",
+      "template": "Arrays.sort(intervals, new Comparator<int[]>() {\n    public int compare(int[] a, int[] b) { return Integer.compare(a[0], b[0]); }\n});\nList<int[]> merged = new ArrayList<int[]>();\nfor (int[] cur : intervals) {\n    if (!merged.isEmpty() && cur[0] <= merged.get(merged.size() - 1)[1]) {\n        int[] last = merged.get(merged.size() - 1);\n        last[1] = Math.max(last[1], cur[1]);\n    } else {\n        merged.add(cur);\n    }\n}",
+      "group": "Algorithm Patterns"
+    },
+    {
+      "pattern": "Backtracking",
+      "spot": [
+        "\"All\" combinations / permutations / subsets",
+        "Build a solution step by step with choices",
+        "Constraint search (IP addresses, partitions, N-Queens)"
+      ],
+      "idea": "It's DFS on a tree of choices that you build as you go. Choose → recurse → un-choose (path.remove). Two questions: what are the choices at each step, and when is a path complete?",
+      "complexity": "Exponential: about O(branches^depth)",
+      "template": "void backtrack(List<Integer> path, boolean[] used, int[] nums, List<List<Integer>> out) {\n    if (path.size() == nums.length) {          // complete?\n        out.add(new ArrayList<Integer>(path)); // copy!\n        return;\n    }\n    for (int i = 0; i < nums.length; i++) {    // choices\n        if (used[i]) continue;\n        used[i] = true; path.add(nums[i]);     // choose\n        backtrack(path, used, nums, out);      // explore\n        path.remove(path.size() - 1); used[i] = false;   // un-choose\n    }\n}",
+      "group": "Algorithm Patterns"
+    },
+    {
+      "pattern": "Dynamic Programming",
+      "spot": [
+        "Count ways / min cost / max value",
+        "Choices at each step and overlapping subproblems",
+        "\"Can you…\" over prefixes, grids, intervals"
+      ],
+      "idea": "Define dp[state] = answer for a smaller problem, write the recurrence from earlier states, fill in order (or memoize the recursion).",
+      "complexity": "O(states × transitions)",
+      "template": "// 1-D: house robber style\nint prev2 = 0, prev1 = 0;\nfor (int x : nums) {\n    int cur = Math.max(prev1, prev2 + x);   // skip, or take\n    prev2 = prev1;\n    prev1 = cur;\n}\n// memoized recursion\nMap<Integer, Integer> memo = new HashMap<Integer, Integer>();\nint solve(int i) {\n    if (i >= n) return 0;\n    if (memo.containsKey(i)) return memo.get(i);\n    int ans = /* combine solve(i + 1), solve(i + 2), ... */ 0;\n    memo.put(i, ans);\n    return ans;\n}",
+      "group": "Algorithm Patterns"
+    },
+    {
+      "pattern": "Greedy",
+      "spot": [
+        "A locally best choice provably leads to the global best",
+        "Scheduling, jumps, partitions, planting"
+      ],
+      "idea": "Make the best choice now and never revisit it. Always sanity-check with a counterexample or an exchange argument before trusting it.",
+      "complexity": "Usually O(n) or O(n log n) with sorting",
+      "template": "int count = 0;\nfor (int i = 0; i < bed.length; i++) {\n    boolean leftFree = i == 0 || bed[i - 1] == 0;\n    boolean rightFree = i == bed.length - 1 || bed[i + 1] == 0;\n    if (bed[i] == 0 && leftFree && rightFree) {   // take it as soon as it's safe\n        bed[i] = 1;\n        count++;\n    }\n}",
+      "group": "Algorithm Patterns"
+    },
+    {
+      "pattern": "Strings",
+      "spot": [
+        "Palindromes, parsing, formatting",
+        "Character counts, expansion around a center"
+      ],
+      "idea": "Use StringBuilder for building, char arrays or int[26] for counts, and 'expand around center' for palindromes.",
+      "complexity": "Often O(n) or O(n²)",
+      "template": "// expand around center (odd and even lengths)\nint expand(String s, int l, int r) {\n    while (l >= 0 && r < s.length() && s.charAt(l) == s.charAt(r)) { l--; r++; }\n    return r - l - 1;   // length of the palindrome\n}\nStringBuilder sb = new StringBuilder();\nsb.append('a'); sb.reverse(); String out = sb.toString();",
+      "group": "Algorithm Patterns"
+    },
+    {
+      "pattern": "Math & Bits",
+      "spot": [
+        "Powers, square roots, divisibility",
+        "Bit counting, XOR tricks",
+        "Geometry (slopes)"
+      ],
+      "idea": "Look for a formula or invariant. Use long to avoid overflow, gcd to normalize ratios, n & (n − 1) to drop the lowest set bit.",
+      "complexity": "Often O(1) or O(log n)",
+      "template": "// fast power\ndouble pow(double x, long n) {\n    if (n < 0) { x = 1 / x; n = -n; }\n    double result = 1;\n    while (n > 0) {\n        if ((n & 1) == 1) result *= x;\n        x *= x;\n        n >>= 1;\n    }\n    return result;\n}\nint gcd(int a, int b) { return b == 0 ? a : gcd(b, a % b); }",
+      "group": "Algorithm Patterns"
+    },
+    {
+      "pattern": "Design",
+      "spot": [
+        "\"Implement a class that supports…\"",
+        "Each operation must be O(1) / O(log n)"
+      ],
+      "idea": "Combine structures so each one covers what the others can't: HashMap + doubly linked list (LRU), list + index map (random O(1)), TreeMap for ordered access.",
+      "complexity": "Per-operation targets are the spec",
+      "template": "// HashMap + doubly linked list skeleton (LRU, Max Stack, All O'one)\nclass Node { int key, val; Node prev, next; Node(int k, int v) { key = k; val = v; } }\nNode head = new Node(0, 0), tail = new Node(0, 0);   // sentinels: head.next = tail; tail.prev = head;\nMap<Integer, Node> map = new HashMap<Integer, Node>();\nvoid unlink(Node n) { n.prev.next = n.next; n.next.prev = n.prev; }\nvoid addFront(Node n) { n.next = head.next; n.prev = head; head.next.prev = n; head.next = n; }",
+      "group": "Algorithm Patterns"
+    },
+    {
+      "pattern": "Concurrency",
+      "spot": [
+        "Threads coordinating access (bounded queue, H2O)"
+      ],
+      "idea": "Guard shared state with a lock; wait on conditions in a while loop; signal the other side after changing state. Semaphores work for counting resources.",
+      "complexity": "—",
+      "template": "ReentrantLock lock = new ReentrantLock();\nCondition notFull = lock.newCondition(), notEmpty = lock.newCondition();\nvoid put(int x) throws InterruptedException {\n    lock.lock();\n    try {\n        while (queue.size() == capacity) notFull.await();   // while, not if\n        queue.addLast(x);\n        notEmpty.signal();\n    } finally { lock.unlock(); }\n}",
+      "group": "Algorithm Patterns"
+    }
+  ]
+}

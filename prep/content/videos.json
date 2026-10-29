@@ -1,0 +1,84 @@
+{
+  "_how_to_add": [
+    "Easiest: python3 add_video.py <youtube-url> --pattern Backtracking   (fills in title/channel automatically)",
+    "Or add an object to 'videos' by hand. Only 'url' and 'patterns' are required.",
+    "patterns: names from content/patterns.json (e.g. 'Sliding Window'). problems: optional LeetCode slugs (e.g. 'two-sum').",
+    "chapters: optional list of 'm:ss Label' (or 'h:mm:ss Label') strings — they become clickable timestamps."
+  ],
+  "videos": [
+    {
+      "url": "https://www.youtube.com/watch?v=Ak-fxEwAR14",
+      "title": "Backtracking was HARD until I learned it this way | Backtracking tutorial",
+      "channel": "AlgoMonster",
+      "duration": "5:50",
+      "patterns": [
+        "Backtracking"
+      ],
+      "problems": [],
+      "chapters": [
+        "0:00 The Backtracking Fear",
+        "0:36 Why Nested Loops Fail",
+        "1:03 Building the Tree Intuition",
+        "1:47 Backtracking is Just DFS",
+        "2:25 What path.pop() Actually Does",
+        "3:36 The 2-Question Framework",
+        "4:05 Writing the Code",
+        "4:21 Full Code Walkthrough (n = 2)",
+        "5:15 Summary & How to Spot Backtracking Problems"
+      ],
+      "links": [
+        {
+          "label": "Interactive backtracking visualizer",
+          "url": "https://algo.monster/problems/backtracking"
+        }
+      ],
+      "notes": "",
+      "added": "2026-10-29"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=q6qG3CxbI3o",
+      "title": "Learning Graphs is easy once you watch this!",
+      "channel": "AlgoMonster",
+      "duration": "",
+      "patterns": [
+        "Graphs"
+      ],
+      "problems": [],
+      "chapters": [],
+      "links": [
+        {
+          "label": "BFS",
+          "url": "https://algo.monster/problems/graph_bfs"
+        },
+        {
+          "label": "DFS",
+          "url": "https://algo.monster/problems/graph_dfs"
+        },
+        {
+          "label": "Topological sort",
+          "url": "https://algo.monster/problems/topo_intro"
+        },
+        {
+          "label": "Minimum spanning tree",
+          "url": "https://algo.monster/problems/mst_intro"
+        }
+      ],
+      "notes": "Vertices and edges up to BFS, DFS, grids as graphs, topological sort, Dijkstra and minimum spanning trees, and how to tell which one a problem needs.",
+      "added": "2026-10-29"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=QSLbp6NO2-s",
+      "title": "The easiest way to learn about Heaps and Priority Queue",
+      "channel": "AlgoMonster",
+      "duration": "",
+      "patterns": [
+        "Heap"
+      ],
+      "problems": [],
+      "chapters": [],
+      "links": [],
+      "notes": "Builds heaps and priority queues from scratch, using an emergency room that always needs its most urgent patient.",
+      "added": "2026-10-29"
+    }
+  ]
+}

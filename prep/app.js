@@ -23,14 +23,15 @@
       if (!r.ok) throw new Error(path + ': HTTP ' + r.status); return r.json();
     });
   }
-  Promise.all([get('problems.json'), get('content/reference.json')]).then(function(res){
-    boot(res[0], res[1]);
+  function opt(path){ return get(path).catch(function(){ return null; }); }
+  Promise.all([get('problems.json'), get('content/reference.json'), opt('content/techniques.json'), opt('content/videos.json')]).then(function(res){
+    boot(res[0], res[1], res[2], res[3]);
   }).catch(function(e){
     document.getElementById('appRoot').innerHTML = '<div class="card offline"><b>Could not load problems.json.</b><p>' + esc(e.message) +
       '</p><p>Run <code>python3 build_prep.py</code> in <code>~/learn/prep</code>, then reload.</p></div>';
   });
 
-  function boot(D, REF){
+  function boot(D, REF, TECHS, VIDS){
     var cos = D.companies, wl = D.window_label;
     var when = D.window === 'all' ? 'all time' : 'the last ' + wl;   // e.g. "asked in the last 6 months"
     var whenShort = D.window === 'all' ? 'all time' : 'last ' + wl;
@@ -105,8 +106,112 @@
                 java_user_main: D.shared.java_user_main, folder_hint: '~/learn/prep' },
       javaRef: REF.java, javaSnippets: REF.javaSnippets, pyRef: REF.python
     };
+    renderTechniques(D, TECHS, VIDS);
     initModal(DATA);
   }
+
+  // ---------- Techniques & videos (content/techniques.json + content/videos.json) ----------
+  function ytId(url){ var m = String(url || '').match(/(?:v=|youtu\.be\/|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{11})/); return m ? m[1] : null; }
+  function toSec(t){ var p = String(t).split(':').map(Number); return p.reduce(function(a, b){ return a * 60 + b; }, 0); }
+  function parseChapter(c){ var m = String(c).match(/^\s*((?:\d+:)?\d{1,2}:\d{2})\s+(.*)$/); return m ? { t: m[1], s: toSec(m[1]), label: m[2] } : null; }
+
+  function videoCard(v){
+    var id = ytId(v.url); if (!id) return '';
+    var chapters = (v.chapters || []).map(parseChapter).filter(Boolean);
+    return '<div class="vcard" data-vid="' + id + '">' +
+      '<div class="vplayer"><button type="button" class="vthumb" data-start="0" aria-label="Play ' + esc(v.title || 'video') + '">' +
+        '<img src="https://i.ytimg.com/vi/' + id + '/hqdefault.jpg" alt="" loading="lazy"><span class="vplay">▶</span></button></div>' +
+      '<div class="vmeta"><b>' + esc(v.title || v.url) + '</b><div class="note">' + esc([v.channel, v.duration].filter(Boolean).join(' · ')) +
+        ' · <a href="https://www.youtube.com/watch?v=' + id + '" target="_blank" rel="noopener">YouTube ↗</a></div>' +
+        (v.notes ? '<div class="note">' + esc(v.notes) + '</div>' : '') +
+        (chapters.length ? '<ol class="chapters">' + chapters.map(function(c){
+          return '<li><button type="button" class="chap" data-start="' + c.s + '"><span class="ct">' + esc(c.t) + '</span> ' + esc(c.label) + '</button></li>';
+        }).join('') + '</ol>' : '') +
+        ((v.links || []).length ? '<div class="note">' + v.links.map(function(l){ return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + ' ↗</a>'; }).join(' · ') + '</div>' : '') +
+      '</div></div>';
+  }
+  function playIn(card, start){
+    var id = card.getAttribute('data-vid'), box = card.querySelector('.vplayer');
+    box.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0&start=' + (start | 0) +
+      '" title="YouTube video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+  }
+  function wireVideos(root){
+    root.querySelectorAll('.vcard').forEach(function(card){
+      card.addEventListener('click', function(e){
+        var b = e.target.closest('[data-start]'); if (!b) return;
+        playIn(card, +b.getAttribute('data-start'));
+      });
+    });
+  }
+
+  // Two sections built from content/techniques.json ("group": "Data Structures" | "Algorithm Patterns")
+  // plus the full video library from content/videos.json.
+  var GROUPS = [{ name: 'Data Structures', root: 'dsRoot',
+                  intro: 'The core structures: what each is good at, the operations and their cost, and a Java starting point.' },
+                { name: 'Algorithm Patterns', root: 'techRoot',
+                  intro: 'Problem-solving techniques: how to recognise when to use each, the core idea, and a Java template.' }];
+  function renderTechniques(D, TECHS, VIDS){
+    var techs = (TECHS && TECHS.techniques) || [], vids = (VIDS && VIDS.videos) || [];
+    var counts = {}; D.problems.forEach(function(p){ counts[p.pattern] = (counts[p.pattern] || 0) + 1; });
+    var byPat = {}; vids.forEach(function(v){ (v.patterns || []).forEach(function(p){ (byPat[p] = byPat[p] || []).push(v); }); });
+    window.PREP.tech = { byPattern: byPat, videos: vids, has: {} };
+    techs.forEach(function(t){ window.PREP.tech.has[t.pattern] = true; });
+
+    function card(t){
+      var s = slugify(t.pattern), vs = byPat[t.pattern] || [];
+      return '<details class="tech" id="tech-' + s + '"' + (vs.length ? ' open' : '') + '><summary><span>' + esc(t.title || t.pattern) + '</span>' +
+        (vs.length ? '<span class="vcount">▶ ' + vs.length + ' video' + (vs.length > 1 ? 's' : '') + '</span>' : '') +
+        '<span class="note">' + (counts[t.pattern] || 0) + ' problems in your list</span></summary><div class="techbody">' +
+        '<div class="techgrid"><div><h4>Use it when…</h4><ul>' + (t.spot || []).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+        '<h4>Core idea</h4><p>' + esc(t.idea) + '</p><p class="note"><b>Typical complexity:</b> ' + esc(t.complexity || '') + '</p>' +
+        (counts[t.pattern] ? '<button type="button" class="btn ghost practice" data-p="' + s + '">Practice ' + counts[t.pattern] + ' ' + esc(t.pattern) + ' problems →</button>' : '') +
+        '</div><div><h4>Java template</h4><pre><code>' + esc(t.template || '') + '</code></pre></div></div>' +
+        (vs.length ? '<h4>Videos</h4><div class="vlist">' + vs.map(videoCard).join('') + '</div>' : '') +
+        '</div></details>';
+    }
+    function chips(list){
+      return '<div class="techchips">' + list.map(function(t){
+        var n = (byPat[t.pattern] || []).length;
+        return '<a href="#tech-' + slugify(t.pattern) + '" class="techchip">' + esc(t.title || t.pattern) + (n ? ' <span class="vcount">▶ ' + n + '</span>' : '') + '</a>';
+      }).join('') + '</div>';
+    }
+    GROUPS.forEach(function(g){
+      var root = document.getElementById(g.root); if (!root) return;
+      var list = techs.filter(function(t){ return (t.group || 'Algorithm Patterns') === g.name; });
+      root.innerHTML = '<p class="note">' + esc(g.intro) + '</p>' + chips(list) + list.map(card).join('');
+    });
+
+    // video library
+    var vroot = document.getElementById('vidRoot');
+    if (vroot) {
+      var orphan = vids.filter(function(v){ return !(v.patterns || []).some(function(p){ return window.PREP.tech.has[p]; }); });
+      vroot.innerHTML = '<p class="note">' + (vids.length ? vids.length + ' video' + (vids.length > 1 ? 's' : '') + ' saved.' : 'No videos yet.') +
+        ' Add more with <code>python3 add_video.py &lt;youtube-url&gt; --pattern "Sliding Window"</code>, or edit <code>content/videos.json</code>. ' +
+        'Each video also appears on the card for its pattern and in matching problem popups.</p>' +
+        (vids.length ? '<ul class="vlibl">' + vids.map(function(v){
+          var id = ytId(v.url);
+          return '<li><a href="https://www.youtube.com/watch?v=' + id + '" target="_blank" rel="noopener">' + esc(v.title || v.url) + '</a> <span class="note">' +
+            esc([v.channel, v.duration].filter(Boolean).join(' · ')) + '</span> ' + (v.patterns || []).map(function(pn){
+              return window.PREP.tech.has[pn] ? '<a class="techchip sm" href="#tech-' + slugify(pn) + '">' + esc(pn) + '</a>' : '<span class="techchip sm">' + esc(pn) + '</span>'; }).join(' ') + '</li>';
+        }).join('') + '</ul>' : '') +
+        (orphan.length ? '<h4>Videos without a guide card</h4><div class="vlist">' + orphan.map(videoCard).join('') + '</div>' : '');
+    }
+
+    document.querySelectorAll('#dsRoot, #techRoot, #vidRoot').forEach(function(root){
+      wireVideos(root);
+      root.querySelectorAll('.practice').forEach(function(b){
+        b.addEventListener('click', function(){
+          var pat = document.getElementById('pat'); pat.value = b.getAttribute('data-p');
+          pat.dispatchEvent(new Event('change'));
+          document.getElementById('problems').scrollIntoView({ block: 'start' });
+        });
+      });
+      root.querySelectorAll('a.techchip').forEach(function(a){
+        a.addEventListener('click', function(){ var d = document.getElementById(a.getAttribute('href').slice(1)); if (d) d.open = true; });
+      });
+    });
+  }
+  window.PREP.videoCard = videoCard; window.PREP.wireVideos = wireVideos;
 
   function initFilters(){
   var tbody = document.querySelector('#ptable tbody');
@@ -354,6 +459,7 @@
     $('mExample').textContent = p.example || '';
     $('mExample').parentNode.style.display = p.example ? '' : 'none';
     loadStatement(pid, false);
+    renderModalTech(p, pid);
     $('mIdea').innerHTML = p.idea || 'No hint written for this one yet — check the pattern tag.';
     $('mIdea').parentNode.open = false;
     $('mIdea').parentNode.style.display = p.idea ? '' : 'none';
@@ -437,6 +543,22 @@
       $('paneRef').hidden = t.getAttribute('data-tab') !== 'ref';
     });
   });
+
+  function renderModalTech(p, pid){
+    var T = window.PREP.tech, box = $('mTech'); if (!T) { box.innerHTML = ''; return; }
+    var direct = T.videos.filter(function(v){ return (v.problems || []).indexOf(pid) !== -1; });
+    var pat = (T.byPattern[p.pattern] || []).filter(function(v){ return direct.indexOf(v) === -1; });
+    var html = T.has[p.pattern] ? '<p class="note">Pattern guide: <a href="#tech-' + p.pattern_slug + '" class="techlink">' + esc(p.pattern) + ' — how to spot it, Java template' + (pat.length + direct.length ? ', videos' : '') + '</a></p>' : '';
+    var vs = direct.concat(pat);
+    if (vs.length) {
+      html += '<details class="mvideos"' + (direct.length ? ' open' : '') + '><summary>▶ ' + vs.length + ' video' + (vs.length > 1 ? 's' : '') +
+        (direct.length ? ' for this problem' : ' on ' + esc(p.pattern)) + '</summary><div class="vlist">' + vs.map(window.PREP.videoCard).join('') + '</div></details>';
+    }
+    box.innerHTML = html;
+    window.PREP.wireVideos(box);
+    var l = box.querySelector('.techlink');
+    if (l) l.addEventListener('click', function(){ close(); var d = document.getElementById('tech-' + p.pattern_slug); if (d) d.open = true; });
+  }
 
   // ---------- full statement (fetched by the local runner from LeetCode, cached on disk) ----------
   var ALLOWED = { P:1, DIV:1, SPAN:1, PRE:1, CODE:1, STRONG:1, B:1, EM:1, I:1, U:1, UL:1, OL:1, LI:1, SUP:1, SUB:1, BR:1, IMG:1,
