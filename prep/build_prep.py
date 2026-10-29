@@ -14,10 +14,11 @@ Examples
   python3 build_prep.py --no-blind75
   python3 build_prep.py --list-companies                  # what's in the dataset
   python3 build_prep.py --missing                         # problems without a summary / tests yet
+  python3 build_prep.py --update-numbers                  # refresh LeetCode problem numbers (needs internet)
 
 Standard library only.
 """
-import argparse, csv, datetime, json, os, re, sys
+import argparse, csv, datetime, json, os, re, subprocess, sys, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -60,6 +61,59 @@ def resolve_company(dataset, name):
         return hit
     close = [d for k, d in folders.items() if name.lower() in k]
     sys.exit(f"Company {name!r} not found in dataset." + (f" Did you mean: {', '.join(close[:8])}?" if close else " Use --list-companies."))
+
+
+NUMBERS = os.path.join(CONTENT, "leetcode_numbers.json")
+LC_API = "https://leetcode.com/api/problems/all/"
+
+
+def fetch_numbers():
+    """Download LeetCode's public problem list and return {slug: number}."""
+    raw = None
+    try:
+        req = urllib.request.Request(LC_API, headers={"User-Agent": "Mozilla/5.0", "Referer": "https://leetcode.com/problemset/"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            raw = r.read()
+    except Exception as e:
+        # python.org builds on macOS sometimes lack CA certificates; curl uses the system ones
+        try:
+            raw = subprocess.run(["curl", "-sSL", "-m", "30", "-A", "Mozilla/5.0", LC_API],
+                                 capture_output=True, check=True).stdout
+        except Exception:
+            print(f"warning: couldn't download LeetCode problem numbers ({e}).", file=sys.stderr)
+            return None
+    try:
+        data = json.loads(raw)
+        out = {}
+        for pair in data["stat_status_pairs"]:
+            st = pair["stat"]
+            num = str(st.get("frontend_question_id", "")).strip()
+            if st.get("question__title_slug") and num:
+                out[st["question__title_slug"]] = int(num) if num.isdigit() else num
+        return out
+    except Exception as e:
+        print(f"warning: unexpected response from LeetCode ({e}).", file=sys.stderr)
+        return None
+
+
+def load_numbers(update):
+    cached = {}
+    if os.path.exists(NUMBERS):
+        try:
+            cached = json.load(open(NUMBERS, encoding="utf-8")).get("numbers", {})
+        except Exception:
+            cached = {}
+    if update or not cached:
+        fresh = fetch_numbers()
+        if fresh:
+            with open(NUMBERS, "w", encoding="utf-8") as f:
+                json.dump({"_note": "slug -> LeetCode problem number. Refresh with: python3 build_prep.py --update-numbers",
+                           "fetched": datetime.date.today().isoformat(), "numbers": dict(sorted(fresh.items()))}, f, indent=0)
+            print(f"Saved {len(fresh)} LeetCode problem numbers to content/leetcode_numbers.json")
+            return fresh
+        if not cached:
+            print("  (problem numbers will be missing until --update-numbers succeeds)", file=sys.stderr)
+    return cached
 
 
 def snapshot_date(dataset):
@@ -132,6 +186,7 @@ def main():
     ap.add_argument("--blind75", dest="no_blind75", action="store_false", help="include the Blind 75 again")
     ap.add_argument("--list-companies", action="store_true")
     ap.add_argument("--missing", action="store_true", help="list problems without a summary or tests, then exit")
+    ap.add_argument("--update-numbers", action="store_true", help="re-download LeetCode problem numbers (cached in content/)")
     a = ap.parse_args()
 
     dataset = os.path.abspath(os.path.expanduser(a.dataset))
@@ -144,6 +199,7 @@ def main():
         return
 
     content = load("problems.json")
+    numbers = load_numbers(a.update_numbers)
     blind = load("blind75.json")
     patterns = load("patterns.json")
     display = load("companies.json").get("display_names", {})
@@ -210,10 +266,11 @@ def main():
         h, prov = harness_for(e)
         pat = pattern_for(e, p["topics"], patterns)
         rec = {
-            "slug": p["slug"], "title": p["title"], "d": p["d"], "link": p["link"],
+            "slug": p["slug"], "num": numbers.get(p["slug"]), "title": p["title"], "d": p["d"], "link": p["link"],
             "pattern": pat, "pattern_slug": slugify(pat),
             "companies": p["companies"], "blind75": p["blind75"],
             "summary": (e or {}).get("summary", ""), "example": (e or {}).get("example", ""), "idea": (e or {}).get("idea", ""),
+            "full": (e or {}).get("full", ""),
             "topics": p["topics"],
             "tests": [[x, y] for x, y in h["display"]], "provided": prov,
             "py_starter": h["py_starter"], "java_starter": h["java_starter"],
@@ -258,6 +315,9 @@ def main():
           f"{', Blind 75' if not a.no_blind75 else ''}; window {WLABEL[a.window]}; dataset snapshot {data['snapshot']})")
     print(f"  {with_tests} have test cases; {sum(1 for _, _, w in missing if w == 'no summary')} have no summary yet "
           f"(run with --missing to list them).")
+    nonum = [p["title"] for p in out_problems if p["num"] is None]
+    if nonum:
+        print(f"  {len(nonum)} without a LeetCode number" + (" (run with --update-numbers)" if len(nonum) > 3 else f": {', '.join(nonum)}"))
     print("Reload the page to see the changes.")
 
 

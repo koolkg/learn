@@ -204,5 +204,32 @@ li.CodeMirror-hint-active .hd,li.CodeMirror-hint-active .hr{color:#e8f0ff}
 .legend b{color:var(--text)}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
 
+.lcnum{color:var(--muted);font-variant-numeric:tabular-nums}
+
+.inshort{margin:2px 0 8px}
+.lbl2{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.inshort p{margin:2px 0 0}
+.fullst{border:1px solid var(--border);border-radius:10px;background:var(--surface);margin:10px 0;overflow:hidden}
+.fullhead{display:flex;align-items:baseline;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)}
+.fullhead .note{font-size:12px}
+.linkbtn{font:inherit;font-size:12px;background:none;border:0;color:var(--accent);cursor:pointer;padding:0}
+.fullbody{padding:4px 14px 8px;font-size:14px;line-height:1.55;position:relative;overflow-wrap:anywhere}
+.fullbody.collapsed{max-height:210px;overflow:hidden}
+.fullbody.collapsed::after{content:"";position:absolute;left:0;right:0;bottom:0;height:60px;background:linear-gradient(to bottom,transparent,var(--surface))}
+.fullbody pre{white-space:pre;overflow-x:auto;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12.5px}
+.fullbody code{background:var(--code-bg);padding:1px 4px;border-radius:4px;font-size:12.5px}
+.fullbody pre code{background:none;padding:0}
+.fullbody img{max-width:100%;height:auto;background:#fff;border-radius:6px}
+.fullbody ul,.fullbody ol{padding-left:22px}
+.fullbody .msg{color:var(--muted);font-size:13.5px}
+.morebtn{display:block;width:100%;font:inherit;font-size:13px;font-weight:600;color:var(--accent);background:var(--surface);border:0;border-top:1px solid var(--border);padding:7px;cursor:pointer}
+.morebtn[hidden]{display:none}
+
+.tnote{font-size:12px;color:var(--muted);font-family:inherit;margin-top:1px}
+.trand{color:var(--muted);font-style:italic}
+.passlist{margin-top:6px}
+.passlist>summary{cursor:pointer;font-size:13px;color:var(--easy);font-weight:600}
+.rlab{word-break:break-all}
+
 .offline{border-left:4px solid var(--med)}
 .offline pre{margin:8px 0}

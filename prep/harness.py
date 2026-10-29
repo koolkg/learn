@@ -163,7 +163,43 @@ def no_shared(a, b):
 ''',
 }
 
+# Large inputs are described compactly and expanded at run time, e.g.
+#   {"gen": "repeat", "value": 0, "n": 2000}        -> [0, 0, ...]          (int[])
+#   {"gen": "alt", "a": 1, "b": 0, "n": 2000}        -> [1, 0, 1, 0, ...]    (int[])
+#   {"gen": "range", "start": 1, "step": 1, "n": 5}  -> [1, 2, 3, 4, 5]      (int[])
+#   {"gen": "grid", "value": "1", "rows": 60, "cols": 60}                      (char[][])
+#   {"gen": "star", "n": 2200, "w": 1000000}         -> [[0,1,w],[0,2,w],...] (int[][], tree edges)
+def expand(v):
+    if not (isinstance(v, dict) and "gen" in v):
+        return v
+    g = v["gen"]
+    if g == "repeat": return [v["value"]] * v["n"]
+    if g == "alt": return [v["a"] if i % 2 == 0 else v["b"] for i in range(v["n"])]
+    if g == "range": return [v["start"] + i * v.get("step", 1) for i in range(v["n"])]
+    if g == "grid": return [[v["value"]] * v["cols"] for _ in range(v["rows"])]
+    if g == "star": return [[0, i, v["w"]] for i in range(1, v["n"] + 1)]
+    raise ValueError(g)
+
+def gen_label(v):
+    g = v["gen"]
+    if g == "repeat": return f"<{v['n']} × {json.dumps(v['value'])}>"
+    if g == "alt": return f"<{v['n']} alternating {v['a']},{v['b']}>"
+    if g == "range": return f"<{v['n']} values from {v['start']} step {v.get('step', 1)}>"
+    if g == "grid": return f"<{v['rows']}×{v['cols']} grid of {json.dumps(v['value'])}>"
+    if g == "star": return f"<star tree: {v['n']} edges of weight {v['w']}>"
+    return json.dumps(v)
+
+PY_GEN = {"repeat": "[{value!r}] * {n}", "alt": "[{a!r} if i % 2 == 0 else {b!r} for i in range({n})]",
+          "range": "[{start} + i * {step} for i in range({n})]", "grid": "[[{value!r}] * {cols} for _ in range({rows})]",
+          "star": "[[0, i, {w}] for i in range(1, {n} + 1)]"}
+
 def py_lit(v, t):
+    if isinstance(v, dict) and "gen" in v:
+        d = dict(v); d.setdefault("step", 1)
+        return "(" + PY_GEN[v["gen"]].format(**d) + ")"
+    return _py_lit(v, t)
+
+def _py_lit(v, t):
     if t == "tree": return f"T({v!r})"
     if t == "list": return f"L({v!r})"
     if t == "list[]": return f"[L(x) for x in {v!r}]"
@@ -172,8 +208,15 @@ def py_lit(v, t):
     if t == "double": return repr(float(v))
     return repr(v)
 
-def py_call_label(name, args):
-    return f"{name}(" + ", ".join(json.dumps(a) for a in args) + ")"
+def arg_label(a):
+    if isinstance(a, dict) and "gen" in a:
+        return gen_label(a)
+    j = json.dumps(a)
+    return j if len(j) <= 160 else j[:150] + " …]"
+
+def py_call_label(name, args, note=None):
+    lab = f"{name}(" + ", ".join(arg_label(a) for a in args) + ")"
+    return lab + (f"  — {note}" if note else "")
 
 # ---------------- Java ----------------
 JAVA_IMPORTS = "import java.util.*;\nimport java.util.function.*;\nimport java.util.stream.*;\n"
@@ -224,6 +267,7 @@ class Node {
 }
 
 JAVA_MAIN_HELPERS = r'''
+    // generated-input helpers are appended below (JAVA_GEN_HELPERS)
     static Object __norm(Object o) {
         if (o == null) return null;
         if (o instanceof Integer || o instanceof Long || o instanceof Short || o instanceof Byte) return ((Number) o).longValue();
@@ -374,7 +418,24 @@ JAVA_USER_MAIN = """        for (String __c : new String[]{"Solution", "Codec", 
         }
 """
 
+JAVA_GEN = {"repeat": "__repeat({value}, {n})", "alt": "__alt({a}, {b}, {n})", "range": "__range({start}, {step}, {n})",
+            "grid": "__grid('{value}', {rows}, {cols})", "star": "__star({n}, {w})"}
+JAVA_GEN_HELPERS = """
+    static int[] __repeat(int v, int n) { int[] a = new int[n]; Arrays.fill(a, v); return a; }
+    static int[] __alt(int x, int y, int n) { int[] a = new int[n]; for (int i = 0; i < n; i++) a[i] = i % 2 == 0 ? x : y; return a; }
+    static int[] __range(int s, int st, int n) { int[] a = new int[n]; for (int i = 0; i < n; i++) a[i] = s + i * st; return a; }
+    static char[][] __grid(char v, int r, int c) { char[][] g = new char[r][c]; for (char[] row : g) Arrays.fill(row, v); return g; }
+    static int[][] __star(int n, int w) { int[][] e = new int[n][]; for (int i = 1; i <= n; i++) e[i - 1] = new int[]{0, i, w}; return e; }
+"""
+JAVA_MAIN_HELPERS = JAVA_MAIN_HELPERS + JAVA_GEN_HELPERS
+
 def java_lit(v, t):
+    if isinstance(v, dict) and "gen" in v:
+        d = dict(v); d.setdefault("step", 1)
+        return JAVA_GEN[v["gen"]].format(**d)
+    return _java_lit(v, t)
+
+def _java_lit(v, t):
     if t == "int": return str(v)
     if t == "long": return f"{v}L"
     if t == "double": return repr(float(v))
@@ -406,9 +467,11 @@ def build(spec):
     mode = spec.get("mode", "eq")
     if kind == "method":
         name = spec["name"]
-        for args, exp in spec["tests"]:
+        for t_ in spec["tests"]:
+            args, exp = t_[0], t_[1]
+            note = t_[2] if len(t_) > 2 else None
             e = canon(exp, mode)
-            label = py_call_label(name, args)
+            label = py_call_label(name, args, note)
             pyargs = ", ".join(py_lit(a, t) for a, t in zip(args, spec["ptypes"]))
             wrap = "_LA" if spec["rtype"] == "list" else ""
             py_post.append(f"_t({label!r}, lambda: {wrap}(Solution().{name}({pyargs})), {e!r}, {mode!r})")
@@ -420,9 +483,11 @@ def build(spec):
         java_starter = f"class Solution {{\n    {spec['java']} {{\n\n    }}\n}}\n"
     elif kind == "ops":
         cls = spec["cls"]
-        for ops, args, exp in spec["tests"]:
+        for t_ in spec["tests"]:
+            ops, args, exp = t_[0], t_[1], t_[2]
+            note = t_[3] if len(t_) > 3 else None
             e = canon(exp, "eq")
-            label = f"{json.dumps(ops)}  {json.dumps(args)}"
+            label = f"{json.dumps(ops)}  {json.dumps(args)}" + (f"  — {note}" if note else "")
             py_post.append(f"_t({label!r}, lambda: _ops({cls}, {ops!r}, {args!r}), {e!r}, 'eq')")
             body = [f"List<Object> out = new ArrayList<>();",
                     f"{cls} o = new {cls}({', '.join(java_lit(a, t) for a, t in zip(args[0], spec['ctor']))});", "out.add(null);"]

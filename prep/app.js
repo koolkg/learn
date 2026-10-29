@@ -83,9 +83,11 @@
       if (p.blind75) tags += '<button type="button" class="tag b75" data-f="blind75" title="In the Blind 75">Blind 75</button>';
       var idea = p.idea ? '<div class="idea">' + p.idea + '</div>' : '';
       var t = esc(p.title), g = esc(p.pattern);
-      return '<tr data-id="p' + i + '" data-pid="' + esc(p.slug) + '" data-order="' + i + '" data-src="' + srcs.join(' ') + '" data-freq=\'' + esc(JSON.stringify(freqs)) + '\' data-pattern="' + p.pattern_slug + '" data-title="' + t.toLowerCase() + '">' +
+      var nt = (p.num != null ? '<span class="lcnum">' + esc(p.num) + '.</span> ' : '') + t;   // "146. LRU Cache"
+      var st = (p.num != null ? p.num + '. ' : '') + t;
+      return '<tr data-id="p' + i + '" data-pid="' + esc(p.slug) + '" data-order="' + i + '" data-src="' + srcs.join(' ') + '" data-freq=\'' + esc(JSON.stringify(freqs)) + '\' data-pattern="' + p.pattern_slug + '" data-title="' + st.toLowerCase() + '">' +
         '<td class="chk"><input type="checkbox" aria-label="Done: ' + t + '"></td>' +
-        '<td><button type="button" class="ptitle" data-pid="' + esc(p.slug) + '">' + t + '</button><span class="st" hidden></span>' + idea +
+        '<td><button type="button" class="ptitle" data-pid="' + esc(p.slug) + '">' + nt + '</button><span class="st" hidden></span>' + idea +
         '<div class="tags">' + tags + '<button type="button" class="pchip mobonly" data-p="' + p.pattern_slug + '">' + g + '</button></div></td>' +
         '<td><span class="diff ' + esc(p.d.toLowerCase()) + '">' + esc(p.d) + '</span></td>' +
         '<td class="pat"><button type="button" class="pchip" data-p="' + p.pattern_slug + '" title="Show only ' + g + '">' + g + '</button></td></tr>';
@@ -341,7 +343,7 @@
     cur = pid; var p = PD[pid];
     if (modal.hidden) { lastFocus = document.activeElement; }
     modal.hidden = false; document.body.classList.add('modal-open');
-    $('mTitle').textContent = p.title;
+    $('mTitle').textContent = (p.num != null ? p.num + '. ' : '') + p.title;
     var row = rowBy[pid];
     var meta = '<span class="diff ' + p.d.toLowerCase() + '">' + p.d + '</span>' + (row ? row.querySelector('.tags').innerHTML.replace(/<button[^>]*class="pchip mobonly"[^>]*>.*?<\/button>/, '') : '') +
                '<span class="pchip">' + esc(p.pattern) + '</span>';
@@ -351,6 +353,7 @@
     else { $('mSummary').innerHTML = 'No summary written for this one yet — use <b>Open on LeetCode</b> below for the full statement and method signature. (You can add a summary, hint and tests in <code>content/problems.json</code>.)'; }
     $('mExample').textContent = p.example || '';
     $('mExample').parentNode.style.display = p.example ? '' : 'none';
+    loadStatement(pid, false);
     $('mIdea').innerHTML = p.idea || 'No hint written for this one yet — check the pattern tag.';
     $('mIdea').parentNode.open = false;
     $('mIdea').parentNode.style.display = p.idea ? '' : 'none';
@@ -359,7 +362,16 @@
     showModalStatus();
     var ol = $('mTests'); ol.innerHTML = '';
     if (p.tests.length) {
-      p.tests.forEach(function(t){ var li = document.createElement('li'); li.innerHTML = '<code>' + esc(t[0]) + '</code> → <code>' + esc(t[1]) + '</code>'; ol.appendChild(li); });
+      var isRand = function(t){ return /random #\d+/.test(t[0]); };
+      var shown = p.tests.filter(function(t){ return !isRand(t); }), nRand = p.tests.length - shown.length;
+      function fmtTest(t){
+        var lab = String(t[0]), m = lab.match(/^(.*?)\s+— (.*)$/);
+        var call = m ? m[1] : lab, note = m ? m[2] : '';
+        var exp = String(t[1]); if (exp.length > 120) exp = exp.slice(0, 110) + ' …';
+        return '<code>' + esc(call) + '</code> → <code>' + esc(exp) + '</code>' + (note ? '<div class="tnote">' + esc(note) + '</div>' : '');
+      }
+      shown.forEach(function(t){ var li = document.createElement('li'); li.innerHTML = fmtTest(t); ol.appendChild(li); });
+      if (nRand) { var li = document.createElement('li'); li.className = 'trand'; li.innerHTML = '+ ' + nRand + ' randomized tests (inputs generated, answers checked against a reference solution)'; ol.appendChild(li); }
       $('mTestsWrap').style.display = '';
       $('mRun').textContent = 'Run tests ▶';
     } else {
@@ -426,6 +438,80 @@
     });
   });
 
+  // ---------- full statement (fetched by the local runner from LeetCode, cached on disk) ----------
+  var ALLOWED = { P:1, DIV:1, SPAN:1, PRE:1, CODE:1, STRONG:1, B:1, EM:1, I:1, U:1, UL:1, OL:1, LI:1, SUP:1, SUB:1, BR:1, IMG:1,
+                  TABLE:1, THEAD:1, TBODY:1, TR:1, TD:1, TH:1, H3:1, H4:1, BLOCKQUOTE:1, FONT:1 };
+  function sanitize(html){
+    var doc = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html');
+    function clean(node){
+      Array.prototype.slice.call(node.childNodes).forEach(function(n){
+        if (n.nodeType === 3) return;
+        if (n.nodeType !== 1 || !ALLOWED[n.tagName]) {
+          if (n.nodeType === 1 && !/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED|LINK|META)$/.test(n.tagName)) {
+            clean(n); while (n.firstChild) node.insertBefore(n.firstChild, n);
+          }
+          node.removeChild(n); return;
+        }
+        var src = n.tagName === 'IMG' ? n.getAttribute('src') : null;
+        Array.prototype.slice.call(n.attributes).forEach(function(a){ n.removeAttribute(a.name); });
+        if (n.tagName === 'IMG') {
+          if (src && /^https:\/\//.test(src)) { n.setAttribute('src', src); n.setAttribute('loading', 'lazy'); n.setAttribute('alt', 'figure'); }
+          else { node.removeChild(n); return; }
+        }
+        clean(n);
+      });
+    }
+    var root = doc.body.firstChild; clean(root);
+    return root.innerHTML;
+  }
+  var fullOpen = sget('prep:fullOpen') === '1';
+  function setFullOpen(open){
+    fullOpen = open; sset('prep:fullOpen', open ? '1' : '0');
+    $('mFullBody').classList.toggle('collapsed', !open);
+    $('mFullMore').textContent = open ? 'Show less ▴' : 'Show full problem ▾';
+    $('mFullMore').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function fitMore(){
+    var body = $('mFullBody');
+    var needs = body.scrollHeight > 230;
+    $('mFullMore').hidden = !needs;
+    if (!needs) body.classList.remove('collapsed'); else body.classList.toggle('collapsed', !fullOpen);
+  }
+  function loadStatement(pid, refresh){
+    var body = $('mFullBody'), srcEl = $('mFullSrc');
+    if (!SERVER) { body.innerHTML = PD[pid] && PD[pid].full ? sanitize(PD[pid].full) : '<p class="msg">Start <code>prep_server.py</code> to load the full problem.</p>'; srcEl.textContent = ''; fitMore(); return; }
+    body.innerHTML = '<p class="msg">Loading the full problem from LeetCode…</p>'; srcEl.textContent = ''; fitMore();
+    api('/statement?slug=' + encodeURIComponent(pid) + (refresh ? '&refresh=1' : '')).then(function(r){
+      if (cur !== pid) return;
+      if (r.ok && r.html) {
+        body.innerHTML = sanitize(r.html);
+        srcEl.textContent = '· from LeetCode' + (r.cached ? ', saved ' + (r.fetched || '') : '');
+        $('mExample').parentNode.style.display = 'none';   // the full statement has all the examples
+        body.querySelectorAll('img').forEach(function(im){ im.addEventListener('load', fitMore); });
+      } else if (PD[pid] && PD[pid].full) {
+        body.innerHTML = sanitize(PD[pid].full) + (r.ok && r.paid
+          ? '<p class="msg">LeetCode\'s official text for this one is Premium-only' + (r.logged_in ? ' (your saved session didn\'t unlock it)' : '') + '. To see it here, add your session cookie (see README) and click Refresh.</p>'
+          : '<p class="msg">Couldn\'t load LeetCode\'s official text: ' + esc(r.error || 'unknown error') + '</p>');
+        srcEl.textContent = '· written in our own words';
+        $('mExample').parentNode.style.display = 'none';
+      } else if (r.ok && r.paid) {
+        body.innerHTML = '<p class="msg"><b>Premium problem.</b> LeetCode only returns its statement to a logged-in Premium account' +
+          (r.logged_in ? ' — your saved session was sent but LeetCode didn\'t return the text (expired session, or the account isn\'t Premium).' : '.') +
+          ' To load it, save your LeetCode session cookie in <code>~/learn/prep/.leetcode_session</code> (see README), then click Refresh. Until then, use the summary above and the test cases below.</p>';
+        srcEl.textContent = '';
+      } else {
+        body.innerHTML = '<p class="msg">' + esc(r.error || 'Could not load the full problem.') + ' The summary above and the test cases below still work.</p>';
+        srcEl.textContent = '';
+      }
+      fitMore();
+    }).catch(function(e){
+      if (cur !== pid) return;
+      body.innerHTML = '<p class="msg">Could not reach the local runner (' + esc(e.message) + ').</p>'; fitMore();
+    });
+  }
+  $('mFullMore').addEventListener('click', function(){ setFullOpen(!fullOpen); });
+  $('mFullRefresh').addEventListener('click', function(){ if (cur) loadStatement(cur, true); });
+
   // ---------- run ----------
   function expand(s){
     return s.split('@@PYHELPERS@@').join(SH.py_helpers).split('@@PYPRELUDE@@').join(SH.py_prelude).split('@@JHELPERS@@').join(SH.java_main_helpers).split('@@JUSERMAIN@@').join(SH.java_user_main);
@@ -453,10 +539,16 @@
         showModalStatus();
         html += '<div class="sum ' + (all ? 'pass' : 'fail') + '">' + (all ? '✓ All ' + passed + ' tests passed' : passed + ' / ' + p.tests.length + ' tests passed') + '</div>';
         if (all && !(PROG[cur] && PROG[cur].done)) html += '<div class="outhint">All passing — tick <b>Done</b> at the top when you\'re confident.</div>';
-        results.forEach(function(x){
-          html += '<div class="res ' + (x.ok ? 'pass' : 'fail') + '"><div class="lbl">' + (x.ok ? '✓ ' : '✗ ') + esc(x.label) + '</div>' +
+        function resHtml(x){
+          var m = String(x.label).match(/^(.*?)\s+— (.*)$/);
+          var lab = m ? '<span class="rlab">' + esc(m[1]) + '</span><div class="tnote">' + esc(m[2]) + '</div>' : esc(x.label);
+          return '<div class="res ' + (x.ok ? 'pass' : 'fail') + '"><div class="lbl">' + (x.ok ? '✓ ' : '✗ ') + lab + '</div>' +
             (x.ok ? '' : (x.err ? '<pre>' + esc(x.err) + '</pre>' : '<pre>expected ' + esc(x.exp) + '\ngot      ' + esc(x.got) + '</pre>')) + '</div>';
-        });
+        }
+        var fails = results.filter(function(x){ return !x.ok; }), oks = results.filter(function(x){ return x.ok; });
+        fails.slice(0, 8).forEach(function(x){ html += resHtml(x); });
+        if (fails.length > 8) html += '<div class="outhint">…and ' + (fails.length - 8) + ' more failing tests. Fix the ones above first.</div>';
+        if (oks.length) html += '<details class="passlist"' + (fails.length ? '' : ' open') + '><summary>' + oks.length + ' passing test' + (oks.length > 1 ? 's' : '') + '</summary>' + oks.map(resHtml).join('') + '</details>';
         if (results.length < p.tests.length && !r.timeout) html += '<div class="res fail">Some tests did not run (your program stopped early).</div>';
       } else {
         html += '<div class="sum pass">Ran' + (r.rc === 0 ? ' successfully' : '') + '</div>';

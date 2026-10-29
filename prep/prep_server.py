@@ -9,11 +9,14 @@ Local runner for the prep page (index.html + problems.json in this folder).
 - Listens on 127.0.0.1 only. Nothing is sent anywhere else.
 - Your code is also saved as files under ./solutions/ (one file per problem and language),
   and your progress (done / passing / attempted) in ./solutions/progress.json.
+- When you open a problem, the full statement is fetched from LeetCode (like your browser would)
+  and cached in ./cache/statements/ — local only, not committed to git. For Premium problems,
+  put your LeetCode session cookie in ./.leetcode_session (see README).
 - Requests must carry a per-session token that is only embedded in the page this
   server serves, so other websites can't use the runner.
 Standard library only. Stop with Ctrl+C.
 """
-import argparse, json, os, re, secrets, shutil, subprocess, sys, tempfile, threading, webbrowser
+import argparse, json, os, re, secrets, shutil, subprocess, sys, tempfile, threading, urllib.request, webbrowser
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
@@ -67,6 +70,86 @@ def solution_files():
 
 def which(cmd):
     return shutil.which(cmd)
+
+
+# ---------- full problem statements, fetched from LeetCode on demand ----------
+CACHE = os.path.join(HERE, "cache", "statements")       # local only; kept out of git (.gitignore)
+COOKIE_FILE = os.path.join(HERE, ".leetcode_session")     # optional: your LeetCode login, for Premium problems
+LC_GRAPHQL = os.environ.get("PREP_LC_GRAPHQL", "https://leetcode.com/graphql")
+LC_QUERY = ("query q($titleSlug: String!) { question(titleSlug: $titleSlug) "
+            "{ questionFrontendId title content isPaidOnly } }")
+
+
+def leetcode_cookies():
+    """Reads LEETCODE_SESSION (and optional csrftoken) from env or ./.leetcode_session."""
+    vals = {}
+    if os.path.exists(COOKIE_FILE):
+        for line in open(COOKIE_FILE, encoding="utf-8"):
+            line = line.strip()
+            if "=" in line and not line.startswith("#"):
+                k, v = line.split("=", 1)
+                vals[k.strip()] = v.strip().strip('"')
+            elif line and not line.startswith("#"):
+                vals["LEETCODE_SESSION"] = line
+    for k in ("LEETCODE_SESSION", "csrftoken"):
+        if os.environ.get(k):
+            vals[k] = os.environ[k]
+    return vals
+
+
+def fetch_statement(slug, refresh=False):
+    path = os.path.join(CACHE, slug + ".json")
+    if os.path.exists(path) and not refresh:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+        if d.get("html"):
+            d["cached"] = True
+            return d
+    cookies = leetcode_cookies()
+    headers = {"Content-Type": "application/json", "User-Agent": "Mozilla/5.0",
+               "Referer": f"https://leetcode.com/problems/{slug}/", "Origin": "https://leetcode.com"}
+    if cookies:
+        headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in cookies.items())
+        if cookies.get("csrftoken"):
+            headers["x-csrftoken"] = cookies["csrftoken"]
+    body = json.dumps({"query": LC_QUERY, "variables": {"titleSlug": slug}}).encode()
+    raw, err = None, None
+    try:
+        req = urllib.request.Request(LC_GRAPHQL, data=body, headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=20) as r:
+            raw = r.read()
+    except Exception as e:
+        err = str(e)
+        if LC_GRAPHQL.startswith("https://"):
+            try:  # python.org builds on macOS may lack CA certs; curl uses the system store
+                cmd = ["curl", "-sS", "-m", "20", "-X", "POST", LC_GRAPHQL, "--data-binary", body.decode()]
+                for k, v in headers.items():
+                    cmd += ["-H", f"{k}: {v}"]
+                raw = subprocess.run(cmd, capture_output=True, check=True).stdout
+                err = None
+            except subprocess.CalledProcessError as e2:
+                msg = (e2.stderr or b"").decode(errors="replace").strip().splitlines()
+                err = f"{err}; curl: {msg[-1] if msg else 'failed'}"
+            except Exception as e2:
+                err = f"{err}; curl: {e2}"
+    if raw is None:
+        short = err if len(err) < 160 else err[:150] + "…"
+        return {"ok": False, "error": f"Couldn't reach LeetCode — offline or blocked by your network ({short})."}
+    try:
+        q = (json.loads(raw).get("data") or {}).get("question")
+    except json.JSONDecodeError:
+        return {"ok": False, "error": "LeetCode returned an unexpected response (maybe a bot check). Try again later."}
+    if not q:
+        return {"ok": False, "error": "LeetCode has no problem with this slug."}
+    d = {"ok": True, "title": q.get("title"), "num": q.get("questionFrontendId"), "paid": bool(q.get("isPaidOnly")),
+         "html": q.get("content") or "", "fetched": __import__("datetime").date.today().isoformat(),
+         "logged_in": bool(cookies.get("LEETCODE_SESSION"))}
+    if d["html"]:
+        os.makedirs(CACHE, exist_ok=True)
+        with open(path + ".tmp", "w", encoding="utf-8") as f:
+            json.dump(d, f)
+        os.replace(path + ".tmp", path)
+    return d
 
 
 def tool_status():
@@ -175,6 +258,14 @@ class Handler(BaseHTTPRequestHandler):
             path = os.path.join(SOLUTIONS, f"{pid}.{'java' if lang == 'java' else 'py'}")
             code = open(path, encoding="utf-8").read() if os.path.exists(path) else None
             return self._send(200, json.dumps({"code": code}))
+        if u.path == "/statement":
+            if not self._auth():
+                return self._send(403, '{"error":"forbidden"}')
+            q = parse_qs(u.query)
+            slug = q.get("slug", [""])[0]
+            if not SAFE_ID.match(slug):
+                return self._send(400, '{"error":"bad request"}')
+            return self._send(200, json.dumps(fetch_statement(slug, q.get("refresh", ["0"])[0] == "1")))
         if u.path == "/progress":
             if not self._auth():
                 return self._send(403, '{"error":"forbidden"}')

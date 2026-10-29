@@ -42,7 +42,7 @@
 
 <h2 id="problems">Problems <span class="lc" id="nProblems"></span></h2>
 <div class="toolbar">
-  <input type="search" id="q" placeholder="Filter problems by title…" aria-label="Filter problems">
+  <input type="search" id="q" placeholder="Filter by title or number…" aria-label="Filter problems">
   <select id="src" aria-label="Filter by source"></select>
   <select id="pat" aria-label="Filter by pattern"></select>
   <select id="stat" aria-label="Filter by status">
@@ -350,7 +350,12 @@ list.add(value);
           <button type="button" role="tab" class="tab" data-tab="ref">Reference</button>
         </div>
         <div class="tabpane" id="paneProb">
-          <p id="mSummary"></p>
+          <div class="inshort"><span class="lbl2">In short</span><p id="mSummary"></p></div>
+          <section class="fullst" id="mFull">
+            <div class="fullhead"><b>Full problem</b><span class="note" id="mFullSrc"></span><span class="grow"></span><button type="button" class="linkbtn" id="mFullRefresh" title="Fetch again from LeetCode">Refresh</button></div>
+            <div class="fullbody collapsed" id="mFullBody"></div>
+            <button type="button" class="morebtn" id="mFullMore" aria-expanded="false">Show full problem ▾</button>
+          </section>
           <div class="mex"><b>Example</b><div id="mExample"></div></div>
           <details class="mhint"><summary>Hint: key idea</summary><div id="mIdea"></div></details>
           <div id="mTestsWrap">

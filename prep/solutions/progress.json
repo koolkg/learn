@@ -1,10 +1,39 @@
 {
+  "can-place-flowers": {
+    "attempted": true,
+    "done": true,
+    "doneAt": "2026-10-29",
+    "last": {
+      "at": "2026-10-29T17:13:00.966Z",
+      "lang": "java",
+      "ok": 32,
+      "total": 32
+    },
+    "updated": "2026-10-29T10:13:00"
+  },
   "max-stack": {
     "attempted": true,
     "done": true,
     "doneAt": "2026-10-28",
-    "last": null,
-    "updated": "2026-10-28T17:47:37.612Z"
+    "last": {
+      "at": "2026-10-29T17:13:08.901Z",
+      "lang": "java",
+      "ok": 15,
+      "total": 15
+    },
+    "updated": "2026-10-29T10:13:08"
+  },
+  "nested-list-weight-sum-ii": {
+    "attempted": true,
+    "done": true,
+    "doneAt": "2026-10-29",
+    "last": {
+      "at": "2026-10-29T17:13:16.991Z",
+      "lang": "java",
+      "ok": 20,
+      "total": 20
+    },
+    "updated": "2026-10-29T10:13:16"
   },
   "number-of-islands": {
     "attempted": true,
