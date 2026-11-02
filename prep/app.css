@@ -274,5 +274,14 @@ details.tech>summary .note{margin-left:auto;font-weight:400}
 .vlibl{padding-left:20px}
 .vlibl li{margin:6px 0}
 
+.runin{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);background:var(--surface);font-size:13px}
+.runin label{color:var(--muted)}
+.runin select{padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;max-width:320px}
+#mRunArgs{flex:1 1 260px;min-width:0;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font:12.5px ui-monospace,Menlo,monospace}
+.runin .note{font-size:12px}
+.retval{border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:6px 0;background:var(--bg);font-size:13px}
+.retval pre{margin:4px 0 0}
+.uout{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;max-height:320px;overflow:auto}
+
 .offline{border-left:4px solid var(--med)}
 .offline pre{margin:8px 0}

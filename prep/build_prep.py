@@ -160,6 +160,16 @@ def harness_for(entry):
     return h, prov
 
 
+def run_meta(entry):
+    """What the page needs to run your code on a custom input."""
+    spec = (entry or {}).get("spec") or {}
+    if spec.get("kind") != "method":
+        return {"kind": spec.get("kind", "none")}
+    sample = next((t[0] for t in spec["tests"] if not any(isinstance(a, dict) for a in t[0])), None)
+    return {"kind": "method", "name": spec["name"], "ptypes": spec["ptypes"], "rtype": spec["rtype"],
+            "mode": spec.get("mode", "eq"), "java": spec["java"], "sample": sample}
+
+
 def shrink(h):
     out = {}
     for k in ("py_pre", "py_post", "java_post"):
@@ -276,6 +286,7 @@ def main():
             "py_starter": h["py_starter"], "java_starter": h["java_starter"],
         }
         rec.update(shrink(h))
+        rec["run"] = run_meta(e)
         out_problems.append(rec)
         if not e or not e.get("summary") or not e.get("spec"):
             missing.append((p["title"], p["slug"], "no summary" if not e or not e.get("summary") else "no tests"))

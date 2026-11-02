@@ -410,7 +410,8 @@
       'Ctrl-Space': function(c){ showHints(c, true); },
       'Tab': function(c){ if (c.somethingSelected()) c.indentSelection('add'); else c.replaceSelection('    ', 'end'); },
       'Shift-Tab': function(c){ c.indentSelection('subtract'); },
-      'Ctrl-Enter': function(){ run(); }, 'Cmd-Enter': function(){ run(); }
+      'Ctrl-Enter': function(){ run(); }, 'Cmd-Enter': function(){ run(); },
+      'Shift-Ctrl-Enter': function(){ runOnce(); }, 'Shift-Cmd-Enter': function(){ runOnce(); }
     }
   });
 
@@ -459,6 +460,7 @@
     $('mExample').textContent = p.example || '';
     $('mExample').parentNode.style.display = p.example ? '' : 'none';
     loadStatement(pid, false);
+    setupRunInput(p);
     renderModalTech(p, pid);
     $('mIdea').innerHTML = p.idea || 'No hint written for this one yet — check the pattern tag.';
     $('mIdea').parentNode.open = false;
@@ -527,6 +529,7 @@
     lang = $('mLang').value; sset('prep:lang', lang);
     cm.setOption('mode', lang === 'java' ? 'text/x-java' : 'python');
     loadCode(); renderRef($('refQ').value);
+    if (cur) syncRunInput();
   });
   $('mAuto').addEventListener('change', function(){ sset('prep:auto', $('mAuto').checked ? '1' : '0'); });
   var resetArmed = false;
@@ -687,6 +690,133 @@
     });
   }
   $('mRun').addEventListener('click', run);
+
+  // ---------- Run once (no grading): single test, custom input, or just your code ----------
+  function paramList(p){
+    var m = (p.run && p.run.java || '').match(/\(([^)]*)\)/);
+    return m && m[1].trim() ? m[1].split(',').map(function(x){ return x.trim(); }) : [];
+  }
+  function setupRunInput(p){
+    var sel = $('mRunSel'), opts = [], meta = p.run || {};
+    if (p.tests.length) opts.push(['t0', 'Test 1: ' + shortLab(p.tests[0][0])]);
+    if (meta.kind === 'method') opts.push(['custom', 'Custom input…']);
+    p.tests.forEach(function(t, i){ if (i > 0) opts.push(['t' + i, 'Test ' + (i + 1) + ': ' + shortLab(t[0])]); });
+    opts.push(['none', 'No input — just run my code (main / prints)']);
+    sel.innerHTML = opts.map(function(o){ return '<option value="' + o[0] + '">' + esc(o[1]) + '</option>'; }).join('');
+    var saved = sget('prep:runsel:' + cur);
+    if (saved && opts.some(function(o){ return o[0] === saved; })) sel.value = saved;
+    var argsSaved = sget('prep:runargs:' + cur);
+    $('mRunArgs').value = argsSaved != null ? argsSaved : (meta.sample ? JSON.stringify(meta.sample) : '[]');
+    syncRunInput();
+  }
+  function shortLab(l){ l = String(l).replace(/\s+— .*$/, ''); return l.length > 70 ? l.slice(0, 67) + '…' : l; }
+  function syncRunInput(){
+    var p = PD[cur], v = $('mRunSel').value, params = paramList(p);
+    $('mRunArgs').hidden = v !== 'custom';
+    $('mRunHint').textContent = v === 'custom' ? 'JSON list of arguments: ' + params.join(', ') + (p.run.ptypes.indexOf('tree') !== -1 ? ' (trees in level order with null)' : '') :
+      (v === 'none' ? (lang === 'java' ? 'Runs your class\'s public static void main(String[] args), if you add one.' : 'Runs your file as-is: put print(...) calls at the bottom.') : 'Shows your prints, the return value and the expected answer.');
+  }
+  $('mRunSel').addEventListener('change', function(){ sset('prep:runsel:' + cur, $('mRunSel').value); syncRunInput(); });
+  $('mRunArgs').addEventListener('input', function(){ sset('prep:runargs:' + cur, $('mRunArgs').value); });
+  $('mRunArgs').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); runOnce(); } });
+  $('mRunOnce').addEventListener('click', runOnce);
+
+  function jlit(v, t){
+    function list(a, f){ return a.map(f).join(', '); }
+    switch (t) {
+      case 'int': return String(v);
+      case 'long': return String(v) + 'L';
+      case 'double': var d = String(v); return /[.eE]/.test(d) ? d : d + '.0';
+      case 'bool': return v ? 'true' : 'false';
+      case 'str': return JSON.stringify(String(v));
+      case 'int[]': return 'new int[]{' + list(v, String) + '}';
+      case 'int[][]': return 'new int[][]{' + list(v, function(r){ return '{' + list(r, String) + '}'; }) + '}';
+      case 'char[][]': return 'new char[][]{' + list(v, function(r){ return '{' + list(r, function(c){ return "'" + (c === "'" || c === '\\' ? '\\' + c : String(c)) + "'"; }) + '}'; }) + '}';
+      case 'str[]': return 'new String[]{' + list(v, function(x){ return JSON.stringify(String(x)); }) + '}';
+      case 'tree': return 'T(new Integer[]{' + list(v, function(x){ return x === null ? 'null' : String(x); }) + '})';
+      case 'list': return 'L(' + jlit(v, 'int[]') + ')';
+      case 'list[]': return 'new ListNode[]{' + list(v, function(x){ return jlit(x, 'list'); }) + '}';
+      case 'cyclelist': return 'LC(' + jlit(v[0], 'int[]') + ', ' + v[1] + ')';
+      case 'nested': var obj = function(e){ return typeof e === 'number' ? String(e) : 'new Object[]{' + list(e, obj) + '}'; }; return 'NL(' + obj(v) + ')';
+    }
+    throw new Error('unsupported type ' + t);
+  }
+  function checkArg(v, t){
+    var isInt = function(x){ return typeof x === 'number' && Math.floor(x) === x; };
+    var ok = {
+      'int': isInt(v), 'long': isInt(v), 'double': typeof v === 'number', 'bool': typeof v === 'boolean', 'str': typeof v === 'string',
+      'int[]': Array.isArray(v) && v.every(isInt), 'list': Array.isArray(v) && v.every(isInt),
+      'int[][]': Array.isArray(v) && v.every(function(r){ return Array.isArray(r) && r.every(isInt); }),
+      'list[]': Array.isArray(v) && v.every(function(r){ return Array.isArray(r) && r.every(isInt); }),
+      'char[][]': Array.isArray(v) && v.every(function(r){ return Array.isArray(r) && r.every(function(c){ return typeof c === 'string' && c.length === 1; }); }),
+      'str[]': Array.isArray(v) && v.every(function(x){ return typeof x === 'string'; }),
+      'tree': Array.isArray(v) && v.every(function(x){ return x === null || isInt(x); }),
+      'cyclelist': Array.isArray(v) && v.length === 2 && Array.isArray(v[0]) && isInt(v[1]),
+      'nested': Array.isArray(v)
+    }[t];
+    return ok !== false;
+  }
+  function onlyTests(src, keepIndex, isJava, extraLine){
+    var re = isJava ? /^\s*__t\(/ : /^_t\(/, n = -1;
+    var lines = src.split('\n').filter(function(l){
+      if (!re.test(l)) return true;
+      n++; return n === keepIndex;
+    });
+    var out = lines.join('\n');
+    if (extraLine) {
+      if (isJava) out = out.replace('public static void main(String[] args) {\n', 'public static void main(String[] args) {\n' + extraLine + '\n');
+      else out += '\n' + extraLine + '\n';
+    }
+    return out;
+  }
+  function runOnce(){
+    if (!cur) return;
+    var out = $('mOut'), p = PD[cur], v = $('mRunSel').value, isJava = lang === 'java';
+    if (!SERVER) { run(); return; }
+    if (isJava && SH.hasJava === false) { run(); return; }
+    var post = isJava ? expand(p.java_post) : expand(p.py_post), pre = isJava ? '' : expand(p.py_pre);
+    var expected = null, what = '';
+    if (v === 'none') { post = onlyTests(post, -1, isJava); what = 'your code (no input)'; }
+    else if (v === 'custom') {
+      var args, meta = p.run;
+      try { args = JSON.parse($('mRunArgs').value); } catch (e) { out.innerHTML = '<div class="res fail"><b>Custom input isn\'t valid JSON.</b> Use a list of arguments, e.g. <code>' + esc(JSON.stringify(meta.sample || [])) + '</code></div>'; return; }
+      if (!Array.isArray(args) || args.length !== meta.ptypes.length) { out.innerHTML = '<div class="res fail"><b>Expected ' + meta.ptypes.length + ' argument' + (meta.ptypes.length > 1 ? 's' : '') + ':</b> ' + esc(paramList(p).join(', ')) + '. Wrap them in a list, e.g. <code>' + esc(JSON.stringify(meta.sample || [])) + '</code></div>'; return; }
+      for (var i = 0; i < args.length; i++) if (!checkArg(args[i], meta.ptypes[i])) { out.innerHTML = '<div class="res fail"><b>Argument ' + (i + 1) + ' should be ' + esc(paramList(p)[i] || meta.ptypes[i]) + '.</b></div>'; return; }
+      var label = 'custom: ' + meta.name + '(' + args.map(function(a){ return JSON.stringify(a); }).join(', ') + ')';
+      var wrapPy = meta.rtype === 'list' ? '_LA' : '', wrapJ = meta.rtype === 'list' ? '__LA' : '';
+      var line = isJava
+        ? '        __t(' + JSON.stringify(label) + ', () -> ' + wrapJ + '(new Solution().' + meta.name + '(' + args.map(function(a, i){ return jlit(a, meta.ptypes[i]); }).join(', ') + ')), "null", ' + JSON.stringify(meta.mode) + ');'
+        : '_t(' + JSON.stringify(label) + ', lambda: ' + wrapPy + '(Solution().' + meta.name + '(' + args.map(function(a, i){ return '_conv(_json.loads(' + JSON.stringify(JSON.stringify(a)) + '), ' + JSON.stringify(meta.ptypes[i]) + ')'; }).join(', ') + ')), "null", ' + JSON.stringify(meta.mode) + ')';
+      post = onlyTests(post, -1, isJava, line); what = 'your custom input';
+    } else {
+      var idx = +v.slice(1); expected = p.tests[idx][1];
+      post = onlyTests(post, idx, isJava); what = 'test ' + (idx + 1);
+    }
+    var btn = $('mRunOnce'); btn.disabled = true; btn.textContent = 'Running…';
+    out.innerHTML = '<div class="outhint">' + (isJava ? 'Compiling and running ' : 'Running ') + esc(what) + '…</div>';
+    api('/run', { lang: lang, code: cm.getValue(), pre: pre, post: post }).then(function(r){
+      btn.disabled = false; btn.textContent = 'Run ▷';
+      if (r.compile_error) { out.innerHTML = '<div class="sum fail">Compile error</div><pre>' + esc(r.compile_error) + '</pre>'; return; }
+      var results = [], user = [];
+      (r.stdout || '').split('\n').forEach(function(l){ if (l.indexOf('@@R ') === 0) { try { results.push(JSON.parse(l.slice(4))); } catch(e){} } else user.push(l); });
+      while (user.length && user[user.length - 1] === '') user.pop();
+      var html = '<div class="outhint">Ran ' + esc(what) + ' — not graded, progress unchanged.</div>';
+      html += '<h4>Your output' + (user.length ? '' : ' <span class="note">(nothing printed)</span>') + '</h4>' + (user.length ? '<pre class="uout">' + esc(user.join('\n')) + '</pre>' : '');
+      var x = results[0];
+      if (x) {
+        var lab = String(x.label).replace(/^custom: /, '').replace(/\s+— .*$/, '');
+        if (x.err) html += '<div class="retval fail"><b>Exception</b> in <code>' + esc(lab) + '</code><pre>' + esc(x.err) + '</pre></div>';
+        else html += '<div class="retval"><div><code>' + esc(lab) + '</code></div><b>Returned:</b><pre>' + esc(x.got) + '</pre>' +
+          (expected != null ? '<b>Expected:</b> <span class="' + (x.ok ? 'sum pass' : 'sum fail') + '">' + (x.ok ? '✓ match' : '✗ different') + '</span><pre>' + esc(expected) + '</pre>' : '') + '</div>';
+      }
+      if (r.timeout) html += '<div class="res fail"><b>Time limit:</b> ' + esc(r.stderr) + '</div>';
+      else if (r.stderr && r.stderr.trim()) html += '<h4>Errors</h4><pre>' + esc(r.stderr.trim().split('\n').slice(-25).join('\n')) + '</pre>';
+      out.innerHTML = html;
+    }).catch(function(e){
+      btn.disabled = false; btn.textContent = 'Run ▷';
+      out.innerHTML = '<div class="res fail"><b>Could not reach the local runner.</b> (' + esc(e.message) + ')</div>';
+    });
+  }
 
   // ---------- reference panel ----------
   function renderRef(q){

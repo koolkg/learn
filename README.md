@@ -1,149 +1,220 @@
-# Coding Interview Prep: how to run it
+# Coding Interview Prep
 
-This folder (`~/learn`) has a practice page for LeetCode problems that LinkedIn and NVIDIA asked in the
-last 6 months, plus the Blind 75. You can read each problem, write Java or Python in the
-browser, and run it against test cases on your own Mac.
+A local practice site for LeetCode problems by company (LinkedIn, NVIDIA, … — any company in the
+dataset) plus the Blind 75. You can read each problem, write Java or Python in the browser with
+autocomplete and a Java API reference, run it against test cases on your own Mac, and track progress.
 
-| File | What it is |
+Everything lives in `~/learn/prep/`:
+
+| Path | What it is |
 |---|---|
-| `coding_interview_prep.html` | The practice page: problem list, filters, editor, Java reference |
-| `prep_server.py` | Small local runner that serves the page and runs your code |
-| `solutions/` | Your code, saved as files (one per problem and language, e.g. `two-sum.java`) |
-| `solutions/progress.json` | Your progress: done / passing / attempted, last test result per problem |
-| `leetcode-company-wise-problems-main/` | The company question lists the page was built from (LinkedIn, Nvidia, …) |
+| `index.html`, `app.js`, `app.css` | The page. It renders everything from `problems.json` |
+| `problems.json` | **Generated** list of problems for the companies you chose (don't edit by hand) |
+| `build_prep.py` | Builds `problems.json` from the dataset + `content/` |
+| `prep_server.py` | Local runner: serves the page, runs your code, saves your work |
+| `harness.py` | Turns the test specs into Java/Python test code (used by `build_prep.py`) |
+| `content/problems.json` | **Hand-written** summaries, hints, patterns and test cases, keyed by LeetCode slug |
+| `content/blind75.json` | The Blind 75 list |
+| `content/patterns.json` | Pattern names, plus how to guess a pattern from LeetCode topics |
+| `content/companies.json` | Optional display names (e.g. `Nvidia` → `NVIDIA`) |
+| `content/reference.json` | Java/Python API cheat sheet and snippets used by autocomplete |
+| `content/techniques.json` | Data-structure and algorithm-pattern cards (idea, Java template, section) |
+| `content/videos.json` | **Your video library** (add with `add_video.py`) |
+| `add_video.py` | Adds a YouTube link to `videos.json` |
+| `vendor/` | CodeMirror editor (MIT licence) |
+| `solutions/` | **Your work:** code files (`two-sum.java`) and `progress.json` |
+
+The company data comes from `~/learn/leetcode-company-wise-problems-main/` (the dataset you downloaded).
 
 ## Requirements
 
-- **Python 3** (already on most Macs): `python3 --version`
-- **A JDK, for running Java** (11 or newer): `javac -version`
-  If it's missing: `brew install openjdk`, then follow the `brew` instructions to put it on your PATH.
-  Without a JDK you can still run Python.
+- **Python 3.8+** (`python3 --version`)
+- **A JDK 11+ to run Java** (`javac -version`). If missing: `brew install openjdk`. Python runs without it.
 
-No packages to install. `prep_server.py` uses only the Python standard library.
+No packages to install; everything uses the Python standard library.
 
 ## Quick start
 
 ```bash
-cd ~/learn
+cd ~/learn/prep
 python3 prep_server.py
 ```
 
-It prints something like this and opens the page in your browser:
+It opens `http://127.0.0.1:8777`. Keep the Terminal window open while you practice; **Ctrl + C** stops it.
+Options: `--port 9000` (if 8777 is busy), `--no-browser`.
 
-```
-Prep runner on http://127.0.0.1:8777/
-  python: /usr/bin/python3
-  javac:  /usr/bin/javac
-  solutions saved to: .../solutions
-Ctrl+C to stop.
-```
+> The page needs the server: opened as a plain file it only shows how to start it.
 
-Keep the Terminal window open while you practice. Press **Ctrl + C** to stop the server.
-
-Options:
+## Choosing companies and the time window
 
 ```bash
-python3 prep_server.py --port 9000      # use another port if 8777 is busy
-python3 prep_server.py --no-browser     # don't open the browser automatically
+cd ~/learn/prep
+python3 build_prep.py --list-companies                       # what's in the dataset
+python3 build_prep.py --companies LinkedIn Nvidia Google      # company folder names, any case
+python3 build_prep.py --companies Uber --window 3mo           # 30d | 3mo | 6mo | all
+python3 build_prep.py --no-blind75                            # only company problems
+python3 build_prep.py                                         # rebuild with the same settings as last time
 ```
+
+Then reload the page. Your code and progress are kept: they're stored by problem, not by build.
+
+The list is ordered by priority: asked by more of your chosen companies first, then most recent
+(30d → 3mo → 6mo), then most frequent. Blind 75 problems no company asked come last.
+
+## Adding summaries, hints and tests
+
+Problems from a newly added company show the title, tags, difficulty, a guessed pattern and a LeetCode
+link, with an editor but no summary or tests. To see which ones:
+
+```bash
+python3 build_prep.py --missing
+```
+
+To fill one in, add an entry to `content/problems.json`, keyed by the slug from the LeetCode URL
+(`https://leetcode.com/problems/add-two-numbers` → `add-two-numbers`), then run `build_prep.py` again:
+
+```json
+"add-two-numbers": {
+  "title": "Add Two Numbers",
+  "difficulty": "Medium",
+  "pattern": "Linked List",
+  "summary": "Two non-empty linked lists hold digits in reverse order. Return their sum as a linked list.",
+  "example": "[2,4,3] + [5,6,4] → [7,0,8]",
+  "idea": "Walk both lists with a carry; append (a + b + carry) % 10.",
+  "spec": {
+    "kind": "method", "name": "addTwoNumbers", "provided": ["ListNode"],
+    "py": "def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:",
+    "java": "public ListNode addTwoNumbers(ListNode l1, ListNode l2)",
+    "ptypes": ["list", "list"], "rtype": "list",
+    "tests": [[[[2,4,3], [5,6,4]], [7,0,8]], [[[0], [0]], [0]]]
+  }
+}
+```
+
+- Without `spec`, add `"signature": {"python": "...", "java": "..."}` to get proper starter code but no tests.
+- Argument types (`ptypes`): `int`, `long`, `double`, `bool`, `str`, `int[]`, `int[][]`, `char[][]`, `str[]`,
+  `tree` (level-order list with `null`s), `list` (linked list), `list[]`, `nested`, `cyclelist`.
+- A test can carry a note as a third element, shown next to it in the popup:
+  `[[[0, 0, 0], 2], true, "plant at both ends"]`.
+- Large inputs can be generated instead of written out (keeps files small and Java under its method-size limit):
+  `{"gen": "repeat", "value": 0, "n": 2000}`, `{"gen": "alt", "a": 1, "b": 0, "n": 2000}`,
+  `{"gen": "range", "start": 1, "step": 1, "n": 500}`, `{"gen": "grid", "value": "1", "rows": 60, "cols": 60}`,
+  `{"gen": "star", "n": 2200, "w": 1000000}`.
+- `"mode": "sort"` compares results in any order; `"sortinner"` also sorts inner lists (e.g. Group Anagrams).
+- Design problems use `"kind": "ops"` (see `max-stack` or `lru-cache` in the file for examples).
 
 ## Using the page
 
-1. **Pick problems.** Use the Source filter (LinkedIn, NVIDIA, Blind 75, …) and the Pattern filter.
-   The list is ordered by priority: asked by more companies, then most recent, then most frequent.
-2. **Click a problem title.** A popup opens:
-   - **Problem tab:** a short description, an example, a hidden hint, and the test cases.
-   - **Reference tab:** a searchable Java API cheat sheet (String, HashMap, TreeMap, PriorityQueue,
-     Deque, …) with Big-O and links to the official docs, plus snippets you can insert.
-3. **Write code** in Java or Python (language picker above the editor).
-   - Typing `.` after a variable lists its methods with signatures, e.g. `map.` → `get`, `getOrDefault`, …
-   - **Ctrl + Space** shows suggestions anywhere. Autocomplete can be turned off with the checkbox.
-4. **Run tests** with the button or **Cmd + Enter**. You'll see:
-   - pass/fail for each test case, with *expected* vs *got*
-   - compile errors, your `System.out` / `print` output, and runtime errors
-   - a 10-second time limit (to stop infinite loops)
-5. **Check Done** at the top of the popup when you've solved it. Use ‹ › to move between problems.
-   **Esc** closes the popup.
+1. **Filter** by Source (company, Blind 75, asked by 2+ companies), Pattern and Status. Click any tag to filter by it.
+2. **Click a problem title.** The popup shows:
+   - **Problem tab:** summary, example, hidden hint, test cases, and a link to LeetCode.
+   - **Reference tab:** searchable Java API cheat sheet (String, HashMap, TreeMap, PriorityQueue, Deque, …)
+     with Big-O and official-docs links, plus snippets you can insert.
+3. **Write code** in Java or Python. Typing `.` after a variable lists its methods (`map.` → `get`,
+   `getOrDefault`, …); **Ctrl + Space** suggests anywhere.
+4. **Run tests** (or **Cmd + Enter**). Each problem with tests has 14–32 of them: the basic cases, labelled
+   **edge cases** (empty/single inputs, boundaries, overflow, duplicates, …) and about 10 **randomized tests**
+   whose answers were computed by reference solutions. Failures are shown first with expected vs got;
+   passing tests are folded away. You also get compile errors, your print output, and a 10-second time limit.
+5. **Run ▷** (or **Cmd + Shift + Enter**) runs your code once without grading it, for debugging with prints.
+   Pick what to run in **Run with**: any single test (shows returned vs expected), **Custom input**, where
+   you type the arguments as a JSON list (e.g. `[[1,0,0,0,1], 1]`; trees in level order with `null`), or
+   **No input** (runs your own `main` in Java, or top-level `print`s in Python). Your prints are shown first,
+   then the return value. Progress isn't changed by Run, only by Run tests.
+6. **Tick Done** when you can solve it confidently. ‹ › move between problems; **Esc** closes.
 
-### Tracking progress
+Notes: helper classes (`ListNode`, `TreeNode`, `NestedInteger`, `Node`, `read4`) are provided — don't
+redefine them. Java gets `java.util.*` imported. For problems without tests, add
+`public static void main(String[] args)` to your class (Java) or a `print(...)` at the bottom (Python).
 
-Every problem shows its status next to the title:
+## Full problem statements
 
-| Label | Meaning |
-|---|---|
-| *(none)* | Not started |
-| **Started** | You've written code but haven't run it |
-| **Tried · 1/4** | Last run passed 1 of 4 tests |
-| **✓ 4/4** | All tests passing, not yet marked done |
-| **✓ Done** | You ticked Done |
+When you open a problem, the popup shows **In short** (a summary I wrote) and **Full problem**: the
+complete official statement with all examples and constraints, which the runner fetches from LeetCode
+on your Mac the first time you open that problem. Click **Show full problem** to expand it (the page
+remembers your choice); **Refresh** fetches it again.
 
-- The **status menu** in the toolbar filters by status: *Not done yet*, *Not started*, *Attempted*,
-  *Passing, not marked done*, or *Done*. It combines with the Source and Pattern filters.
-- The **progress bar** and legend above the list count done / passing / attempted / not started for the
-  current filter, e.g. "how much of NVIDIA's list is done".
-- The popup header shows the last result, e.g. "last run 3/4 passed · Java · Oct 28".
-- Passing all tests doesn't mark a problem done automatically. Tick **Done** when you can solve it
-  confidently.
-
-### Writing code: things to know
-
-- Start from the given starter (class and method names must match, as on LeetCode).
-- Helper classes such as `ListNode`, `TreeNode`, `NestedInteger`, `Node` and `read4` are
-  **provided**. Don't redefine them (the popup lists what's provided).
-- Java: `java.util.*` is imported for you, and `public class` is fine.
-- Problems from the Blind 75 that no company asked recently have **no test cases**. Run just compiles
-  and runs your code. To try an input, add this to your class:
-  ```java
-  public static void main(String[] args) {
-      System.out.println(new Solution().climbStairs(5));
-  }
+- Statements are cached in `prep/cache/statements/`. That folder is in `.gitignore`: it's LeetCode's
+  content, so keep it out of public repos.
+- **Premium problems** (e.g. Max Stack, Nested List Weight Sum II, Meeting Rooms) are only returned to a
+  logged-in LeetCode Premium account. To load them, copy your session cookie from the browser
+  (leetcode.com → Developer tools → Application → Cookies → `LEETCODE_SESSION`, and `csrftoken`) into
+  `prep/.leetcode_session`:
   ```
-  In Python, add a `print(...)` at the bottom.
+  LEETCODE_SESSION=eyJ0eXAi...
+  csrftoken=AbC123...
+  ```
+  Then click **Refresh** in the popup. This file is also in `.gitignore`; treat it like a password.
+  Without Premium you still get the summary, hint and test cases.
 
-## Where your code is saved
+## Data Structures, Algorithm Patterns and Videos
 
-| How you opened the page | Saved in the browser | Saved as files in `solutions/` | Can run code |
-|---|---|---|---|
-| Through the server (`http://127.0.0.1:8777`) | Yes | Yes, e.g. `solutions/two-sum.java` | Yes |
-| Double-clicking the HTML file | Yes | No | No |
+Three sections sit next to Big-O:
 
-- Browser copies survive closing the tab and restarting, but are lost if you clear browsing data or
-  use a private window. They're also separate per browser, and per way of opening the page.
-- **Recommended:** always open the page through `prep_server.py`, so your code is also kept as normal files.
-- **Progress** (done / passing / attempted) is saved in `solutions/progress.json` when the runner is on,
-  and in the browser either way. On load the page merges both, so a done problem stays done even if
-  the browser copy is cleared.
-- Problems are linked to files by their LeetCode URL name (slug): `https://leetcode.com/problems/two-sum`
-  → `solutions/two-sum.java`, `solutions/two-sum.py`, and the `"two-sum"` entry in `progress.json`.
-- Commit `solutions/` to git to keep your code and progress across machines.
+- **Data Structures**: arrays and hash maps, linked lists, stacks and queues, heaps, trees, tries, graphs, matrices.
+- **Algorithm Patterns**: two pointers, sliding window, binary search, intervals, backtracking, DP, greedy, and more.
+- **Videos**: your whole video library in one list.
+
+Each card shows when to use it, the core idea, a Java template, typical complexity, and a **Practice** button
+that filters the problem list. Videos tagged with a pattern are embedded on its card. Click the thumbnail
+or any chapter timestamp to play from that point. Problem popups link to their guide and show matching videos.
+
+All videos live in **`prep/content/videos.json`**. To add one:
+
+```bash
+cd ~/learn/prep
+python3 add_video.py https://www.youtube.com/watch?v=Ak-fxEwAR14 --pattern Backtracking
+python3 add_video.py https://youtu.be/XXXXXXXXXXX --pattern "Sliding Window" \
+    --problem longest-substring-without-repeating-characters \
+    --chapters "0:00 Intro" "3:10 Shrinking the window" "8:45 Code"
+python3 add_video.py --list
+```
+
+It looks up the title and channel automatically, then you reload the page; no rebuild needed. You can also
+edit the JSON by hand: only `url` and `patterns` are required, and `problems` (LeetCode slugs), `chapters`
+(`"m:ss Label"`), `links` and `notes` are optional. A video can belong to several patterns. Card text, templates and which
+section a card is in (`group`) are in `content/techniques.json`.
+
+## Progress and where your work is saved
+
+Every problem shows a status: *(none)* not started · **Started** (code written) · **Tried · 1/4** (last run) ·
+**✓ 4/4** (all tests passing) · **✓ Done**. The status menu filters by it; the bar shows totals for the current filter.
+
+| What | Where |
+|---|---|
+| Your code | `prep/solutions/<slug>.java` / `.py` (plus a browser copy) |
+| Progress | `prep/solutions/progress.json` (plus a browser copy) |
+
+Problems are linked to files by their LeetCode slug: `two-sum` → `solutions/two-sum.java` and the
+`"two-sum"` entry in `progress.json`. On load the page merges the file and the browser copy, so nothing
+marked done is lost. **Commit `prep/solutions/` to git** to keep your work across machines.
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---|---|
-| Page says "Runner off" | You opened the HTML file directly. Start `python3 prep_server.py` and use the page it opens. |
-| "Could not reach the local runner" | The server was stopped. Start it again and reload the page. |
-| "No JDK found" / `javac not found` | Install a JDK (`brew install openjdk`) and restart the server. |
-| `Address already in use` | Another copy is running, or the port is busy. Stop it, or use `--port 9000`. |
-| My code isn't there after reopening | You probably opened the page the other way (file vs server), or in another browser. Files in `solutions/` are loaded when the browser has no copy. |
-| `java.lang.StackOverflowError` | Very deep recursion. The runner already gives Java a large stack, so check for infinite recursion. |
-| Tests time out | 10-second limit per run. Look for an infinite loop or an O(n²) where O(n) is expected. |
+| Page says to start the runner | You opened `index.html` as a file. Run `python3 prep_server.py` and use the page it opens. |
+| "Could not load problems.json" | Run `python3 build_prep.py`, then reload. |
+| "Could not reach the local runner" | The server stopped. Start it again and reload. |
+| `Company 'x' not found` | Use `--list-companies` for exact folder names. |
+| "No JDK found" | `brew install openjdk`, then restart the server. |
+| `Address already in use` | Another copy is running, or use `--port 9000`. |
+| Tests time out | 10-second limit: look for an infinite loop or an O(n²) where O(n) is expected. |
 
 ## How the runner works (and why it's safe)
 
-When you click **Run tests**, the page sends your code and that problem's test harness to
-`prep_server.py`. It writes a temporary file, compiles and runs it with your own `javac`/`java` or
-`python3`, and sends the results back. The temporary files are deleted afterwards.
+On **Run**, the page sends your code and that problem's test harness to `prep_server.py`, which writes a
+temporary file, compiles/runs it with your own `javac`/`java` or `python3`, returns the results and deletes
+the temporary files.
 
-- **Local only:** it listens only on `127.0.0.1`, so other machines can't reach it, and nothing is uploaded.
-- **Token check:** each start creates a random token that's only embedded in the page it serves, so
-  other websites open in your browser can't ask it to run code.
-- **Saves only to `solutions/`** (your code and `progress.json`): it doesn't write anywhere else.
-- **Short and readable:** about 200 lines of plain Python. Read it before running if you like.
+- Listens only on `127.0.0.1`; your code is never uploaded anywhere.
+- A random token, embedded only in the page it serves, is required for every action, so other websites
+  open in your browser can't use it.
+- Writes only to `prep/solutions/` and `prep/cache/`. Its only outside connection is to leetcode.com, to fetch problem statements.
 
 ## Data source
 
-Company lists come from the `liquidslr/leetcode-company-wise-problems` dataset (LeetCode company
-tags), snapshot of **1 June 2025**. "Last 6 months" and the 30d / 3mo / 6mo tags are relative to that
-date, not today. Problem descriptions on the page are short summaries, not LeetCode's text. Use
-"Open on LeetCode" for the full statement.
+Company lists: `liquidslr/leetcode-company-wise-problems` (LeetCode company tags), snapshot of
+**1 June 2025**. "Last 6 months" and the 30d / 3mo / 6mo tags are relative to that date, not today.
+To refresh, download a newer copy of the dataset into `~/learn/leetcode-company-wise-problems-main/`
+and run `build_prep.py`. Problem summaries are short paraphrases, not LeetCode's text.

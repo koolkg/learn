@@ -386,7 +386,14 @@ list.add(value);
           <label class="ac"><input type="checkbox" id="mAuto" checked> Autocomplete</label>
           <span class="grow"></span>
           <button type="button" class="btn ghost" id="mReset">Reset code</button>
-          <button type="button" class="btn" id="mRun" title="Run tests (Ctrl/Cmd + Enter)">Run tests ▶</button>
+          <button type="button" class="btn ghost" id="mRunOnce" title="Run once and show your prints (Ctrl/Cmd + Shift + Enter)">Run ▷</button>
+          <button type="button" class="btn" id="mRun" title="Run all tests (Ctrl/Cmd + Enter)">Run tests ▶</button>
+        </div>
+        <div class="runin">
+          <label for="mRunSel">Run with</label>
+          <select id="mRunSel" aria-label="Input for Run"></select>
+          <input type="text" id="mRunArgs" spellcheck="false" autocomplete="off" aria-label="Custom input as a JSON list of arguments" hidden>
+          <span class="note" id="mRunHint"></span>
         </div>
         <div class="editorwrap"><textarea id="mCode"></textarea></div>
         <div class="out" id="mOut"><div class="outhint">Press <b>Run tests</b> (or Ctrl/Cmd + Enter). <b>Ctrl + Space</b> shows suggestions; typing <code>.</code> after a variable lists its methods.</div></div>

@@ -82,6 +82,15 @@ def T(arr):
             node.right = TreeNode(arr[i]); q.append(node.right)
         i += 1
     return root
+def _conv(v, t):
+    """turns JSON input into the argument type (used by the page's Run with custom input)"""
+    if t == "tree": return T(v)
+    if t == "list": return L(v)
+    if t == "list[]": return [L(x) for x in v]
+    if t == "nested": return NL(v)
+    if t == "cyclelist": return LC(v[0], v[1])
+    if t == "double": return float(v)
+    return v
 def _LA(x):
     return [] if x is None else x
 def _ops(cls, ops, args):
