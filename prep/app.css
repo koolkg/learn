@@ -283,5 +283,15 @@ details.tech>summary .note{margin-left:auto;font-weight:400}
 .retval pre{margin:4px 0 0}
 .uout{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px;max-height:320px;overflow:auto}
 
+.verbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--border);background:var(--surface);font-size:13px}
+.verbar label{color:var(--muted)}
+.verbar select{padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;max-width:340px}
+.btn.sm{font-size:12.5px;padding:4px 10px}
+.vernew{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center}
+.vernew[hidden]{display:none}
+.vernew input{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font:12.5px ui-monospace,Menlo,monospace;width:170px}
+#mVerMsg{font-size:12px}
+#mVerMsg.warn{color:var(--med)}
+
 .offline{border-left:4px solid var(--med)}
 .offline pre{margin:8px 0}

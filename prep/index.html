@@ -395,6 +395,19 @@ list.add(value);
           <input type="text" id="mRunArgs" spellcheck="false" autocomplete="off" aria-label="Custom input as a JSON list of arguments" hidden>
           <span class="note" id="mRunHint"></span>
         </div>
+        <div class="verbar">
+          <label for="mVerSel">Version</label>
+          <select id="mVerSel" aria-label="Saved versions"></select>
+          <button type="button" class="btn ghost sm" id="mVerSave">Save as version…</button>
+          <span class="vernew" id="mVerNew" hidden>
+            <input type="text" id="mVerName" spellcheck="false" autocomplete="off" placeholder="name, e.g. bfs or two-pass-dfs" aria-label="Version name">
+            <input type="text" id="mVerNote" spellcheck="false" autocomplete="off" placeholder="note (optional)" aria-label="Version note">
+            <button type="button" class="btn sm" id="mVerOk">Save</button>
+            <button type="button" class="linkbtn" id="mVerCancel">Cancel</button>
+          </span>
+          <button type="button" class="linkbtn" id="mVerDel" hidden>Delete</button>
+          <span class="note" id="mVerMsg"></span>
+        </div>
         <div class="editorwrap"><textarea id="mCode"></textarea></div>
         <div class="out" id="mOut"><div class="outhint">Press <b>Run tests</b> (or Ctrl/Cmd + Enter). <b>Ctrl + Space</b> shows suggestions; typing <code>.</code> after a variable lists its methods.</div></div>
       </section>

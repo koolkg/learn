@@ -9,6 +9,7 @@ Local runner for the prep page (index.html + problems.json in this folder).
 - Listens on 127.0.0.1 only. Nothing is sent anywhere else.
 - Your code is also saved as files under ./solutions/ (one file per problem and language),
   and your progress (done / passing / attempted) in ./solutions/progress.json.
+- Named versions of a solution are kept in ./solutions/<problem>/<name>.java|.py (+ versions.json).
 - When you open a problem, the full statement is fetched from LeetCode (like your browser would)
   and cached in ./cache/statements/ — local only, not committed to git. For Premium problems,
   put your LeetCode session cookie in ./.leetcode_session (see README).
@@ -58,6 +59,43 @@ def write_progress(data):
         json.dump(data, f, indent=2, sort_keys=True)
         f.write("\n")
     os.replace(tmp, PROGRESS)  # atomic: never leaves a half-written file
+
+
+# ---------- named versions: solutions/<slug>/<name>.<ext> + solutions/<slug>/versions.json ----------
+SAFE_VER = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
+EXT = {"java": "java", "python": "py"}
+
+
+def ver_dir(slug):
+    return os.path.join(SOLUTIONS, slug)
+
+
+def read_versions(slug):
+    try:
+        with open(os.path.join(ver_dir(slug), "versions.json"), encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
+def write_versions(slug, versions):
+    os.makedirs(ver_dir(slug), exist_ok=True)
+    path = os.path.join(ver_dir(slug), "versions.json")
+    with open(path + ".tmp", "w", encoding="utf-8") as f:
+        json.dump(versions, f, indent=2)
+        f.write("\n")
+    os.replace(path + ".tmp", path)
+
+
+def versions_with_code(slug):
+    out = []
+    for v in read_versions(slug):
+        fp = os.path.join(ver_dir(slug), v.get("file", ""))
+        if os.path.exists(fp):
+            with open(fp, encoding="utf-8") as f:
+                out.append(dict(v, code=f.read()))
+    return out
 
 
 def solution_files():
@@ -250,6 +288,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(404, json.dumps({"error": msg}))
             with open(path, "rb") as f:
                 return self._send(200, f.read(), ctype)
+        if u.path == "/versions":
+            if not self._auth():
+                return self._send(403, '{"error":"forbidden"}')
+            slug = parse_qs(u.query).get("id", [""])[0]
+            if not SAFE_ID.match(slug):
+                return self._send(400, '{"error":"bad request"}')
+            with _lock:
+                return self._send(200, json.dumps({"versions": versions_with_code(slug)}))
         if u.path == "/load":
             if not self._auth():
                 return self._send(403, '{"error":"forbidden"}')
@@ -306,6 +352,38 @@ class Handler(BaseHTTPRequestHandler):
                 data[pid] = entry
                 write_progress(data)
             return self._send(200, json.dumps(entry))
+        if u.path in ("/versions/save", "/versions/delete", "/versions/result"):
+            slug, lang, name = req.get("id", ""), req.get("lang", ""), req.get("name", "")
+            if not SAFE_ID.match(slug) or lang not in EXT or not SAFE_VER.match(name):
+                return self._send(400, '{"error":"bad request: version names use a-z, 0-9 and -"}')
+            fname = f"{name}.{EXT[lang]}"
+            now = __import__("datetime").datetime.now().isoformat(timespec="seconds")
+            with _lock:
+                vs = read_versions(slug)
+                cur = next((v for v in vs if v["name"] == name and v["lang"] == lang), None)
+                if u.path == "/versions/save":
+                    os.makedirs(ver_dir(slug), exist_ok=True)
+                    with open(os.path.join(ver_dir(slug), fname), "w", encoding="utf-8") as f:
+                        f.write(req.get("code", ""))
+                    if cur is None:
+                        cur = {"name": name, "lang": lang, "file": fname, "saved": now}
+                        vs.append(cur)
+                    cur["updated"] = now
+                    if "note" in req: cur["note"] = str(req["note"])[:200]
+                    if isinstance(req.get("result"), dict): cur["result"] = req["result"]
+                elif u.path == "/versions/result":
+                    if cur is None:
+                        return self._send(404, '{"error":"no such version"}')
+                    if isinstance(req.get("result"), dict): cur["result"] = req["result"]
+                else:  # delete
+                    if cur is not None:
+                        vs.remove(cur)
+                        try:
+                            os.remove(os.path.join(ver_dir(slug), fname))
+                        except FileNotFoundError:
+                            pass
+                write_versions(slug, vs)
+                return self._send(200, json.dumps({"versions": versions_with_code(slug)}))
         if u.path == "/save":
             pid, lang = req.get("id", ""), req.get("lang", "")
             if not SAFE_ID.match(pid) or lang not in ("java", "python"):

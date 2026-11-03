@@ -47,6 +47,16 @@
     },
     "updated": "2026-10-29T10:13:08"
   },
+  "maximum-subarray": {
+    "attempted": true,
+    "last": {
+      "at": "2026-11-03T04:55:29.732Z",
+      "lang": "java",
+      "ok": 20,
+      "total": 20
+    },
+    "updated": "2026-11-02T20:55:29"
+  },
   "nested-list-weight-sum-ii": {
     "attempted": true,
     "done": true,

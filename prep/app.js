@@ -434,6 +434,7 @@
     var pid = cur, l = lang, v = cm.getValue();
     sset(key(pid, l), v);
     if (!(PROG[pid] && PROG[pid].attempted)) patch(pid, { attempted: true });
+    verEdited();
     clearTimeout(saveTimer);
     if (SERVER) saveTimer = setTimeout(function(){ api('/save', { id: pid, lang: l, code: v }).catch(function(){}); }, 700);
   });
@@ -461,6 +462,7 @@
     $('mExample').parentNode.style.display = p.example ? '' : 'none';
     loadStatement(pid, false);
     setupRunInput(p);
+    loadVersions(pid);
     renderModalTech(p, pid);
     $('mIdea').innerHTML = p.idea || 'No hint written for this one yet — check the pattern tag.';
     $('mIdea').parentNode.open = false;
@@ -529,7 +531,7 @@
     lang = $('mLang').value; sset('prep:lang', lang);
     cm.setOption('mode', lang === 'java' ? 'text/x-java' : 'python');
     loadCode(); renderRef($('refQ').value);
-    if (cur) syncRunInput();
+    if (cur) { syncRunInput(); loadVersions(cur); }
   });
   $('mAuto').addEventListener('change', function(){ sset('prep:auto', $('mAuto').checked ? '1' : '0'); });
   var resetArmed = false;
@@ -661,6 +663,7 @@
         var passed = results.filter(function(x){ return x.ok; }).length;
         var all = passed === p.tests.length;
         patch(cur, { attempted: true, last: { lang: lang, ok: passed, total: p.tests.length, at: new Date().toISOString() } });
+        noteRunForVersion({ ok: passed, total: p.tests.length, at: new Date().toISOString() });
         showModalStatus();
         html += '<div class="sum ' + (all ? 'pass' : 'fail') + '">' + (all ? '✓ All ' + passed + ' tests passed' : passed + ' / ' + p.tests.length + ' tests passed') + '</div>';
         if (all && !(PROG[cur] && PROG[cur].done)) html += '<div class="outhint">All passing — tick <b>Done</b> at the top when you\'re confident.</div>';
@@ -690,6 +693,109 @@
     });
   }
   $('mRun').addEventListener('click', run);
+
+  // ---------- named versions (solutions/<slug>/<name>.<ext>) ----------
+  var VERS = [], curVer = null, lastRun = null, verArmed = null, delArmed = false;
+  function verOf(name){ return VERS.filter(function(v){ return v.lang === lang && v.name === name; })[0]; }
+  function fmtWhen(iso){ try { return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); } catch(e){ return ''; } }
+  function verLabel(v){
+    var r = v.result ? (v.result.total ? (v.result.ok === v.result.total ? ' · ✓ ' : ' · ✗ ') + v.result.ok + '/' + v.result.total : '') : ' · not run';
+    return v.name + r + ' · ' + fmtWhen(v.updated || v.saved) + (v.note ? ' — ' + v.note : '');
+  }
+  function renderVersions(){
+    var mine = VERS.filter(function(v){ return v.lang === lang; });
+    var sel = $('mVerSel');
+    sel.innerHTML = '<option value="">Draft (autosaved)</option>' + mine.map(function(v){
+      return '<option value="' + esc(v.name) + '">' + esc(verLabel(v)) + '</option>'; }).join('');
+    if (!curVer) { var same = mine.filter(function(v){ return v.code === cm.getValue(); })[0]; if (same) curVer = same.name; }
+    sel.value = curVer && verOf(curVer) ? curVer : '';
+    if (!verOf(curVer)) curVer = null;
+    $('mVerDel').hidden = !curVer;
+    verEdited();
+  }
+  function loadVersions(pid){
+    VERS = []; curVer = null; verArmed = null; delArmed = false; lastRun = null;
+    $('mVerNew').hidden = true; $('mVerSave').hidden = false; $('mVerMsg').textContent = ''; $('mVerMsg').className = 'note';
+    if (!SERVER) { $('mVerSel').innerHTML = '<option>Draft (autosaved)</option>'; $('mVerSel').disabled = true; $('mVerSave').disabled = true;
+                   $('mVerMsg').textContent = 'Start prep_server.py to save named versions.'; return; }
+    $('mVerSel').disabled = false; $('mVerSave').disabled = false;
+    api('/versions?id=' + encodeURIComponent(pid)).then(function(r){ if (cur !== pid) return; VERS = r.versions || []; renderVersions(); }).catch(function(){});
+  }
+  function verEdited(){
+    var v = verOf(curVer), msg = $('mVerMsg');
+    if (v && v.code !== cm.getValue()) { msg.textContent = 'Edited since saved — Save as version to update “' + v.name + '”, or pick a new name.'; msg.className = 'note warn'; }
+    else if (msg.className.indexOf('warn') !== -1) { msg.textContent = ''; msg.className = 'note'; }
+  }
+  function draftIsUnsaved(){
+    var code = cm.getValue(), p = PD[cur];
+    if (!code.trim() || code === starter(p, lang)) return false;
+    return !VERS.some(function(v){ return v.lang === lang && v.code === code; });
+  }
+  function setDraft(code){
+    cm.setValue(code); cm.clearHistory();
+    sset(key(cur, lang), code);
+    if (SERVER) api('/save', { id: cur, lang: lang, code: code }).catch(function(){});
+  }
+  $('mVerSel').addEventListener('change', function(){
+    var name = $('mVerSel').value, msg = $('mVerMsg');
+    if (!name) { curVer = null; $('mVerDel').hidden = true; msg.textContent = 'Editing the draft. Load a version from this menu any time.'; msg.className = 'note'; return; }
+    var v = verOf(name); if (!v) return;
+    if (v.code !== cm.getValue() && draftIsUnsaved() && verArmed !== name) {
+      verArmed = name;
+      msg.textContent = 'Your current code isn’t saved as a version. Pick “' + name + '” again to replace it, or Save it as a version first.'; msg.className = 'note warn';
+      $('mVerSel').value = curVer || ''; return;
+    }
+    verArmed = null; curVer = name; setDraft(v.code);
+    $('mVerDel').hidden = false; delArmed = false; $('mVerDel').textContent = 'Delete';
+    msg.textContent = 'Loaded “' + name + '”' + (v.result && v.result.total ? ' — last result ' + v.result.ok + '/' + v.result.total : '') + '.'; msg.className = 'note';
+  });
+  $('mVerSave').addEventListener('click', function(){
+    var mine = VERS.filter(function(v){ return v.lang === lang; });
+    var cv = verOf(curVer);
+    $('mVerName').value = cv ? cv.name : 'v' + (mine.length + 1);
+    $('mVerNote').value = cv && cv.note ? cv.note : '';
+    $('mVerNew').hidden = false; $('mVerSave').hidden = true; $('mVerName').focus(); $('mVerName').select();
+  });
+  function closeNew(){ $('mVerNew').hidden = true; $('mVerSave').hidden = false; }
+  $('mVerName').addEventListener('input', function(){
+    var cv = verOf(curVer);
+    if (cv && cv.note && $('mVerNote').value === cv.note && $('mVerName').value.trim().toLowerCase() !== cv.name) $('mVerNote').value = '';
+  });
+  $('mVerCancel').addEventListener('click', closeNew);
+  function saveVersion(){
+    var name = $('mVerName').value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+    if (!name) { $('mVerMsg').textContent = 'Give the version a name (letters, digits, dashes).'; $('mVerMsg').className = 'note warn'; return; }
+    var code = cm.getValue(), body = { id: cur, lang: lang, name: name, code: code, note: $('mVerNote').value.trim() };
+    if (lastRun && lastRun.code === code && lastRun.lang === lang) body.result = { ok: lastRun.ok, total: lastRun.total, at: lastRun.at };
+    var existed = !!verOf(name);
+    api('/versions/save', body).then(function(r){
+      VERS = r.versions || []; curVer = name; closeNew(); renderVersions();
+      $('mVerMsg').textContent = (existed ? 'Updated “' : 'Saved “') + name + '” to solutions/' + cur + '/' + name + (lang === 'java' ? '.java' : '.py');
+      $('mVerMsg').className = 'note';
+    }).catch(function(e){ $('mVerMsg').textContent = 'Could not save: ' + e.message; $('mVerMsg').className = 'note warn'; });
+  }
+  $('mVerOk').addEventListener('click', saveVersion);
+  ['mVerName', 'mVerNote'].forEach(function(id){
+    $(id).addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); saveVersion(); } if (e.key === 'Escape') { e.stopPropagation(); closeNew(); } });
+  });
+  $('mVerDel').addEventListener('click', function(){
+    if (!curVer) return;
+    if (!delArmed) { delArmed = true; $('mVerDel').textContent = 'Click again to delete “' + curVer + '”'; setTimeout(function(){ delArmed = false; $('mVerDel').textContent = 'Delete'; }, 3000); return; }
+    var name = curVer;
+    api('/versions/delete', { id: cur, lang: lang, name: name }).then(function(r){
+      VERS = r.versions || []; curVer = null; delArmed = false; $('mVerDel').textContent = 'Delete'; renderVersions();
+      $('mVerMsg').textContent = 'Deleted “' + name + '”. The code is still in the editor as your draft.'; $('mVerMsg').className = 'note';
+    }).catch(function(){});
+  });
+  function noteRunForVersion(res){
+    var code = cm.getValue();
+    lastRun = { ok: res.ok, total: res.total, at: res.at, code: code, lang: lang };
+    var v = verOf(curVer);
+    if (v && v.code === code && SERVER) {
+      api('/versions/result', { id: cur, lang: lang, name: v.name, result: { ok: res.ok, total: res.total, at: res.at } })
+        .then(function(r){ VERS = r.versions || VERS; renderVersions(); }).catch(function(){});
+    }
+  }
 
   // ---------- Run once (no grading): single test, custom input, or just your code ----------
   function paramList(p){

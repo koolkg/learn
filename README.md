@@ -184,10 +184,25 @@ Every problem shows a status: *(none)* not started · **Started** (code written)
 |---|---|
 | Your code | `prep/solutions/<slug>.java` / `.py` (plus a browser copy) |
 | Progress | `prep/solutions/progress.json` (plus a browser copy) |
+| Saved versions | `prep/solutions/<slug>/<name>.java` / `.py`, listed in `prep/solutions/<slug>/versions.json` |
 
 Problems are linked to files by their LeetCode slug: `two-sum` → `solutions/two-sum.java` and the
 `"two-sum"` entry in `progress.json`. On load the page merges the file and the browser copy, so nothing
 marked done is lost. **Commit `prep/solutions/` to git** to keep your work across machines.
+
+### Saving several versions of a solution
+
+The editor always holds one **draft** per language, autosaved as you type. To keep an approach,
+click **Save as version…**, give it a name (`bfs`, `two-pass-dfs`) and an optional note. Each version is
+a real file: `solutions/<slug>/<name>.java`.
+
+- The **Version** menu lists your saved versions for the current language with their last test result
+  (`✓ 33/33`, `✗ 18/33`, or `not run`). Pick one to load it into the editor.
+- If the editor holds code that isn't saved as a version, the menu asks you to pick again before replacing it.
+- **Run tests** on an unchanged version records its result. Edit a loaded version and save with the same
+  name to update it, or a new name to keep both.
+- **Delete** (click twice) removes the version file; the code stays in the editor as your draft.
+- Versions need the runner (`prep_server.py`) to be running.
 
 ## Troubleshooting
 
