@@ -5,7 +5,12 @@
     "file": "bruteforce.java",
     "saved": "2026-11-02T20:45:20",
     "updated": "2026-11-02T20:45:20",
-    "note": ""
+    "note": "",
+    "result": {
+      "ok": 20,
+      "total": 20,
+      "at": "2026-11-03T05:29:33.748Z"
+    }
   },
   {
     "name": "kadane-s-algorithm",
