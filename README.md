@@ -184,11 +184,63 @@ Every problem shows a status: *(none)* not started · **Started** (code written)
 |---|---|
 | Your code | `prep/solutions/<slug>.java` / `.py` (plus a browser copy) |
 | Progress | `prep/solutions/progress.json` (plus a browser copy) |
+| Problems you added | `prep/content/custom_problems.json` |
+| Focus tab content | `prep/content/focus.json` |
 | Saved versions | `prep/solutions/<slug>/<name>.java` / `.py`, listed in `prep/solutions/<slug>/versions.json` |
 
 Problems are linked to files by their LeetCode slug: `two-sum` → `solutions/two-sum.java` and the
 `"two-sum"` entry in `progress.json`. On load the page merges the file and the browser copy, so nothing
 marked done is lost. **Commit `prep/solutions/` to git** to keep your work across machines.
+
+### ★ Focus tab (LinkedIn Staff onsite)
+
+The **★ Focus** tab at the top of the page is built from the LinkedIn Staff onsite reports you collected. Each
+report is broken down round by round, with links to:
+
+- **Coding:** Max Stack, API request blocker, job scheduler, LRU → progressive LRU (TTL), Find Leaves
+  (tree → graph), robot in an unexplored grid, supply-drop graph problems (Dijkstra / state graph),
+  CI pipeline minimum time. Each has a **Practice in the editor** button with tests, plus a detailed solution
+  (Java, no lambdas, all checked against the tests). The solution also shows up as a **Solution ★** tab
+  inside the editor popup.
+- **System design:** distributed job scheduler, CI job scheduler (live logs, webhooks vs polling),
+  user activity platform (1 min / 1 h / 1 day), API rate limiting / blocking.
+- **Domain & AI rounds:** CI/CD and developer-experience questions, and how to run AI-assisted coding rounds.
+- **Behavioral & leveling:** the Staff vs Senior Staff conversation and a story bank.
+
+Practice mode hides the solutions until you click. Focus problems carry a **★ Focus** tag in the list, and the
+Source filter has "★ Focus". The content is in `prep/content/focus.json`. Its practice problems are in
+`content/custom_problems.json` (added by `focus/merge_customs.py`; re-running it updates them and keeps your
+own problems).
+
+### ML & LLM questions
+
+The **ML & LLM** tab (after System design) shows conceptual and ML-system-design questions from interview
+reports. Each has a 60-second answer, a full answer and likely follow-ups. Turn on *Practice mode* to hide the
+answers until you click. To add one, append an entry to `prep/content/concepts.json`:
+`id`, `category` (e.g. "LLM fundamentals", "ML system design"), `title`, `question`, `source`, `short`, `answer`,
+`followups` (list), `links` (list of `{"label", "url"}`). `short` and `answer` support `### headings`, `- bullets`,
+`1. lists`, `**bold**`, `` `code` ``, fenced code blocks and `| tables |`. Reload the page to see it.
+
+### Adding your own problems
+
+Click **+ Add problem** next to the filters. This is for problems that aren't in the list, like one you got in a
+real interview. Only the title is required. The other fields are optional:
+
+- Difficulty, pattern, companies (comma-separated), and where it's from.
+- A short summary, the full problem, an example and a hint. In the full problem, a blank line starts a new
+  paragraph, `` `code` `` is shown as code, lines starting with `- ` are bullets, and ``` fences a block.
+- **Method signature (Java)**, e.g. `int maxProfit(int[] prices)`. Python gets the same method. Supported types are
+  listed under "Supported types" in the form.
+- **Tests**, one per line: `[7,1,5,3,6,4] -> 5   // optional note`. Put the arguments in a JSON list
+  (`[[1,2], 3] -> true` for two arguments); with one argument the brackets are optional. Trees are written in
+  level order (`[3,9,20,null,null,15,7]`), linked lists as their values (`[1,2,3]`). Choose "any order" if the
+  answer is a list whose order doesn't matter.
+
+Saving writes `prep/content/custom_problems.json` and re-runs `build_prep.py` for you. Your problems are listed
+first and tagged **Mine**; the Source filter has "Added by you". Open one and click **Edit problem** to change
+it or delete it. Your code, versions and progress work the same as for any other problem, and stay in
+`solutions/` even if you delete the problem. You can also edit `content/custom_problems.json` by hand, then run
+`python3 build_prep.py`.
 
 ### Saving several versions of a solution
 
