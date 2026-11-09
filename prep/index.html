@@ -23,10 +23,12 @@
 <li>Change companies or the time window: <code>python3 build_prep.py --companies LinkedIn Nvidia Google --window 6mo</code>, then reload. See README.md.</li>
 </ol></details>
 <nav class="toc">
-  <a href="#plan">Study plan</a><a href="#problems">Problems</a>
-  <a href="#java">Java toolkit</a><a href="#bigo">Big-O</a><a href="#ds">Data Structures</a><a href="#tech">Algorithm Patterns</a><a href="#videos">Videos</a><a href="#sd">System design</a><a href="#beh">Behavioral</a><a href="#approach">In the room</a>
+  <a href="#focus" class="navfocus">★ Focus</a><a href="#plan">Study plan</a><a href="#problems">Problems</a>
+  <a href="#java">Java toolkit</a><a href="#bigo">Big-O</a><a href="#ds">Data Structures</a><a href="#tech">Algorithm Patterns</a><a href="#videos">Videos</a><a href="#sd">System design</a><a href="#ml">ML &amp; LLM</a><a href="#beh">Behavioral</a><a href="#approach">In the room</a>
 </nav>
 <div id="appRoot">
+<h2 id="focus">★ Focus: LinkedIn Staff onsite</h2>
+<div id="focusRoot"><p class="note">Loading…</p></div>
 <h2 id="plan">Study plan</h2>
 <div class="grid" id="planCards"></div>
 <div class="card">
@@ -54,6 +56,7 @@
     <option value="done">Done</option>
   </select>
   <label><input type="checkbox" id="hideDone"> Hide done</label>
+  <button type="button" class="btn sm addprob" id="addProb" title="Add a problem that isn't in the list, like one from a real interview">+ Add problem</button>
   <div class="progress"><span id="ptext">Loading…</span><div class="bar"><i id="pbar"></i><i id="pbar2"></i><i id="pbar3"></i></div></div>
   <div class="legend" id="plegend"></div>
 </div>
@@ -320,6 +323,10 @@ list.add(value);
 <tr><td><b>Pushing for innovation.</b></td><td>AI security guardrails (prompt-injection detection, tool guardrails); your patents.</td></tr>
 </tbody></table></div>
 
+<h2 id="ml">ML &amp; LLM · concepts and ML system design</h2>
+<p class="note">Questions from interview reports with interview-ready answers: a 60-second version first, then the full answer and likely follow-ups. Add more in <code>content/concepts.json</code>.</p>
+<div id="mlRoot"><p class="note">Start <code>prep_server.py</code> to load these.</p></div>
+
 <h2 id="approach">In the room (coding round)</h2>
 <div class="card">
 <ol>
@@ -346,6 +353,7 @@ list.add(value);
         <div class="mmeta" id="mMeta"></div>
         <div class="mstatus" id="mStatus"></div>
       </div>
+      <button type="button" class="btn ghost sm" id="mEdit" hidden title="Edit this problem you added">Edit problem</button>
       <label class="mdone"><input type="checkbox" id="mDone"> Done</label>
       <button type="button" class="ibtn" id="mClose" title="Close (Esc)">✕</button>
     </header>
@@ -353,6 +361,7 @@ list.add(value);
       <section class="mleft">
         <div class="tabs" role="tablist">
           <button type="button" role="tab" class="tab on" data-tab="prob">Problem</button>
+          <button type="button" role="tab" class="tab" data-tab="sol" id="mSolTab" hidden>Solution ★</button>
           <button type="button" role="tab" class="tab" data-tab="ref">Reference</button>
         </div>
         <div class="tabpane" id="paneProb">
@@ -371,6 +380,10 @@ list.add(value);
           <p class="note" id="mProvided"></p>
           <div id="mTech"></div>
           <p class="note"><a id="mLink" href="#" target="_blank" rel="noopener">Open on LeetCode ↗</a></p>
+        </div>
+        <div class="tabpane" id="paneSol" hidden>
+          <p class="note">From the Focus tab. Try the problem first: this is the full worked solution.</p>
+          <div id="mSol"></div>
         </div>
         <div class="tabpane" id="paneRef" hidden>
           <input type="search" id="refQ" placeholder="Search: e.g. TreeMap floor, PriorityQueue, substring…" aria-label="Search reference">
@@ -413,6 +426,61 @@ list.add(value);
       </section>
     </div>
   </div>
+</div>
+
+<div class="cpmodal" id="cpModal" role="dialog" aria-modal="true" aria-labelledby="cpTitle" hidden>
+  <form class="cpbox" id="cpForm" novalidate>
+    <header class="cphead">
+      <h2 id="cpTitle">Add a problem</h2>
+      <span class="grow"></span>
+      <button type="button" class="ibtn" id="cpClose" title="Close (Esc)">✕</button>
+    </header>
+    <div class="cpbody">
+      <p class="note">For problems that aren't in the list, like one from a real interview. Only the title is required. Saved to <code>content/custom_problems.json</code>.</p>
+      <div class="cperr" id="cpErr" hidden></div>
+      <div class="cprow">
+        <label class="cpf grow2">Title <input type="text" id="cpTitleIn" required maxlength="120" placeholder="e.g. Merge meeting rooms"></label>
+        <label class="cpf">Difficulty <select id="cpDiff"><option>Easy</option><option selected>Medium</option><option>Hard</option></select></label>
+      </div>
+      <div class="cprow">
+        <label class="cpf">Pattern <input type="text" id="cpPattern" list="cpPatList" placeholder="pick or type"></label>
+        <label class="cpf">Companies <input type="text" id="cpCompanies" list="cpCoList" placeholder="LinkedIn, Google"></label>
+        <label class="cpf grow2">Where it's from <input type="text" id="cpSource" maxlength="200" placeholder="e.g. LinkedIn phone screen, Nov 2026"></label>
+      </div>
+      <datalist id="cpPatList"></datalist><datalist id="cpCoList"></datalist>
+      <label class="cpf">In short <span class="note">(shown at the top and as the key idea)</span><textarea id="cpSummary" rows="2"></textarea></label>
+      <label class="cpf">Full problem <span class="note">blank line = new paragraph · <code>`code`</code> · lines starting with <code>- </code> are bullets · <code>```</code> fences a block</span>
+        <textarea id="cpStatement" rows="8" spellcheck="true"></textarea></label>
+      <div class="cprow">
+        <label class="cpf grow2">Example <textarea id="cpExample" rows="2"></textarea></label>
+        <label class="cpf grow2">Hint <textarea id="cpHint" rows="2"></textarea></label>
+      </div>
+      <fieldset class="cptests">
+        <legend>Run tests <span class="note">(optional)</span></legend>
+        <label class="cpf">Method signature, in Java <span class="note">— Python gets the same method</span>
+          <input type="text" id="cpSig" spellcheck="false" autocomplete="off" class="mono" placeholder="int maxProfit(int[] prices)"></label>
+        <details class="cptypes"><summary>Supported types</summary>
+          <p>Parameters: <code>int long double boolean char String int[] int[][] char[] char[][] String[] List&lt;Integer&gt; List&lt;String&gt; List&lt;List&lt;Integer&gt;&gt; TreeNode ListNode ListNode[]</code></p>
+          <p>Return: the same plus <code>boolean[] double[] List&lt;Boolean&gt; List&lt;List&lt;String&gt;&gt;</code>, and <code>void</code> (no tests). Trees are written in level order: <code>[3,9,20,null,null,15,7]</code>; linked lists as their values: <code>[1,2,3]</code>.</p>
+        </details>
+        <label class="cpf">Tests <span class="note">one per line: <code>arguments as a JSON list -&gt; expected</code>, optional <code>// note</code></span>
+          <textarea id="cpTests" rows="5" spellcheck="false" class="mono" placeholder="[[7,1,5,3,6,4]] -> 5&#10;[[7,6,4,3,1]] -> 0   // prices only fall"></textarea></label>
+        <label class="cpf cpinline">Answer order
+          <select id="cpOrder">
+            <option value="exact">must match exactly</option>
+            <option value="any">any order (list is sorted before comparing)</option>
+            <option value="any-inner">any order, inside each inner list too</option>
+          </select></label>
+      </fieldset>
+    </div>
+    <footer class="cpfoot">
+      <button type="button" class="linkbtn danger" id="cpDelete" hidden>Delete problem</button>
+      <span class="grow"></span>
+      <span class="note" id="cpMsg"></span>
+      <button type="button" class="btn ghost" id="cpCancel">Cancel</button>
+      <button type="submit" class="btn" id="cpSave">Save problem</button>
+    </footer>
+  </form>
 </div>
 
 <script src="vendor/codemirror.js"></script>

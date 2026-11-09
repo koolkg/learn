@@ -23,6 +23,7 @@ import argparse, csv, datetime, json, os, re, subprocess, sys, urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import harness  # noqa: E402  (test-harness generator, same folder)
+import custom_problems  # noqa: E402  (problems you add yourself)
 
 CONTENT = os.path.join(HERE, "content")
 OUT = os.path.join(HERE, "problems.json")
@@ -197,6 +198,7 @@ def main():
     ap.add_argument("--list-companies", action="store_true")
     ap.add_argument("--missing", action="store_true", help="list problems without a summary or tests, then exit")
     ap.add_argument("--update-numbers", action="store_true", help="re-download LeetCode problem numbers (cached in content/)")
+    ap.add_argument("--no-fetch", action="store_true", help="don't try to download LeetCode numbers (used by the page's Add problem form)")
     a = ap.parse_args()
 
     dataset = os.path.abspath(os.path.expanduser(a.dataset))
@@ -209,7 +211,7 @@ def main():
         return
 
     content = load("problems.json")
-    numbers = load_numbers(a.update_numbers)
+    numbers = {} if a.no_fetch and not os.path.exists(NUMBERS) else load_numbers(a.update_numbers and not a.no_fetch)
     blind = load("blind75.json")
     patterns = load("patterns.json")
     display = load("companies.json").get("display_names", {})
@@ -262,7 +264,42 @@ def main():
 
     blind_pos = {b["slug"]: i for i, b in enumerate(blind)}
 
+    # Focus tab (content/focus.json): problems it points to are always in the list and tagged "focus"
+    focus_slugs = set()
+    fpath = os.path.join(CONTENT, "focus.json")
+    if os.path.exists(fpath):
+        try:
+            for it in json.load(open(fpath, encoding="utf-8")).get("items", []):
+                focus_slugs.update(it.get("slugs", []))
+        except ValueError as e:
+            print(f"warning: couldn't read content/focus.json: {e}", file=sys.stderr)
+    for s in sorted(focus_slugs):
+        if s not in problems and s in content:
+            e = content[s]
+            get(s, e.get("title", s), e.get("difficulty", "Medium"), f"https://leetcode.com/problems/{s}")
+
+    # problems you added yourself (content/custom_problems.json) — always included, listed first
+    customs = []
+    cpath = os.path.join(CONTENT, custom_problems.FILE_NAME)
+    if os.path.exists(cpath):
+        try:
+            customs = json.load(open(cpath, encoding="utf-8")).get("problems", [])
+        except ValueError as e:
+            print(f"warning: couldn't read content/{custom_problems.FILE_NAME}: {e}", file=sys.stderr)
+    custom_entries = {}
+    for i, c in enumerate(sorted(customs, key=lambda c: c.get("added", ""), reverse=True)):
+        try:
+            custom_entries[c["slug"]] = custom_problems.to_entry(c)
+        except Exception as e:   # a hand-edited entry with a mistake shouldn't break the build
+            print(f"warning: custom problem {c.get('slug')}: {e}", file=sys.stderr)
+            continue
+        problems[c["slug"]] = {"slug": c["slug"], "title": c["title"], "d": c.get("difficulty", "Medium"), "link": "",
+                               "topics": "", "companies": {n: {"window": "mine"} for n in c.get("companies", [])},
+                               "blind75": False, "custom": c, "corder": i}
+
     def order_key(p):
+        if p.get("custom"):
+            return (-1, p["corder"], 0, 0, "")
         if p["companies"]:
             best_w = min(WRANK[c["window"]] for c in p["companies"].values())
             best_f = max(c.get("freq", 0) for c in p["companies"].values())
@@ -272,7 +309,7 @@ def main():
     ordered = sorted(problems.values(), key=order_key)
     out_problems, missing = [], []
     for p in ordered:
-        e = content.get(p["slug"])
+        e = custom_entries.get(p["slug"]) or content.get(p["slug"])
         h, prov = harness_for(e)
         pat = pattern_for(e, p["topics"], patterns)
         rec = {
@@ -287,7 +324,13 @@ def main():
         }
         rec.update(shrink(h))
         rec["run"] = run_meta(e)
+        if p.get("custom"):
+            rec["custom"] = p["custom"]
+        if p["slug"] in focus_slugs:
+            rec["focus"] = True
         out_problems.append(rec)
+        if p.get("custom"):
+            continue
         if not e or not e.get("summary") or not e.get("spec"):
             missing.append((p["title"], p["slug"], "no summary" if not e or not e.get("summary") else "no tests"))
 
@@ -299,7 +342,7 @@ def main():
 
     for cm in company_meta:
         n = cm["name"]
-        cm["count"] = sum(1 for p in out_problems if n in p["companies"])
+        cm["count"] = sum(1 for p in out_problems if n in p["companies"] and not p.get("custom"))
         cm["by_window"] = {w: sum(1 for p in out_problems if n in p["companies"] and p["companies"][n]["window"] == w) for w, _ in WINDOWS}
 
     data = {
@@ -321,12 +364,13 @@ def main():
 
     with_tests = sum(1 for p in out_problems if p["tests"])
     counts = ", ".join("%s %d" % (c["name"], c["count"]) for c in company_meta)
+    ncustom = sum(1 for p in out_problems if p.get("custom"))
     print(f"Wrote {os.path.relpath(OUT)}: {len(out_problems)} problems "
           f"({counts}"
-          f"{', Blind 75' if not a.no_blind75 else ''}; window {WLABEL[a.window]}; dataset snapshot {data['snapshot']})")
+          f"{', Blind 75' if not a.no_blind75 else ''}{', %d added by you' % ncustom if ncustom else ''}; window {WLABEL[a.window]}; dataset snapshot {data['snapshot']})")
     print(f"  {with_tests} have test cases; {sum(1 for _, _, w in missing if w == 'no summary')} have no summary yet "
           f"(run with --missing to list them).")
-    nonum = [p["title"] for p in out_problems if p["num"] is None]
+    nonum = [p["title"] for p in out_problems if p["num"] is None and not p.get("custom")]
     if nonum:
         print(f"  {len(nonum)} without a LeetCode number" + (" (run with --update-numbers)" if len(nonum) > 3 else f": {', '.join(nonum)}"))
     print("Reload the page to see the changes.")

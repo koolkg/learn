@@ -89,6 +89,7 @@ def _conv(v, t):
     if t == "list[]": return [L(x) for x in v]
     if t == "nested": return NL(v)
     if t == "cyclelist": return LC(v[0], v[1])
+    if t == "robot": return Robot(v[0], v[1][0], v[1][1])
     if t == "double": return float(v)
     return v
 def _LA(x):
@@ -108,6 +109,30 @@ def _t(label, fn, exp, mode):
 '''
 
 PY_EXTRA = {
+"Robot": r'''
+class Robot:
+    """Provided. A robot in a grid you can't see. It starts facing up.
+    turnLeft(), turnRight(), moveForward() -> bool (False = blocked, robot stays),
+    isTarget() -> bool, reposition(row, col) -> bool: jump to a cell already visited,
+    with (row, col) relative to the start (start is (0, 0), up is row - 1)."""
+    _DR = (-1, 0, 1, 0); _DC = (0, 1, 0, -1)
+    def __init__(self, grid, r, c):
+        self._g = [row[:] for row in grid]; self._r, self._c, self._d = r, c, 0
+        self._r0, self._c0 = r, c; self._seen = {(r, c)}
+    def _ok(self, r, c):
+        return 0 <= r < len(self._g) and 0 <= c < len(self._g[0]) and self._g[r][c] != 1
+    def turnLeft(self): self._d = (self._d + 3) % 4
+    def turnRight(self): self._d = (self._d + 1) % 4
+    def moveForward(self):
+        r, c = self._r + self._DR[self._d], self._c + self._DC[self._d]
+        if not self._ok(r, c): return False
+        self._r, self._c = r, c; self._seen.add((r, c)); return True
+    def isTarget(self): return self._g[self._r][self._c] == 2
+    def reposition(self, row, col):
+        r, c = self._r0 + row, self._c0 + col
+        if (r, c) not in self._seen: return False
+        self._r, self._c = r, c; return True
+''',
 "NestedInteger": r'''
 class NestedInteger:
     """Provided: isInteger(), getInteger(), getList()."""
@@ -214,6 +239,7 @@ def _py_lit(v, t):
     if t == "list[]": return f"[L(x) for x in {v!r}]"
     if t == "nested": return f"NL({v!r})"
     if t == "cyclelist": return f"LC({v[0]!r}, {v[1]!r})"
+    if t == "robot": return f"Robot({v[0]!r}, {v[1][0]!r}, {v[1][1]!r})"
     if t == "double": return repr(float(v))
     return repr(v)
 
@@ -231,6 +257,22 @@ def py_call_label(name, args, note=None):
 JAVA_IMPORTS = "import java.util.*;\nimport java.util.function.*;\nimport java.util.stream.*;\n"
 
 JAVA_EXTRA = {
+"Robot": '''
+class Robot {
+    // Provided. A robot in a grid you can't see. It starts facing up.
+    // turnLeft(), turnRight(), moveForward() (false = blocked, robot stays), isTarget(),
+    // reposition(row, col): jump to a cell already visited, (row, col) relative to the start (0, 0); up is row - 1.
+    private final int[][] g; private int r, c, d; private final int r0, c0; private final boolean[][] seen;
+    private static final int[] DR = {-1, 0, 1, 0}, DC = {0, 1, 0, -1};
+    Robot(int[][] g, int r, int c) { this.g = g; this.r = r; this.c = c; this.r0 = r; this.c0 = c; seen = new boolean[g.length][g[0].length]; seen[r][c] = true; }
+    private boolean ok(int nr, int nc) { return nr >= 0 && nc >= 0 && nr < g.length && nc < g[0].length && g[nr][nc] != 1; }
+    public void turnLeft() { d = (d + 3) % 4; }
+    public void turnRight() { d = (d + 1) % 4; }
+    public boolean moveForward() { int nr = r + DR[d], nc = c + DC[d]; if (!ok(nr, nc)) return false; r = nr; c = nc; seen[r][c] = true; return true; }
+    public boolean isTarget() { return g[r][c] == 2; }
+    public boolean reposition(int row, int col) { int nr = r0 + row, nc = c0 + col; if (nr < 0 || nc < 0 || nr >= g.length || nc >= g[0].length || !seen[nr][nc]) return false; r = nr; c = nc; return true; }
+}
+''',
 "ListNode": '''
 class ListNode {
     int val; ListNode next;
@@ -437,6 +479,10 @@ JAVA_GEN_HELPERS = """
     static int[][] __star(int n, int w) { int[][] e = new int[n][]; for (int i = 1; i <= n; i++) e[i - 1] = new int[]{0, i, w}; return e; }
 """
 JAVA_MAIN_HELPERS = JAVA_MAIN_HELPERS + JAVA_GEN_HELPERS
+JAVA_MAIN_HELPERS += """    static List<Integer> __li(int[] a) { List<Integer> r = new ArrayList<>(); for (int x : a) r.add(x); return r; }
+    static List<String> __ls(String[] a) { return new ArrayList<>(Arrays.asList(a)); }
+    static List<List<Integer>> __lli(int[][] a) { List<List<Integer>> r = new ArrayList<>(); for (int[] x : a) r.add(__li(x)); return r; }
+"""
 
 def java_lit(v, t):
     if isinstance(v, dict) and "gen" in v:
@@ -454,10 +500,16 @@ def _java_lit(v, t):
     if t == "int[][]": return "new int[][]{" + ", ".join("{" + ", ".join(map(str, r)) + "}" for r in v) + "}"
     if t == "char[][]": return "new char[][]{" + ", ".join("{" + ", ".join(f"'{c}'" for c in r) + "}" for r in v) + "}"
     if t == "str[]": return "new String[]{" + ", ".join(jstr(s) for s in v) + "}"
+    if t == "char": return "'" + ("\\" + v if v in ("'", "\\") else v) + "'"
+    if t == "char[]": return "new char[]{" + ", ".join(_java_lit(c, "char") for c in v) + "}"
+    if t == "list<int>": return "__li(" + _java_lit(v, "int[]") + ")"
+    if t == "list<str>": return "__ls(" + _java_lit(v, "str[]") + ")"
+    if t == "list<list<int>>": return "__lli(" + _java_lit(v, "int[][]") + ")"
     if t == "tree": return "T(new Integer[]{" + ", ".join("null" if x is None else str(x) for x in v) + "})"
     if t == "list": return "L(" + java_lit(v, "int[]") + ")"
     if t == "list[]": return "new ListNode[]{" + ", ".join(java_lit(x, "list") for x in v) + "}"
     if t == "cyclelist": return f"LC({java_lit(v[0], 'int[]')}, {v[1]})"
+    if t == "robot": return f"new Robot({java_lit(v[0], 'int[][]')}, {v[1][0]}, {v[1][1]})"
     if t == "nested":
         def obj(e): return str(e) if isinstance(e, int) else "new Object[]{" + ", ".join(obj(y) for y in e) + "}"
         return "NL(" + obj(v) + ")"
@@ -510,11 +562,12 @@ def build(spec):
         # starters
         pyctor = ", ".join(f"p{i}: {'int' if t=='int' else 'List[str]' if t=='str[]' else 'str'}" for i, t in enumerate(spec["ctor"]))
         jctor = ", ".join(f"{JTYPE[t]} p{i}" for i, t in enumerate(spec["ctor"]))
-        PYT = {"int": "int", "str": "str", "bool": "bool", "void": "None"}
-        ctor_names = {"LRUCache": ["capacity"], "MyCircularQueue": ["k"], "WordDistance": ["wordsDict"]}.get(cls, [])
+        PYT = {"int": "int", "str": "str", "bool": "bool", "void": "None", "list<str>": "List[str]", "list<int>": "List[int]"}
+        ctor_names = spec.get("ctor_names") or {"LRUCache": ["capacity"], "MyCircularQueue": ["k"], "WordDistance": ["wordsDict"]}.get(cls, [])
         for i, nm in enumerate(ctor_names):
             pyctor = pyctor.replace(f"p{i}:", f"{nm}:"); jctor = jctor.replace(f" p{i}", f" {nm}")
         argnames = {"push": ["x"], "get": ["key"], "put": ["key", "value"], "enQueue": ["value"], "shortest": ["word1", "word2"]}
+        argnames.update(spec.get("argnames") or {})
         py_lines = [f"class {cls}:", "", f"    def __init__(self{', ' + pyctor if pyctor else ''}):", "        pass", ""]
         j_lines = [f"class {cls} {{", "", f"    public {cls}({jctor}) {{", "", "    }", ""]
         for m, (pt, rt) in spec["methods"].items():
@@ -522,7 +575,7 @@ def build(spec):
             pyp = "".join(f", {n}: {PYT[t]}" for n, t in zip(nm, pt))
             jp = ", ".join(f"{JTYPE[t]} {n}" for n, t in zip(nm, pt))
             py_lines += [f"    def {m}(self{pyp}) -> {PYT[rt]}:", "        pass", ""]
-            jr = {"void": "void", "int": "int", "bool": "boolean", "str": "String"}[rt]
+            jr = {"void": "void", "int": "int", "bool": "boolean", "str": "String", "list<str>": "List<String>", "list<int>": "List<Integer>"}[rt]
             j_lines += [f"    public {jr} {m}({jp}) {{", "", "    }", ""]
         py_starter = "\n".join(py_lines).rstrip() + "\n"
         java_starter = "\n".join(j_lines).rstrip() + "\n}\n"

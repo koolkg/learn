@@ -24,14 +24,14 @@
     });
   }
   function opt(path){ return get(path).catch(function(){ return null; }); }
-  Promise.all([get('problems.json'), get('content/reference.json'), opt('content/techniques.json'), opt('content/videos.json')]).then(function(res){
-    boot(res[0], res[1], res[2], res[3]);
+  Promise.all([get('problems.json'), get('content/reference.json'), opt('content/techniques.json'), opt('content/videos.json'), opt('content/concepts.json'), opt('content/focus.json')]).then(function(res){
+    boot(res[0], res[1], res[2], res[3], res[4], res[5]);
   }).catch(function(e){
     document.getElementById('appRoot').innerHTML = '<div class="card offline"><b>Could not load problems.json.</b><p>' + esc(e.message) +
       '</p><p>Run <code>python3 build_prep.py</code> in <code>~/learn/prep</code>, then reload.</p></div>';
   });
 
-  function boot(D, REF, TECHS, VIDS){
+  function boot(D, REF, TECHS, VIDS, CON, FOCUS){
     var cos = D.companies, wl = D.window_label;
     var when = D.window === 'all' ? 'all time' : 'the last ' + wl;   // e.g. "asked in the last 6 months"
     var whenShort = D.window === 'all' ? 'all time' : 'last ' + wl;
@@ -64,6 +64,15 @@
     if (nMulti) src += '<option value="multi">Asked by 2+ companies (' + nMulti + ')</option>';
     var nB = D.problems.filter(function(p){ return p.blind75; }).length;
     if (nB) src += '<option value="blind75">Blind 75 (' + nB + ')</option>';
+    var nFocus = D.problems.filter(function(p){ return p.focus; }).length;
+    if (nFocus) src = src.replace('</option>', '</option><option value="focus">★ Focus: LinkedIn onsite (' + nFocus + ')</option>');
+    function mine(p){ return p.custom && p.custom.origin !== 'focus'; }
+    var nMine = D.problems.filter(mine).length;
+    if (nMine) src += '<option value="custom">Added by you (' + nMine + ')</option>';
+    var known = {}; cos.forEach(function(c){ known[c.slug] = 1; });
+    var extra = {};   // companies that only appear on problems you added
+    D.problems.forEach(function(p){ if (p.custom) Object.keys(p.companies).forEach(function(n){ if (!known[slugify(n)]) extra[n] = (extra[n] || 0) + 1; }); });
+    Object.keys(extra).sort().forEach(function(n){ src += '<option value="co:' + slugify(n) + '">' + esc(n) + ' (' + extra[n] + ')</option>'; });
     document.getElementById('src').innerHTML = src;
     var pc = {}; D.problems.forEach(function(p){ pc[p.pattern] = (pc[p.pattern] || 0) + 1; });
     var pat = '<option value="">All patterns</option>';
@@ -74,14 +83,17 @@
     var order = {}; cos.forEach(function(c, i){ order[c.name] = i; });
     var html = D.problems.map(function(p, i){
       var cn = Object.keys(p.companies).sort(function(a, b){ return (order[a] || 0) - (order[b] || 0); });
-      var srcs = cn.map(function(n){ return 'co:' + slugify(n); }); if (p.blind75) srcs.push('blind75');
+      var srcs = cn.map(function(n){ return 'co:' + slugify(n); }); if (p.blind75) srcs.push('blind75'); if (mine(p)) srcs.push('custom'); if (p.focus) srcs.push('focus');
       var freqs = {}; cn.forEach(function(n){ freqs[slugify(n)] = p.companies[n].freq || 0; });
       var tags = cn.map(function(n){
         var c = p.companies[n], w = c.window;
+        if (w === 'mine') return '<button type="button" class="tag co" data-f="co:' + slugify(n) + '" title="You tagged this ' + esc(n) + '">' + esc(n) + '</button>';
         var tip = 'Asked at ' + n + ' within the last ' + ({ '30d': '30 days', '3mo': '3 months', '6mo': '6 months', 'all': 'all time' }[w] || w) + (c.freq != null ? '; ' + wl + ' frequency ' + Math.round(c.freq) + '%' : '');
         return '<button type="button" class="tag co" data-f="co:' + slugify(n) + '" title="' + esc(tip) + '">' + esc(n) + '<span class="win w' + w + '">' + w + '</span></button>';
       }).join('');
       if (p.blind75) tags += '<button type="button" class="tag b75" data-f="blind75" title="In the Blind 75">Blind 75</button>';
+      if (p.focus) tags = '<button type="button" class="tag focus" data-f="focus" title="On the Focus list (LinkedIn onsite reports)">★ Focus</button>' + tags;
+      if (mine(p)) tags = '<button type="button" class="tag mine" data-f="custom" title="' + esc(p.custom.source ? 'Added by you: ' + p.custom.source : 'Added by you') + '">Mine</button>' + tags;
       var idea = p.idea ? '<div class="idea">' + p.idea + '</div>' : '';
       var t = esc(p.title), g = esc(p.pattern);
       var nt = (p.num != null ? '<span class="lcnum">' + esc(p.num) + '.</span> ' : '') + t;   // "146. LRU Cache"
@@ -107,7 +119,10 @@
       javaRef: REF.java, javaSnippets: REF.javaSnippets, pyRef: REF.python
     };
     renderTechniques(D, TECHS, VIDS);
+    renderConcepts(CON);
     initModal(DATA);
+    renderFocus(FOCUS, D);
+    initCustom(D, function(slug){ var b = document.querySelector('button.ptitle[data-pid="' + slug + '"]'); if (b) b.click(); });
   }
 
   // ---------- Techniques & videos (content/techniques.json + content/videos.json) ----------
@@ -212,6 +227,312 @@
     });
   }
   window.PREP.videoCard = videoCard; window.PREP.wireVideos = wireVideos;
+
+  // ---------- add / edit your own problems (content/custom_problems.json via prep_server.py) ----------
+  function initCustom(D, openProblem){
+    var $ = function(id){ return document.getElementById(id); };
+    var box = $('cpModal'), editing = null, delArmed = false, busy = false;
+    var FIELDS = { title: 'cpTitleIn', difficulty: 'cpDiff', pattern: 'cpPattern', companies: 'cpCompanies', source: 'cpSource',
+                   summary: 'cpSummary', statement: 'cpStatement', example: 'cpExample', hint: 'cpHint',
+                   signature: 'cpSig', tests: 'cpTests', order: 'cpOrder' };
+    var FIELD_OF = { title: 'cpTitleIn', signature: 'cpSig', tests: 'cpTests' };
+
+    $('cpPatList').innerHTML = D.patterns.map(function(p){ return '<option value="' + esc(p) + '">'; }).join('');
+    var cos = {};
+    D.companies.forEach(function(c){ cos[c.name] = 1; });
+    D.problems.forEach(function(p){ Object.keys(p.companies).forEach(function(n){ cos[n] = 1; }); });
+    $('cpCoList').innerHTML = Object.keys(cos).map(function(n){ return '<option value="' + esc(n) + '">'; }).join('');
+
+    function bySlug(slug){ return D.problems.filter(function(p){ return p.slug === slug; })[0]; }
+
+    function show(slug){
+      var rec = slug ? (bySlug(slug) || {}).custom : null;
+      editing = rec ? slug : null; delArmed = false;
+      $('cpTitle').textContent = rec ? 'Edit problem' : 'Add a problem';
+      $('cpSave').textContent = rec ? 'Save changes' : 'Save problem';
+      $('cpDelete').hidden = !rec; $('cpDelete').textContent = 'Delete problem';
+      Object.keys(FIELDS).forEach(function(k){
+        var el = $(FIELDS[k]), v = rec ? rec[k] : '';
+        if (k === 'companies') v = (v || []).join(', ');
+        if (k === 'difficulty') v = v || 'Medium';
+        if (k === 'order') v = v || 'exact';
+        el.value = v == null ? '' : v; el.classList.remove('bad');
+      });
+      $('cpErr').hidden = true; $('cpMsg').textContent = '';
+      box.hidden = false; document.body.classList.add('modal-open');
+      setTimeout(function(){ $('cpTitleIn').focus(); }, 20);
+    }
+    function hide(){
+      box.hidden = true;
+      if ($('modal').hidden) document.body.classList.remove('modal-open');
+    }
+    window.prepEditCustom = show;
+
+    // the "+ Add problem" button next to the filters
+    var add = $('addProb');
+    if (add) add.addEventListener('click', function(){ show(null); });
+    $('cpClose').addEventListener('click', hide);
+    $('cpCancel').addEventListener('click', hide);
+    box.addEventListener('mousedown', function(e){ if (e.target === box) hide(); });
+    window.addEventListener('keydown', function(e){
+      if (box.hidden || e.key !== 'Escape') return;
+      e.stopPropagation(); e.preventDefault(); hide();
+    }, true);
+
+    function showErrors(errors){
+      Object.keys(FIELD_OF).forEach(function(k){ $(FIELD_OF[k]).classList.remove('bad'); });
+      errors.forEach(function(er){ if (FIELD_OF[er.field]) $(FIELD_OF[er.field]).classList.add('bad'); });
+      $('cpErr').innerHTML = '<b>Please fix:</b><ul>' + errors.map(function(er){ return '<li>' + esc(er.msg) + '</li>'; }).join('') + '</ul>';
+      $('cpErr').hidden = false;
+      $('cpErr').scrollIntoView({ block: 'nearest' });
+    }
+    function post(path, body){
+      return fetch(path, { method: 'POST', headers: { 'X-Prep-Token': window.PREP.TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(function(r){ if (!r.ok && r.status !== 404) throw new Error('HTTP ' + r.status); return r.json(); });
+    }
+    function done(slug){
+      try { sessionStorage.setItem('prep:openAfter', slug || ''); } catch(e){}
+      location.reload();
+    }
+    function setBusy(on, msg){
+      busy = on; $('cpSave').disabled = on; $('cpDelete').disabled = on; $('cpMsg').textContent = msg || '';
+    }
+
+    $('cpForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      if (busy) return;
+      var fields = {};
+      Object.keys(FIELDS).forEach(function(k){ fields[k] = $(FIELDS[k]).value; });
+      if (!fields.title.trim()) { showErrors([{ field: 'title', msg: 'Give the problem a title.' }]); return; }
+      setBusy(true, 'Saving and rebuilding the list…');
+      post('/custom/save', { slug: editing, fields: fields }).then(function(r){
+        if (!r.ok) { setBusy(false); showErrors(r.errors || [{ msg: 'Could not save.' }]); return; }
+        done(r.slug);
+      }).catch(function(err){ setBusy(false); showErrors([{ msg: 'Could not reach the runner (' + err.message + '). Is prep_server.py running?' }]); });
+    });
+    $('cpDelete').addEventListener('click', function(){
+      if (!editing || busy) return;
+      if (!delArmed) {
+        delArmed = true; $('cpDelete').textContent = 'Click again to delete';
+        setTimeout(function(){ delArmed = false; $('cpDelete').textContent = 'Delete problem'; }, 3000);
+        return;
+      }
+      setBusy(true, 'Deleting…');
+      post('/custom/delete', { slug: editing }).then(function(r){
+        if (!r.ok) { setBusy(false); showErrors(r.errors || [{ msg: 'Could not delete.' }]); return; }
+        done('');
+      }).catch(function(err){ setBusy(false); showErrors([{ msg: 'Could not reach the runner (' + err.message + ').' }]); });
+    });
+
+    // reopen the problem that was just saved
+    var again = null;
+    try { again = sessionStorage.getItem('prep:openAfter'); sessionStorage.removeItem('prep:openAfter'); } catch(e){}
+    if (again && bySlug(again)) {
+      setTimeout(function(){
+        document.getElementById('problems').scrollIntoView({ block: 'start' });
+        openProblem(again);
+      }, 50);
+    }
+  }
+
+  // ---------- ML & LLM questions (content/concepts.json) ----------
+  // markdown-lite: ### / #### headings, - bullets, 1. lists, ``` blocks, | tables |, **bold**, `code`
+  function mdInline(s){
+    var parts = String(s).split('`'), out = '';
+    parts.forEach(function(p, i){
+      out += i % 2 ? '<code>' + esc(p) + '</code>' : esc(p).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+    });
+    return out;
+  }
+  function mdLite(text){
+    var lines = String(text || '').split('\n'), out = [], i = 0;
+    function cells(l){ return l.trim().replace(/^\||\|$/g, '').split('|').map(function(c){ return c.trim(); }); }
+    while (i < lines.length) {
+      var l = lines[i];
+      if (/^```svg\s*$/.test(l.trim())) {          // trusted local content: inline diagram
+        var sv = []; i++;
+        while (i < lines.length && !/^```/.test(lines[i].trim())) { sv.push(lines[i]); i++; }
+        i++; out.push('<div class="mlsvg">' + sv.join('\n') + '</div>'); continue;
+      }
+      if (/^```/.test(l.trim())) {
+        var buf = []; i++;
+        while (i < lines.length && !/^```/.test(lines[i].trim())) { buf.push(lines[i]); i++; }
+        i++; out.push('<pre class="mlpre">' + esc(buf.join('\n')) + '</pre>'); continue;
+      }
+      var h = l.match(/^(#{3,4})\s+(.*)$/);
+      if (h) { out.push(h[1].length === 3 ? '<h4>' + mdInline(h[2]) + '</h4>' : '<h5>' + mdInline(h[2]) + '</h5>'); i++; continue; }
+      if (/^\s*\|/.test(l) && i + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
+        var head = cells(l), rows = []; i += 2;
+        while (i < lines.length && /^\s*\|/.test(lines[i])) { rows.push(cells(lines[i])); i++; }
+        out.push('<div class="mltable"><table><thead><tr>' + head.map(function(c){ return '<th>' + mdInline(c) + '</th>'; }).join('') +
+          '</tr></thead><tbody>' + rows.map(function(r){ return '<tr>' + r.map(function(c){ return '<td>' + mdInline(c) + '</td>'; }).join('') + '</tr>'; }).join('') +
+          '</tbody></table></div>');
+        continue;
+      }
+      var ul = /^\s*[-*]\s+/, ol = /^\s*\d+[.)]\s+/;
+      if (ul.test(l) || ol.test(l)) {
+        var isOl = ol.test(l), re = isOl ? ol : ul, items = [];
+        while (i < lines.length && re.test(lines[i])) {
+          var item = lines[i].replace(re, ''); i++;
+          while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !ul.test(lines[i]) && !ol.test(lines[i])) { item += ' ' + lines[i].trim(); i++; }
+          items.push('<li>' + mdInline(item) + '</li>');
+        }
+        out.push((isOl ? '<ol>' : '<ul>') + items.join('') + (isOl ? '</ol>' : '</ul>')); continue;
+      }
+      if (!l.trim()) { i++; continue; }
+      var para = [];
+      while (i < lines.length && lines[i].trim() && !/^(#{3,4}\s|```|\s*[-*]\s+|\s*\d+[.)]\s+|\s*\|)/.test(lines[i])) { para.push(lines[i].trim()); i++; }
+      out.push('<p>' + mdInline(para.join(' ')) + '</p>');
+    }
+    return out.join('\n');
+  }
+
+  function renderConcepts(CON){
+    var root = document.getElementById('mlRoot');
+    if (!root) return;
+    var qs = (CON && CON.questions) || [];
+    if (!qs.length) { root.innerHTML = '<p class="note">No questions yet. Add them to <code>content/concepts.json</code>.</p>'; return; }
+    var cats = [];
+    qs.forEach(function(q){ if (cats.indexOf(q.category) === -1) cats.push(q.category); });
+    var chips = '<div class="mlcats"><button type="button" class="pchip on" data-cat="">All (' + qs.length + ')</button>' + cats.map(function(c){
+      return '<button type="button" class="pchip" data-cat="' + esc(c) + '">' + esc(c) + ' (' + qs.filter(function(q){ return q.category === c; }).length + ')</button>';
+    }).join('') + '<label class="mlpractice"><input type="checkbox" id="mlPractice"> Practice mode (hide answers until you click)</label></div>';
+    root.innerHTML = chips + qs.map(function(q, n){
+      return '<details class="sdq mlq" data-cat="' + esc(q.category) + '" id="ml-' + esc(q.id) + '">' +
+        '<summary>' + (n + 1) + '. ' + esc(q.title) + ' <span class="tag">' + esc(q.category) + '</span></summary>' +
+        '<div class="body">' +
+          '<blockquote class="mlquestion">' + mdInline(q.question) + (q.source ? '<div class="note">' + esc(q.source) + '</div>' : '') + '</blockquote>' +
+          '<div class="mlanswers">' +
+            (q.short ? '<div class="mlshort"><b>60-second answer</b><p>' + mdInline(q.short) + '</p></div>' : '') +
+            '<div class="mlfull">' + mdLite(q.answer) + '</div>' +
+            ((q.followups || []).length ? '<h4>Likely follow-ups</h4><ul>' + q.followups.map(function(f){ return '<li>' + mdInline(f) + '</li>'; }).join('') + '</ul>' : '') +
+            (q.related ? '<p class="note">' + mdInline(q.related) + '</p>' : '') +
+            ((q.links || []).length ? '<p class="note">Read more: ' + q.links.map(function(l){ return '<a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + ' ↗</a>'; }).join(' · ') + '</p>' : '') +
+          '</div>' +
+          '<button type="button" class="btn ghost sm mlreveal" hidden>Show answer</button>' +
+        '</div></details>';
+    }).join('');
+    root.querySelectorAll('.mlcats .pchip').forEach(function(b){
+      b.addEventListener('click', function(){
+        var c = b.getAttribute('data-cat');
+        root.querySelectorAll('.mlcats .pchip').forEach(function(x){ x.classList.toggle('on', x === b); });
+        root.querySelectorAll('.mlq').forEach(function(d){ d.style.display = !c || d.getAttribute('data-cat') === c ? '' : 'none'; });
+      });
+    });
+    var practice = document.getElementById('mlPractice');
+    function setPractice(on){
+      root.querySelectorAll('.mlq').forEach(function(d){
+        d.querySelector('.mlanswers').hidden = on; d.querySelector('.mlreveal').hidden = !on;
+      });
+    }
+    try { practice.checked = localStorage.getItem('prep:mlPractice') === '1'; } catch(e){}
+    setPractice(practice.checked);
+    practice.addEventListener('change', function(){ try { localStorage.setItem('prep:mlPractice', practice.checked ? '1' : '0'); } catch(e){} setPractice(practice.checked); });
+    root.querySelectorAll('.mlreveal').forEach(function(b){
+      b.addEventListener('click', function(){ b.parentNode.querySelector('.mlanswers').hidden = false; b.hidden = true; });
+    });
+  }
+
+  // ---------- Focus tab (content/focus.json) ----------
+  var FOCUS_BY_SLUG = {};
+  window.prepFocusFor = function(slug){ return FOCUS_BY_SLUG[slug] || null; };
+  window.prepMdLite = function(t){ return mdLite(t); };
+
+  function renderFocus(F, D){
+    var root = document.getElementById('focusRoot');
+    if (!root) return;
+    if (!F || !(F.items || []).length) { root.innerHTML = '<p class="note">No focus items. Add them to <code>content/focus.json</code>.</p>'; return; }
+    var have = {}; D.problems.forEach(function(p){ have[p.slug] = p; });
+    var byId = {};
+    F.items.forEach(function(it){
+      byId[it.id] = it;
+      (it.slugs || []).forEach(function(s){ if (!FOCUS_BY_SLUG[s]) FOCUS_BY_SLUG[s] = it; });
+    });
+    var slugs = Object.keys(FOCUS_BY_SLUG).filter(function(s){ return have[s]; });
+
+    function practiceButtons(it){
+      var b = (it.slugs || []).map(function(s){
+        if (!have[s]) return '<span class="note">(' + esc(s) + ' isn\'t in problems.json — run build_prep.py)</span>';
+        var p = have[s];
+        return '<button type="button" class="fprac" data-open="' + esc(s) + '"><span class="fst" data-st="' + esc(s) + '"></span>' +
+               esc(p.title) + ' <span class="diff ' + esc(p.d.toLowerCase()) + '">' + esc(p.d) + '</span>' +
+               (p.tests.length ? ' <span class="note">' + p.tests.length + ' tests</span>' : '') + ' ▸</button>';
+      }).join('');
+      return b ? '<div class="fpracs"><b>Practice in the editor:</b>' + b + '</div>' : '';
+    }
+
+    var html = '<p class="note">' + esc(F.intro || '') + '</p>';
+    html += '<div class="fbar"><span id="fprog"></span><div class="bar"><i id="fbar"></i></div>' +
+            '<label class="mlpractice"><input type="checkbox" id="fPractice"> Practice mode (hide solutions until you click)</label></div>';
+    // the interview reports, round by round
+    html += '<div class="freports">' + (F.reports || []).map(function(r){
+      return '<div class="freport"><div class="frt">' + esc(r.title) + '</div><div class="note">' + esc(r.date) + ' · ' + esc(r.where) + '</div><ol>' +
+        r.rounds.map(function(rd){
+          return '<li><b>' + esc(rd.name) + '</b>' + (rd.note ? '<div class="note">' + esc(rd.note) + '</div>' : '') +
+            '<div class="flinks">' + rd.items.map(function(id){
+              return byId[id] ? '<a href="#f-' + esc(id) + '" class="flink" data-id="' + esc(id) + '">' + esc(byId[id].title) + '</a>' : '';
+            }).join('') + '</div></li>';
+        }).join('') + '</ol></div>';
+    }).join('') + '</div>';
+    // sections
+    var sections = [];
+    F.items.forEach(function(it){ if (sections.indexOf(it.section) === -1) sections.push(it.section); });
+    sections.forEach(function(sec){
+      html += '<h3 class="fsec">' + esc(sec) + '</h3>';
+      html += F.items.filter(function(it){ return it.section === sec; }).map(function(it){
+        return '<details class="sdq mlq fitem" id="f-' + esc(it.id) + '">' +
+          '<summary>' + esc(it.title) + '<span class="fsum" data-sum="' + esc(it.id) + '"></span></summary><div class="body">' +
+          '<blockquote class="mlquestion">' + mdInline(it.question) + (it.source ? '<div class="note">' + esc(it.source) + '</div>' : '') + '</blockquote>' +
+          practiceButtons(it) +
+          '<div class="mlanswers">' +
+            (it.short ? '<div class="mlshort"><b>' + (sec === 'Coding' ? 'Solution in short' : '60-second answer') + '</b><p>' + mdInline(it.short) + '</p></div>' : '') +
+            '<div class="mlfull">' + mdLite(it.answer) + '</div>' +
+            ((it.followups || []).length ? '<h4>Likely follow-ups</h4><ul>' + it.followups.map(function(f){ return '<li>' + mdInline(f) + '</li>'; }).join('') + '</ul>' : '') +
+          '</div>' +
+          '<button type="button" class="btn ghost sm mlreveal" hidden>Show solution</button>' +
+          '</div></details>';
+      }).join('');
+    });
+    root.innerHTML = html;
+
+    root.addEventListener('click', function(e){
+      var b = e.target.closest('[data-open]');
+      if (b) { var t = document.querySelector('button.ptitle[data-pid="' + b.getAttribute('data-open') + '"]'); if (t) t.click(); return; }
+      var l = e.target.closest('.flink');
+      if (l) { var d = document.getElementById('f-' + l.getAttribute('data-id')); if (d) d.open = true; }
+      var r = e.target.closest('.mlreveal');
+      if (r) { r.parentNode.querySelector('.mlanswers').hidden = false; r.hidden = true; }
+    });
+    var practice = document.getElementById('fPractice');
+    function setPractice(on){
+      root.querySelectorAll('.fitem').forEach(function(d){ d.querySelector('.mlanswers').hidden = on; d.querySelector('.mlreveal').hidden = !on; });
+    }
+    try { practice.checked = localStorage.getItem('prep:focusPractice') === '1'; } catch(e){}
+    setPractice(practice.checked);
+    practice.addEventListener('change', function(){ try { localStorage.setItem('prep:focusPractice', practice.checked ? '1' : '0'); } catch(e){} setPractice(practice.checked); });
+
+    // status chips + progress, refreshed whenever progress changes
+    var LABEL = { done: '✓ Done', passed: '✓ Passing', attempted: 'Tried' };
+    function refresh(){
+      var done = 0;
+      slugs.forEach(function(s){
+        var row = document.querySelector('#ptable tr[data-pid="' + s + '"]');
+        var st = row ? row.getAttribute('data-status') || '' : '';
+        if (st === 'done') done++;
+        root.querySelectorAll('[data-st="' + s + '"]').forEach(function(el){ el.textContent = LABEL[st] || ''; el.className = 'fst' + (st ? ' st-' + st : ''); });
+      });
+      F.items.forEach(function(it){
+        var ss = (it.slugs || []).filter(function(s){ return have[s]; }); if (!ss.length) return;
+        var n = ss.filter(function(s){ var row = document.querySelector('#ptable tr[data-pid="' + s + '"]'); return row && row.getAttribute('data-status') === 'done'; }).length;
+        var el = root.querySelector('[data-sum="' + it.id + '"]'); if (el) el.textContent = ' · ' + n + '/' + ss.length + ' done';
+      });
+      document.getElementById('fprog').textContent = done + ' / ' + slugs.length + ' focus problems done';
+      document.getElementById('fbar').style.width = (slugs.length ? 100 * done / slugs.length : 0) + '%';
+    }
+    var prev = window.prepUpdate;
+    window.prepUpdate = function(){ if (prev) prev(); refresh(); };
+    refresh();
+  }
 
   function initFilters(){
   var tbody = document.querySelector('#ptable tbody');
@@ -456,7 +777,19 @@
                '<span class="pchip">' + esc(p.pattern) + '</span>';
     $('mMeta').innerHTML = meta;
     $('mMeta').querySelectorAll('button').forEach(function(b){ b.disabled = true; b.style.cursor = 'default'; });
+    $('mEdit').hidden = !p.custom;
+    var fItem = window.prepFocusFor ? window.prepFocusFor(pid) : null;
+    $('mSolTab').hidden = !fItem;
+    if (fItem) {
+      $('mSol').innerHTML = '<div class="mlshort"><b>Solution in short</b><p>' + esc(fItem.short || '') + '</p></div>' + window.prepMdLite(fItem.answer) +
+        ((fItem.followups || []).length ? '<h4>Likely follow-ups</h4><ul>' + fItem.followups.map(function(f){ return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '');
+    } else if (!$('paneSol').hidden) {
+      document.querySelector('.tab[data-tab="prob"]').click();
+    }
+    $('mLink').parentNode.style.display = p.link ? '' : 'none';
+    $('mFullRefresh').hidden = !!p.custom;
     if (p.summary) { $('mSummary').textContent = p.summary; }
+    else if (p.custom) { $('mSummary').innerHTML = 'No summary yet — click <b>Edit problem</b> (top right) to add one, plus the full problem and tests.'; }
     else { $('mSummary').innerHTML = 'No summary written for this one yet — use <b>Open on LeetCode</b> below for the full statement and method signature. (You can add a summary, hint and tests in <code>content/problems.json</code>.)'; }
     $('mExample').textContent = p.example || '';
     $('mExample').parentNode.style.display = p.example ? '' : 'none';
@@ -506,6 +839,7 @@
     b.addEventListener('click', function(){ open(b.getAttribute('data-pid')); });
   });
   $('mClose').addEventListener('click', close);
+  $('mEdit').addEventListener('click', function(){ if (cur && window.prepEditCustom) window.prepEditCustom(cur); });
   modal.addEventListener('mousedown', function(e){ if (e.target === modal) close(); });
   var lastHintClose = 0;
   cm.on('endCompletion', function(){ lastHintClose = Date.now(); });
@@ -546,6 +880,7 @@
       document.querySelectorAll('.tab').forEach(function(x){ x.classList.toggle('on', x === t); });
       $('paneProb').hidden = t.getAttribute('data-tab') !== 'prob';
       $('paneRef').hidden = t.getAttribute('data-tab') !== 'ref';
+      $('paneSol').hidden = t.getAttribute('data-tab') !== 'sol';
     });
   });
 
@@ -606,6 +941,13 @@
   }
   function loadStatement(pid, refresh){
     var body = $('mFullBody'), srcEl = $('mFullSrc');
+    if (PD[pid] && PD[pid].custom) {
+      var c = PD[pid].custom;
+      body.innerHTML = PD[pid].full ? sanitize(PD[pid].full) : '<p class="msg">No full problem written yet. Click <b>Edit problem</b> to add it.</p>';
+      srcEl.textContent = '· added by you' + (c.source ? ' — ' + c.source : '');
+      if (PD[pid].full) $('mExample').parentNode.style.display = PD[pid].example ? '' : 'none';
+      fitMore(); return;
+    }
     if (!SERVER) { body.innerHTML = PD[pid] && PD[pid].full ? sanitize(PD[pid].full) : '<p class="msg">Start <code>prep_server.py</code> to load the full problem.</p>'; srcEl.textContent = ''; fitMore(); return; }
     body.innerHTML = '<p class="msg">Loading the full problem from LeetCode…</p>'; srcEl.textContent = ''; fitMore();
     api('/statement?slug=' + encodeURIComponent(pid) + (refresh ? '&refresh=1' : '')).then(function(r){
@@ -839,6 +1181,12 @@
       case 'int[][]': return 'new int[][]{' + list(v, function(r){ return '{' + list(r, String) + '}'; }) + '}';
       case 'char[][]': return 'new char[][]{' + list(v, function(r){ return '{' + list(r, function(c){ return "'" + (c === "'" || c === '\\' ? '\\' + c : String(c)) + "'"; }) + '}'; }) + '}';
       case 'str[]': return 'new String[]{' + list(v, function(x){ return JSON.stringify(String(x)); }) + '}';
+      case 'robot': return 'new Robot(' + jlit(v[0], 'int[][]') + ', ' + v[1][0] + ', ' + v[1][1] + ')';
+      case 'char': var ch = String(v); return "'" + (ch === "'" || ch === '\\' ? '\\' + ch : ch) + "'";
+      case 'char[]': return 'new char[]{' + list(v, function(c){ return jlit(c, 'char'); }) + '}';
+      case 'list<int>': return '__li(' + jlit(v, 'int[]') + ')';
+      case 'list<str>': return '__ls(' + jlit(v, 'str[]') + ')';
+      case 'list<list<int>>': return '__lli(' + jlit(v, 'int[][]') + ')';
       case 'tree': return 'T(new Integer[]{' + list(v, function(x){ return x === null ? 'null' : String(x); }) + '})';
       case 'list': return 'L(' + jlit(v, 'int[]') + ')';
       case 'list[]': return 'new ListNode[]{' + list(v, function(x){ return jlit(x, 'list'); }) + '}';
@@ -856,6 +1204,12 @@
       'list[]': Array.isArray(v) && v.every(function(r){ return Array.isArray(r) && r.every(isInt); }),
       'char[][]': Array.isArray(v) && v.every(function(r){ return Array.isArray(r) && r.every(function(c){ return typeof c === 'string' && c.length === 1; }); }),
       'str[]': Array.isArray(v) && v.every(function(x){ return typeof x === 'string'; }),
+      'list<str>': Array.isArray(v) && v.every(function(x){ return typeof x === 'string'; }),
+      'list<int>': Array.isArray(v) && v.every(isInt),
+      'list<list<int>>': Array.isArray(v) && v.every(function(r){ return Array.isArray(r) && r.every(isInt); }),
+      'char': typeof v === 'string' && v.length === 1,
+      'robot': Array.isArray(v) && v.length === 2 && Array.isArray(v[0]) && Array.isArray(v[1]),
+      'char[]': Array.isArray(v) && v.every(function(c){ return typeof c === 'string' && c.length === 1; }),
       'tree': Array.isArray(v) && v.every(function(x){ return x === null || isInt(x); }),
       'cyclelist': Array.isArray(v) && v.length === 2 && Array.isArray(v[0]) && isInt(v[1]),
       'nested': Array.isArray(v)

@@ -1,0 +1,147 @@
+{
+ "_note": "ML / LLM questions shown in the 'ML & LLM' section. Add entries here; 'answer' and 'short' use markdown-lite: ### heading, - bullets, 1. lists, **bold**, `code`, ``` blocks, | tables |.",
+ "questions": [
+  {
+   "id": "transformer-complexity",
+   "category": "LLM fundamentals",
+   "title": "Transformer complexity",
+   "question": "Explain the computational complexity of Transformer models and how it changes with different sequence lengths.",
+   "source": "Interview report: technical round (LLM fundamentals)",
+   "short": "Per layer, self-attention costs O(n²·d) compute and O(n²) memory for the score matrix, while the projections and feed-forward network cost O(n·d²). Short sequences are dominated by the d² terms (the weights); once n grows past a few times d, attention's n² term dominates. In generation, prefill is one big quadratic, compute-bound pass; decode with a KV cache costs O(n·d) attention per new token, but it's memory-bandwidth-bound and the KV cache grows linearly with n.",
+   "answer": "### Notation\nn = sequence length, d = model width (d_model), h = heads, L = layers, b = batch.\n\n### One layer, one sequence\n| Part | Compute (FLOPs) | Memory |\n|---|---|---|\n| Q, K, V, O projections | 4 matmuls of (n×d)(d×d) → ~8·n·d² | weights 4·d² |\n| Scores QKᵀ | (n×d)(d×n) → ~2·n²·d | n²·h scores if materialized |\n| Softmax(·)·V | ~2·n²·d | — |\n| Feed-forward (4d hidden) | 2 matmuls → ~16·n·d² | weights 8·d² |\n| **Total** | **~24·n·d² + 4·n²·d** | activations O(n·d + h·n²) |\n\nSo per layer it's **O(n·d² + n²·d)** time. The attention term overtakes the rest when 4n²d > 24nd², i.e. **n > ~6d**. For d = 4096 that's around 24k tokens. Below that, cost is roughly linear in n; above it, roughly quadratic.\n\nRules of thumb:\n- Parameters ≈ **12·L·d²** (embeddings aside).\n- Forward FLOPs per token ≈ **2 × parameters** (+ the attention term 2·L·n·d).\n- Training ≈ **6 × parameters × tokens** (forward + backward).\n\n### How it changes with sequence length\n- **Training / prefill** processes all n tokens in parallel. Compute is O(n²·d) for attention, and GPUs are compute-bound here. Naive attention also stores the n×n score matrix, so memory is O(n²). FlashAttention removes that, so memory becomes O(n), but compute stays O(n²).\n- **Decode (one token at a time)** with a **KV cache**: the new token's query attends to n cached keys, which is O(n·d) per layer per token, plus O(d²) for the weights. Generating n tokens totals O(n²·d) instead of the O(n³·d) you'd pay by recomputing everything each step.\n- Decode is **memory-bandwidth-bound**. Every step reads all the weights and the whole KV cache to produce one token per sequence, so arithmetic intensity ≈ batch size. Batching is what makes decode efficient.\n- The **KV cache** grows linearly: 2 (K and V) × L × kv_heads × head_dim × n × bytes. For Llama-2-7B (32 layers, 32 heads × 128, fp16) that's 2·32·32·128·2 B ≈ **0.5 MB per token**, about **2 GB for 4k tokens per sequence**. Long contexts run out of KV memory before they run out of compute. That's why GQA/MQA and KV quantization matter.\n\n### Long-context options (if they ask \"how would you handle 1M tokens?\")\n- **Exact but cheaper IO:** FlashAttention, Flash-Decoding, ring attention (split the sequence across GPUs).\n- **Fewer pairs:** sliding-window/local attention O(n·w), sparse patterns, attention sinks + window.\n- **Different mechanism:** linear attention, state-space models (Mamba) at O(n).\n- **Smaller cache:** GQA/MQA, KV quantization, KV eviction, multi-head latent attention.\n- **Positional encodings** that extrapolate: RoPE scaling (e.g. YaRN).\n",
+   "followups": [
+    "Where's the crossover where attention dominates? (n ≈ 6d for a standard 4× FFN.)",
+    "Why is decode slow even though it's only O(n·d) per token? (Memory-bandwidth-bound; weights + KV are read every step.)",
+    "Estimate the KV cache for a 70B model with GQA at 32k context. (80 layers × 8 KV heads × 128 × 2 × 2 B ≈ 320 KB/token → ~10 GB.)",
+    "What does FlashAttention change about the complexity? (Memory O(n²)→O(n); FLOPs unchanged.)"
+   ],
+   "links": [
+    {
+     "label": "Attention Is All You Need (2017)",
+     "url": "https://arxiv.org/abs/1706.03762"
+    },
+    {
+     "label": "Scaling Laws (Kaplan et al., FLOP counts)",
+     "url": "https://arxiv.org/abs/2001.08361"
+    }
+   ]
+  },
+  {
+   "id": "llm-inference-optimization",
+   "category": "LLM fundamentals",
+   "title": "LLM inference optimization",
+   "question": "What techniques can be used to optimize LLM inference performance?",
+   "source": "Interview report: technical round (LLM fundamentals)",
+   "short": "Start from the bottleneck. Prefill is compute-bound; decode is memory-bandwidth-bound, since each token reads all weights plus the KV cache. You can read fewer bytes (quantization, GQA, KV cache compression), do more useful work per byte (batching, continuous batching, speculative decoding), avoid wasted work (KV cache, prefix caching, PagedAttention), and use faster kernels and parallelism (FlashAttention, fused kernels, CUDA graphs, tensor parallelism). Then trade latency against throughput: time-to-first-token (TTFT), time per output token, tokens/sec and cost per token.",
+   "answer": "### First, name the metrics and the bottleneck\n- **TTFT** (time to first token) is driven by **prefill**: compute-bound, O(n²) attention over the prompt.\n- **TPOT / inter-token latency** is driven by **decode**: memory-bandwidth-bound. Rough floor per step ≈ (model bytes + KV bytes) ÷ HBM bandwidth. Example: 7B in fp16 = 14 GB ÷ ~3 TB/s ≈ 5 ms/token at batch 1.\n- **Throughput** (tokens/s/GPU) and **cost per token** improve with batch size, until KV memory or latency SLOs stop you.\n\n### 1. Read fewer bytes\n- **Weight quantization:** INT8 / FP8 (Hopper and later), 4-bit weight-only (GPTQ, AWQ). Decode speeds up roughly in proportion to the bytes saved.\n- **KV cache:** **GQA / MQA** (fewer K/V heads), KV quantization (FP8/INT8), eviction or windowing for long contexts.\n- **Smaller or sparser model:** distillation, pruning, **MoE** (only the active experts' weights are read per token).\n\n### 2. Do more work per byte read\n- **Batching.** **Continuous (in-flight) batching** adds and removes requests every step instead of waiting for the whole batch to finish. It's the biggest single throughput win.\n- **Speculative decoding.** A small draft model (or Medusa / EAGLE heads, or n-gram lookup) proposes k tokens, and the big model verifies them in one forward pass. Accepted tokens are free and the **output distribution is unchanged**. Best at low batch sizes, where decode is most memory-bound.\n- **Chunked prefill:** split long prompts so they interleave with decode steps instead of stalling them.\n\n### 3. Don't redo or waste work\n- **KV cache** (standard). **PagedAttention** (vLLM) stores KV in fixed-size blocks like OS pages: almost no fragmentation, more sequences per GPU, cheap sharing.\n- **Prefix / prompt caching:** reuse the KV of shared system prompts, few-shot examples or chat history.\n- **Disaggregated prefill and decode:** separate GPU pools sized for each phase (compute-heavy vs memory-heavy).\n\n### 4. Faster kernels and runtime\n- **FlashAttention** (prefill) and **Flash-Decoding** (decode with long KV): fused, IO-aware attention.\n- **Kernel fusion** (bias + activation + norm), **CUDA graphs** to remove launch overhead, compilers and engines: TensorRT-LLM, vLLM, SGLang, torch.compile.\n\n### 5. Parallelism and serving\n- **Tensor parallelism** within a node (NVLink) cuts per-token latency. **Pipeline parallelism** across nodes fits bigger models. **Expert parallelism** for MoE.\n- Autoscaling, request routing by prompt length, priority queues, streaming responses, and a semantic or response cache in front.\n\n### How to present it\nName the bottleneck, then pick 3–4 techniques that match the SLO. For a latency-sensitive chatbot: FP8 or INT4 weights, GQA model, speculative decoding, tensor parallelism. For offline batch jobs: big batches, continuous batching, prefix caching, quantization; latency doesn't matter. Always mention measuring (profilers, roofline) and checking quality after quantization.\n",
+   "followups": [
+    "Why doesn't speculative decoding change the output? (Rejection sampling against the target model's distribution.)",
+    "When does increasing batch size stop helping? (KV memory limit, or decode becomes compute-bound, or the latency SLO.)",
+    "Quantization trade-offs: weight-only vs weight+activation; which layers are sensitive; calibration data.",
+    "How does PagedAttention improve throughput? (Less fragmentation → more concurrent sequences; prefix sharing.)"
+   ],
+   "links": [
+    {
+     "label": "PagedAttention / vLLM",
+     "url": "https://arxiv.org/abs/2309.06180"
+    },
+    {
+     "label": "Speculative decoding (Leviathan et al.)",
+     "url": "https://arxiv.org/abs/2211.17192"
+    },
+    {
+     "label": "AWQ",
+     "url": "https://arxiv.org/abs/2306.00978"
+    },
+    {
+     "label": "GPTQ",
+     "url": "https://arxiv.org/abs/2210.17323"
+    }
+   ]
+  },
+  {
+   "id": "grouped-query-attention",
+   "category": "LLM fundamentals",
+   "title": "Grouped-Query Attention (GQA)",
+   "question": "Explain Grouped-Query Attention and its role in Transformer architectures.",
+   "source": "Interview report: technical round (LLM fundamentals)",
+   "short": "In multi-head attention every query head has its own K and V heads. GQA splits the H query heads into G groups, and each group shares one K/V head. G = H is ordinary multi-head attention; G = 1 is multi-query attention (MQA). Its job is to shrink the KV cache and the memory traffic during decode by H/G (e.g. 64 query heads with 8 KV heads gives an 8× smaller cache in Llama-2-70B). It keeps quality close to multi-head attention, where MQA tends to lose some.",
+   "answer": "### The three variants\n```\nMHA  (G = H)   Q: q1 q2 q3 q4 q5 q6 q7 q8     K/V: 8 heads, one per query head\nGQA  (G = 2)   Q: q1 q2 q3 q4 | q5 q6 q7 q8   K/V: 2 heads, each shared by 4 query heads\nMQA  (G = 1)   Q: q1 … q8                     K/V: 1 head shared by all\n```\nEach query head still computes its own attention pattern. Only the keys and values are shared within a group.\n\n### Why it exists\n- Decode is **memory-bandwidth-bound**. Each step reads the whole **KV cache**, whose size is 2 × L × **kv_heads** × head_dim × n × bytes.\n- Cutting KV heads from H to G shrinks the cache and the bytes read per token by **H/G**. That allows longer contexts, bigger batches, and faster decode.\n- **MQA** (Shazeer, 2019) gets the biggest saving but can hurt quality and training stability. **GQA** (Ainslie et al., 2023) is the middle ground, with quality close to MHA and speed close to MQA.\n- Used by Llama 2 70B and Llama 3 (8 KV heads), Mistral, and most current open models.\n\n### What it does and doesn't change\n- Saves KV cache memory, memory bandwidth, and K/V projection parameters.\n- Does **not** reduce the n² score computation much: there are still H query heads computing QKᵀ. The win is memory, not FLOPs.\n- **Uptraining:** an existing MHA checkpoint can be converted by **mean-pooling** each group's K/V heads, then training for about 5% of the original pretraining compute.\n- **Tensor parallelism:** KV heads are split across GPUs. With 8 KV heads and TP = 8 each GPU gets one; with TP > G the KV heads must be replicated.\n\n### Code sketch (PyTorch-style)\n```\n# q: [b, H, n, dh]   k, v: [b, G, n, dh]\nk = k.repeat_interleave(H // G, dim=1)   # -> [b, H, n, dh]\nv = v.repeat_interleave(H // G, dim=1)\natt = softmax(q @ k.transpose(-1, -2) / sqrt(dh) + mask) @ v\n```\nReal kernels (FlashAttention) index the shared head directly instead of copying it.\n\n### Related\n**Multi-head latent attention** (DeepSeek-V2) compresses K/V into a low-rank latent vector, saving even more cache. **Sliding-window attention** limits n instead of the number of heads.\n",
+   "followups": [
+    "Compute the KV cache saving for 32 query heads and 8 KV heads. (4×.)",
+    "Why not always use MQA? (Quality and stability loss; TP needs ≥ TP-degree KV heads.)",
+    "Does GQA speed up prefill? (A little, mostly memory; prefill is compute-bound on the QKᵀ, which is unchanged.)",
+    "How would you convert an MHA model to GQA? (Mean-pool the K/V heads in each group, then uptrain.)"
+   ],
+   "links": [
+    {
+     "label": "GQA paper (Ainslie et al., 2023)",
+     "url": "https://arxiv.org/abs/2305.13245"
+    },
+    {
+     "label": "MQA: Fast Transformer Decoding (Shazeer, 2019)",
+     "url": "https://arxiv.org/abs/1911.02150"
+    }
+   ]
+  },
+  {
+   "id": "flashattention",
+   "category": "LLM fundamentals",
+   "title": "FlashAttention",
+   "question": "Explain FlashAttention and how it improves the efficiency of attention computation.",
+   "source": "Interview report: technical round (LLM fundamentals)",
+   "short": "Standard attention writes the n×n score and probability matrices to GPU high-bandwidth memory (HBM) and reads them back, so it's limited by memory bandwidth, not math. FlashAttention computes exact attention in tiles that fit in on-chip SRAM. It loads a block of Q and streams blocks of K and V past it, using an 'online softmax' (running max and sum) so each block's partial result can be rescaled and combined. Only the final output goes back to HBM. The FLOPs are the same, but HBM traffic drops sharply, extra memory goes from O(n²) to O(n), and it runs 2–4× faster, which enabled much longer contexts.",
+   "answer": "### The problem: attention is IO-bound\nGPU memory hierarchy: **HBM** is tens of GB at ~2–3 TB/s; **SRAM** (shared memory) is ~100–200 KB per SM, roughly 10× faster.\n\nNaive attention runs as separate kernels:\n1. S = QKᵀ → **write** n×n to HBM\n2. P = softmax(S) → **read** S, **write** P\n3. O = P·V → **read** P\n\nThat's Θ(n²) HBM reads and writes per head, and the softmax, mask and dropout steps do little math per byte. The GPU sits waiting on memory.\n\n### The idea: tiling + online softmax + fusion\n- Split Q into row blocks and K, V into column blocks sized to fit in SRAM.\n- For a Q block, loop over the K/V blocks. Compute S_j = Q·K_jᵀ **in SRAM**, apply the softmax incrementally, accumulate into O, and never write S or P to HBM.\n- **Online softmax**: softmax needs the row max and sum over all keys, so keep running statistics per row and rescale:\n```\nm_new = max(m, rowmax(S_j))\nl_new = exp(m - m_new) * l + rowsum(exp(S_j - m_new))\nO     = exp(m - m_new) * O + exp(S_j - m_new) @ V_j\n... after the last block:  O = O / l\n```\n- The whole thing (matmul, mask, softmax, dropout, matmul) is **one fused kernel**.\n- **Backward pass:** instead of storing P (n²), store only O and the per-row log-sum-exp, then **recompute** the attention blocks during backward. That costs more FLOPs but is still faster because there's far less IO.\n\n### What improves\n- **Exact** attention, not an approximation.\n- Extra memory goes from **O(n²) → O(n)**, so long sequences fit.\n- HBM accesses drop from Θ(n·d + n²) to Θ(n²·d²/M), where M is the SRAM size.\n- **2–4× speedups** at release; GPT-2 training ~3× faster; enabled 16k–64k contexts at the time.\n- FLOPs are **unchanged**; it's still O(n²·d). FlashAttention fixes memory traffic, not asymptotic compute.\n\n### Versions\n- **FlashAttention-2 (2023):** fewer non-matmul FLOPs, parallelizes over the sequence dimension too, better work split across warps. About 2× faster than v1.\n- **FlashAttention-3 (2024):** Hopper (H100) features. Asynchronous memory loads (TMA) and warp specialization overlap data movement with matmuls; FP8 support.\n- **Flash-Decoding:** at decode time there's one query and a long KV cache, so it splits the KV across thread blocks in parallel and combines the partial softmaxes with the same rescaling trick.\n\n### 30-second whiteboard\nDraw Q blocks as rows and K/V blocks as columns. Show the loop: \"load K_j, V_j into SRAM → partial scores → update m, l, O → next block\". Then point out that the n×n matrix never exists in HBM.\n",
+   "followups": [
+    "Why is it exact if we never see the full row before the softmax? (Online-softmax rescaling is algebraically identical.)",
+    "Why recompute in the backward pass instead of storing? (Recompute FLOPs are cheaper than n² HBM IO.)",
+    "Does it change the O(n²) compute? (No. Use sparse/linear attention or windows for that.)",
+    "How does decode differ? (One query row; Flash-Decoding splits the KV sequence across blocks.)"
+   ],
+   "links": [
+    {
+     "label": "FlashAttention (Dao et al., 2022)",
+     "url": "https://arxiv.org/abs/2205.14135"
+    },
+    {
+     "label": "FlashAttention-2",
+     "url": "https://arxiv.org/abs/2307.08691"
+    },
+    {
+     "label": "FlashAttention-3",
+     "url": "https://arxiv.org/abs/2407.08608"
+    },
+    {
+     "label": "Online softmax (Milakov & Gimelshein)",
+     "url": "https://arxiv.org/abs/1805.02867"
+    }
+   ]
+  },
+  {
+   "id": "feed-ranking-optimization",
+   "category": "ML system design",
+   "title": "Staff AI system design: feed ranking optimization",
+   "question": "Round 2 (Staff AI System Design): a typical ML system design problem. The interviewer presented a feed ranking scenario and asked how to optimize it. (The rest of the question was cut off in the report; this answer covers both ranking quality and serving cost/latency.)",
+   "source": "Interview report: Round 2, Staff AI System Design",
+   "short": "Clarify the objective first: what 'better' means (long-term value, not just clicks) and the constraints (latency, cost, freshness). Then lay out the funnel: candidate generation from many sources, a light ranker, a heavy multi-task ranker, then re-ranking with business rules and diversity. Optimize three things: (1) quality, via multi-task labels combined by a value model, better features and embeddings, and calibration; (2) efficiency, via caching, distillation, quantization, and the cascade itself; (3) the loop, via logging, offline metrics that predict online ones, A/B tests, and guardrails. Close with the Staff-level trade-offs and a rollout plan.",
+   "answer": "### 1. Clarify (5 min): what are we optimizing?\n- **Objective:** engagement now (CTR, dwell time) or long-term value (retention, sessions/week, meaningful interactions, creator health)? Name a **north-star metric** and **guardrails** (hides, reports, latency, diversity, ad load).\n- **Scale:** e.g. 300M DAU, ~10 feed loads/day each, ~35k QPS average and ~100k at peak. Each request scores ~1–2k candidates from ~10k retrieved.\n- **SLO:** p99 < 200–300 ms end to end; ranking budget ~50–80 ms.\n- What's broken today: quality, freshness, latency, cost, cold start, or creator fairness? Pick the main pain point; that's likely the \"optimize\" they mean.\n\n### 2. The funnel\n```\nCandidate sources (network posts, follows, groups, embedding ANN, trending, ads)\n    → ~10k →  light ranker (two-tower / GBDT, ~1 ms per 1k)\n    → ~500 →  heavy ranker (multi-task DNN / transformer over user history)\n    → ~50  →  re-rank (diversity, dedupe, freshness, policy, ads blending)\n    → feed (+ pagination cache)\n```\nEach stage trades recall for precision under a compute budget. Optimizing the cascade, i.e. how many candidates move to each stage and how well the stages agree, is itself a lever.\n\n### 3. Quality optimizations\n- **Labels:** multi-task heads for P(click), P(like), P(comment), P(share), dwell time, P(hide/report). Combine them with a **value model**: score = Σ wᵢ·P(eventᵢ), with weights tuned by online experiments against the north star. This avoids click-bait from a pure CTR objective.\n- **Model:** MMoE / PLE multi-task architecture; a sequence model over the user's recent interactions (a transformer over the last N actions); cross features (DCN-v2). Use LLM or content embeddings for text, images and video to help cold-start posts.\n- **Features:** real-time counters (impressions and engagement in the last 5 min / 1 h), viewer–author affinity, freshness, content quality and integrity scores. A feature store with **the same code for training and serving** avoids training/serving skew.\n- **Biases:** position bias (position as a feature, set to a fixed value at serving, or inverse propensity weighting), exposure bias. Keep a small exploration slice for cold start (bandits).\n- **Calibration** per task so the weighted sum means something; recalibrate after model changes.\n- **Diversity and fairness** in re-ranking: MMR or determinantal point process (DPP), author and topic caps, a creator exposure floor.\n\n### 4. Serving and efficiency optimizations\n- **Latency budget per stage**; fetch candidates and features in parallel; deadline-aware degradation (fall back to the light ranker or a cached feed).\n- **Precompute:** the user embedding per session, item embeddings offline, ANN index (HNSW / ScaNN); cache the ranked feed per user for a short TTL and recompute when new posts arrive.\n- **Model efficiency:** distill the heavy ranker into a smaller one, quantize (INT8/FP16), batch candidates per request on GPU, use TensorRT/Triton and dynamic batching. Score only the top-K from the light ranker.\n- **Cost:** cascade sizes tuned on a cost-vs-metric curve; spot or batch capacity for offline embedding work.\n- **Freshness:** streaming feature updates (Kafka/Flink); incremental or online model updates for the fast-changing parts; daily full retrains.\n\n### 5. The improvement loop (what Staff-level interviews look for)\n- **Logging:** impressions with the features **as served** (avoids leakage), outcomes joined with delayed labels such as dwell time and later sessions.\n- **Offline evaluation:** per-task AUC / log-loss, NDCG; counterfactual or off-policy evaluation for the value-model weights. Track which offline metrics actually predict online wins.\n- **Online:** A/B tests with guardrails, long-running holdouts for long-term effects, interleaving for faster ranker comparisons; watch for novelty effects.\n- **Monitoring:** feature drift, calibration drift, latency and errors, integrity metrics. Automatic rollback.\n\n### 6. Trade-offs to say out loud\n- Short-term engagement vs long-term satisfaction (value weights, hide and report signals).\n- Model size vs latency and cost (distillation, cascade); freshness vs cost (streaming vs batch).\n- Personalization vs filter bubbles and creator fairness (exploration, diversity).\n- Organizational: shared feature platform, model registry, experiment platform. How multiple teams (ads, integrity, notifications) plug into the re-rank stage.\n\n### 7. Wrap-up\n\"If I had one quarter: (1) move from a CTR objective to a calibrated multi-task value model, (2) add a sequence model over recent activity, (3) distill it to meet the latency budget. Measure with a 2-week A/B test plus a long-term holdout.\"\n",
+   "followups": [
+    "How do you pick the weights in the value model? (Online experiments / constrained optimization against the north star; offline proxies.)",
+    "How do you handle a new post with no engagement? (Content embeddings, author priors, exploration traffic.)",
+    "Offline AUC went up but online engagement didn't. Why? (Leakage, train/serve skew, bias, wrong proxy metric.)",
+    "Where would an LLM help? (Content understanding and embeddings, quality and integrity labels, offline distillation, not the per-request heavy ranker at 100k QPS.)"
+   ],
+   "links": [
+    {
+     "label": "MMoE (multi-task ranking)",
+     "url": "https://dl.acm.org/doi/10.1145/3219819.3220007"
+    },
+    {
+     "label": "DCN-v2",
+     "url": "https://arxiv.org/abs/2008.13535"
+    }
+   ],
+   "related": "See also System design → 1. Design LinkedIn's feed ranking system (product and infrastructure view)."
+  }
+ ]
+}

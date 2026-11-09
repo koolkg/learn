@@ -9,6 +9,8 @@ Local runner for the prep page (index.html + problems.json in this folder).
 - Listens on 127.0.0.1 only. Nothing is sent anywhere else.
 - Your code is also saved as files under ./solutions/ (one file per problem and language),
   and your progress (done / passing / attempted) in ./solutions/progress.json.
+- Problems you add with the page's "+ Add problem" form go in ./content/custom_problems.json;
+  the server then re-runs build_prep.py so they show up in problems.json.
 - Named versions of a solution are kept in ./solutions/<problem>/<name>.java|.py (+ versions.json).
 - When you open a problem, the full statement is fetched from LeetCode (like your browser would)
   and cached in ./cache/statements/ — local only, not committed to git. For Premium problems,
@@ -30,6 +32,8 @@ STATIC = {  # url path -> (file, content type)
     "/content/reference.json": (os.path.join("content", "reference.json"), "application/json; charset=utf-8"),
     "/content/techniques.json": (os.path.join("content", "techniques.json"), "application/json; charset=utf-8"),
     "/content/videos.json": (os.path.join("content", "videos.json"), "application/json; charset=utf-8"),
+    "/content/concepts.json": (os.path.join("content", "concepts.json"), "application/json; charset=utf-8"),
+    "/content/focus.json": (os.path.join("content", "focus.json"), "application/json; charset=utf-8"),
 }
 VENDOR = re.compile(r"^/vendor/([a-z-]+\.(js|css))$")
 SOLUTIONS = os.path.join(HERE, "solutions")
@@ -96,6 +100,48 @@ def versions_with_code(slug):
             with open(fp, encoding="utf-8") as f:
                 out.append(dict(v, code=f.read()))
     return out
+
+
+# ---------- problems you add yourself: content/custom_problems.json ----------
+sys.path.insert(0, HERE)
+import custom_problems  # noqa: E402
+CUSTOM = os.path.join(HERE, "content", custom_problems.FILE_NAME)
+
+
+def read_custom():
+    try:
+        with open(CUSTOM, encoding="utf-8") as f:
+            return json.load(f).get("problems", [])
+    except FileNotFoundError:
+        return []
+
+
+def write_custom(items):
+    os.makedirs(os.path.dirname(CUSTOM), exist_ok=True)
+    with open(CUSTOM + ".tmp", "w", encoding="utf-8") as f:
+        json.dump({"_note": "Problems you added. Edit here or with the page's form, then: python3 build_prep.py",
+                   "problems": items}, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+    os.replace(CUSTOM + ".tmp", CUSTOM)
+
+
+def rebuild():
+    """re-run build_prep.py with the saved settings; returns (ok, message)"""
+    try:
+        r = subprocess.run([sys.executable, os.path.join(HERE, "build_prep.py"), "--no-fetch"], cwd=HERE,
+                           capture_output=True, text=True, timeout=120)
+    except subprocess.TimeoutExpired:
+        return False, "build_prep.py took too long"
+    out = (r.stdout + r.stderr).strip()
+    return r.returncode == 0, out[-1500:]
+
+
+def all_slugs():
+    try:
+        with open(os.path.join(HERE, "problems.json"), encoding="utf-8") as f:
+            return {p["slug"] for p in json.load(f).get("problems", [])}
+    except (FileNotFoundError, ValueError):
+        return set()
 
 
 def solution_files():
@@ -384,6 +430,40 @@ class Handler(BaseHTTPRequestHandler):
                             pass
                 write_versions(slug, vs)
                 return self._send(200, json.dumps({"versions": versions_with_code(slug)}))
+        if u.path in ("/custom/save", "/custom/delete"):
+            slug = req.get("slug") or None
+            if slug is not None and (not SAFE_ID.match(slug) or not slug.startswith(custom_problems.PREFIX)):
+                return self._send(400, '{"error":"bad request"}')
+            now = __import__("datetime").datetime.now().isoformat(timespec="seconds")
+            with _lock:
+                items = read_custom()
+                old = next((c for c in items if c.get("slug") == slug), None) if slug else None
+                if slug and old is None:
+                    return self._send(404, json.dumps({"ok": False, "errors": [{"field": "", "msg": "That problem no longer exists."}]}))
+                if u.path == "/custom/delete":
+                    items.remove(old)
+                else:
+                    taken = all_slugs() | {c.get("slug") for c in items}
+                    try:
+                        rec = custom_problems.clean(req.get("fields") or {}, taken, editing=slug)
+                    except custom_problems.Invalid as e:
+                        return self._send(200, json.dumps({"ok": False, "errors": e.errors}))
+                    if old and isinstance(old.get("spec"), dict) and not rec.get("signature"):
+                        rec["spec"] = old["spec"]          # keep hand-written class-design tests
+                    if old and old.get("origin"):
+                        rec["origin"] = old["origin"]
+                    rec["added"] = old.get("added", now) if old else now
+                    rec["updated"] = now
+                    if old:
+                        items[items.index(old)] = rec
+                    else:
+                        items.append(rec)
+                    slug = rec["slug"]
+                write_custom(items)
+                ok, msg = rebuild()
+            if not ok:
+                return self._send(200, json.dumps({"ok": False, "errors": [{"field": "", "msg": "Saved, but build_prep.py failed: " + msg}]}))
+            return self._send(200, json.dumps({"ok": True, "slug": slug}))
         if u.path == "/save":
             pid, lang = req.get("id", ""), req.get("lang", "")
             if not SAFE_ID.match(pid) or lang not in ("java", "python"):

@@ -23,6 +23,17 @@
     },
     "updated": "2026-10-29T10:13:00"
   },
+  "custom-api-request-blocker": {
+    "attempted": true,
+    "done": false,
+    "doneAt": null,
+    "last": null,
+    "updated": "2026-11-06T23:13:12.178Z"
+  },
+  "custom-progressive-lru-implementation": {
+    "attempted": true,
+    "updated": "2026-11-05T21:01:43"
+  },
   "letter-combinations-of-a-phone-number": {
     "attempted": true,
     "done": true,
