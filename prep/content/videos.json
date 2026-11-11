@@ -79,6 +79,62 @@
       "links": [],
       "notes": "Builds heaps and priority queues from scratch, using an emergency room that always needs its most urgent patient.",
       "added": "2026-10-29"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=Chxz1Y7b3qU",
+      "title": "",
+      "channel": "",
+      "duration": "",
+      "patterns": [
+        "Dynamic Programming"
+      ],
+      "problems": [],
+      "chapters": [],
+      "links": [],
+      "notes": "",
+      "added": "2026-11-11"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=bPbuCAzzmUs",
+      "title": "Dynamic Programming is not difficult",
+      "channel": "AlgoMonster",
+      "duration": "",
+      "patterns": [
+        "Dynamic Programming"
+      ],
+      "problems": [],
+      "chapters": [],
+      "links": [],
+      "notes": "Why DP is less scary than it looks: where the name comes from, the two things every DP problem needs, a two-step way to solve one, then top-down and bottom-up code on Climbing Stairs, and a quick tour of other DP patterns.",
+      "added": "2026-11-11"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=Hdr64lKQ3e4",
+      "title": "",
+      "channel": "",
+      "duration": "",
+      "patterns": [
+        "Dynamic Programming"
+      ],
+      "problems": [],
+      "chapters": [],
+      "links": [],
+      "notes": "",
+      "added": "2026-11-11"
+    },
+    {
+      "url": "https://www.youtube.com/watch?v=rRRFvQezcSM",
+      "title": "",
+      "channel": "",
+      "duration": "",
+      "patterns": [
+        "Dynamic Programming"
+      ],
+      "problems": [],
+      "chapters": [],
+      "links": [],
+      "notes": "",
+      "added": "2026-11-11"
     }
   ]
 }
