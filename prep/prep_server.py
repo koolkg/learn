@@ -34,6 +34,7 @@ STATIC = {  # url path -> (file, content type)
     "/content/videos.json": (os.path.join("content", "videos.json"), "application/json; charset=utf-8"),
     "/content/concepts.json": (os.path.join("content", "concepts.json"), "application/json; charset=utf-8"),
     "/content/focus.json": (os.path.join("content", "focus.json"), "application/json; charset=utf-8"),
+    "/content/system_design.json": (os.path.join("content", "system_design.json"), "application/json; charset=utf-8"),
 }
 VENDOR = re.compile(r"^/vendor/([a-z-]+\.(js|css))$")
 SOLUTIONS = os.path.join(HERE, "solutions")

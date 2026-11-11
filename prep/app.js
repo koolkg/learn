@@ -24,14 +24,16 @@
     });
   }
   function opt(path){ return get(path).catch(function(){ return null; }); }
-  Promise.all([get('problems.json'), get('content/reference.json'), opt('content/techniques.json'), opt('content/videos.json'), opt('content/concepts.json'), opt('content/focus.json')]).then(function(res){
-    boot(res[0], res[1], res[2], res[3], res[4], res[5]);
+  Promise.all([get('problems.json'), get('content/reference.json'), opt('content/techniques.json'), opt('content/videos.json'), opt('content/concepts.json'), opt('content/focus.json'), opt('content/system_design.json')]).then(function(res){
+    boot(res[0], res[1], res[2], res[3], res[4], res[5], res[6]);
   }).catch(function(e){
     document.getElementById('appRoot').innerHTML = '<div class="card offline"><b>Could not load problems.json.</b><p>' + esc(e.message) +
       '</p><p>Run <code>python3 build_prep.py</code> in <code>~/learn/prep</code>, then reload.</p></div>';
   });
 
-  function boot(D, REF, TECHS, VIDS, CON, FOCUS){
+  function boot(D, REF, TECHS, VIDS, CON, FOCUS, SDD){
+    ((SDD && SDD.designs) || []).forEach(function(d){ SDBY[d.id] = d; });
+    renderSD(SDD);
     var cos = D.companies, wl = D.window_label;
     var when = D.window === 'all' ? 'all time' : 'the last ' + wl;   // e.g. "asked in the last 6 months"
     var whenShort = D.window === 'all' ? 'all time' : 'last ' + wl;
@@ -346,7 +348,10 @@
   }
   function mdLite(text){
     var lines = String(text || '').split('\n'), out = [], i = 0;
-    function cells(l){ return l.trim().replace(/^\||\|$/g, '').split('|').map(function(c){ return c.trim(); }); }
+    function cells(l){   // split on unescaped pipes; "\|" inside a cell is a literal pipe
+      return l.trim().replace(/^\||\|$/g, '').replace(/\\\|/g, '\u0000').split('|')
+        .map(function(c){ return c.trim().replace(/\u0000/g, '|'); });
+    }
     while (i < lines.length) {
       var l = lines[i];
       if (/^```svg\s*$/.test(l.trim())) {          // trusted local content: inline diagram
@@ -387,6 +392,16 @@
     return out.join('\n');
   }
 
+  var SDBY = {};
+  // an item with "design": "<id>" shows the full write-up from content/system_design.json
+  function designOf(it){
+    var d = it && it.design && SDBY[it.design];
+    if (!d) return it;
+    var o = {}; Object.keys(it).forEach(function(k){ o[k] = it[k]; });
+    o.short = d.short; o.answer = d.answer; o.followups = d.followups;
+    return o;
+  }
+
   function renderConcepts(CON){
     var root = document.getElementById('mlRoot');
     if (!root) return;
@@ -397,7 +412,8 @@
     var chips = '<div class="mlcats"><button type="button" class="pchip on" data-cat="">All (' + qs.length + ')</button>' + cats.map(function(c){
       return '<button type="button" class="pchip" data-cat="' + esc(c) + '">' + esc(c) + ' (' + qs.filter(function(q){ return q.category === c; }).length + ')</button>';
     }).join('') + '<label class="mlpractice"><input type="checkbox" id="mlPractice"> Practice mode (hide answers until you click)</label></div>';
-    root.innerHTML = chips + qs.map(function(q, n){
+    root.innerHTML = chips + qs.map(function(q0, n){
+      var q = designOf(q0);
       return '<details class="sdq mlq" data-cat="' + esc(q.category) + '" id="ml-' + esc(q.id) + '">' +
         '<summary>' + (n + 1) + '. ' + esc(q.title) + ' <span class="tag">' + esc(q.category) + '</span></summary>' +
         '<div class="body">' +
@@ -444,6 +460,7 @@
     if (!F || !(F.items || []).length) { root.innerHTML = '<p class="note">No focus items. Add them to <code>content/focus.json</code>.</p>'; return; }
     var have = {}; D.problems.forEach(function(p){ have[p.slug] = p; });
     var byId = {};
+    F.items = F.items.map(designOf);
     F.items.forEach(function(it){
       byId[it.id] = it;
       (it.slugs || []).forEach(function(s){ if (!FOCUS_BY_SLUG[s]) FOCUS_BY_SLUG[s] = it; });
@@ -532,6 +549,57 @@
     var prev = window.prepUpdate;
     window.prepUpdate = function(){ if (prev) prev(); refresh(); };
     refresh();
+  }
+
+  // ---------- System design tab (content/system_design.json) ----------
+  function renderSD(SDD){
+    var root = document.getElementById('sdRoot');
+    if (!root) return;
+    var ds = (SDD && SDD.designs) || [];
+    if (!ds.length) { root.innerHTML = '<p class="note">No designs found. Run <code>python3 build_prep.py</code> or add <code>content/system_design.json</code>.</p>'; return; }
+    var TAGS = SDD.tags || {};
+    var order = Object.keys(TAGS);
+    var chips = '<div class="mlcats"><button type="button" class="pchip on" data-tag="">All (' + ds.length + ')</button>' + order.map(function(t){
+      var n = ds.filter(function(d){ return (d.tags || []).indexOf(t) !== -1; }).length;
+      return n ? '<button type="button" class="pchip" data-tag="' + esc(t) + '">' + esc(TAGS[t]) + ' (' + n + ')</button>' : '';
+    }).join('') + '<label class="mlpractice"><input type="checkbox" id="sdPractice"> Practice mode (hide the design until you click)</label></div>';
+    var toc = '<div class="sdtoc">' + ds.map(function(d, i){
+      return '<a href="#sd-' + esc(d.id) + '" class="flink" data-id="' + esc(d.id) + '">' + (i + 1) + '. ' + esc(d.title) + '</a>';
+    }).join('') + '</div>';
+    root.innerHTML = chips + toc + ds.map(function(d, i){
+      return '<details class="sdq mlq sditem" id="sd-' + esc(d.id) + '" data-tags="' + esc((d.tags || []).join(' ')) + '">' +
+        '<summary>' + (i + 1) + '. ' + esc(d.title) + (d.tags || []).map(function(t){ return ' <span class="tag">' + esc(TAGS[t] || t) + '</span>'; }).join('') + '</summary>' +
+        '<div class="body">' +
+          '<blockquote class="mlquestion">' + mdInline(d.question || '') + '</blockquote>' +
+          '<div class="mlanswers">' +
+            (d.short ? '<div class="mlshort"><b>60-second version</b><p>' + mdInline(d.short) + '</p></div>' : '') +
+            '<div class="mlfull">' + mdLite(d.answer) + '</div>' +
+            ((d.followups || []).length ? '<h4>Likely follow-ups</h4><ul>' + d.followups.map(function(f){ return '<li>' + mdInline(f) + '</li>'; }).join('') + '</ul>' : '') +
+          '</div>' +
+          '<button type="button" class="btn ghost sm mlreveal" hidden>Show design</button>' +
+        '</div></details>';
+    }).join('');
+    root.addEventListener('click', function(e){
+      var c = e.target.closest('.mlcats .pchip');
+      if (c) {
+        var t = c.getAttribute('data-tag');
+        root.querySelectorAll('.mlcats .pchip').forEach(function(x){ x.classList.toggle('on', x === c); });
+        root.querySelectorAll('.sditem').forEach(function(d){ d.style.display = !t || (' ' + d.getAttribute('data-tags') + ' ').indexOf(' ' + t + ' ') !== -1 ? '' : 'none'; });
+        root.querySelectorAll('.sdtoc .flink').forEach(function(a){ var d = document.getElementById('sd-' + a.getAttribute('data-id')); a.style.display = d.style.display; });
+        return;
+      }
+      var l = e.target.closest('.sdtoc .flink');
+      if (l) { var d = document.getElementById('sd-' + l.getAttribute('data-id')); if (d) d.open = true; return; }
+      var r = e.target.closest('.mlreveal');
+      if (r) { r.parentNode.querySelector('.mlanswers').hidden = false; r.hidden = true; }
+    });
+    var practice = document.getElementById('sdPractice');
+    function setPractice(on){
+      root.querySelectorAll('.sditem').forEach(function(d){ d.querySelector('.mlanswers').hidden = on; d.querySelector('.mlreveal').hidden = !on; });
+    }
+    try { practice.checked = localStorage.getItem('prep:sdPractice') === '1'; } catch(e){}
+    setPractice(practice.checked);
+    practice.addEventListener('change', function(){ try { localStorage.setItem('prep:sdPractice', practice.checked ? '1' : '0'); } catch(e){} setPractice(practice.checked); });
   }
 
   function initFilters(){
@@ -1328,13 +1396,639 @@
     (c.impl || []).forEach(function(p){ list = list.concat(methodsOf(p, seen)); });
     return list;
   }
-  function resolveJava(code, ident){
-    var re = new RegExp('(?:^|[\\s(,;{])([A-Za-z_][\\w.]*)\\s*(<[^;=(){}]*>)?\\s*((?:\\[\\s*\\])*)\\s+' + ident + '\\s*(?:[=;,):]|$)', 'gm');
-    var m, last = null; while ((m = re.exec(code))) { if (m[1] !== 'return' && m[1] !== 'new') last = m; }
-    if (!last) return null;
-    if (last[3] && last[3].indexOf('[') !== -1) return '__array__';
-    var t = last[1].split('.').pop();
-    return t;
+  // ======== type-aware member suggestions ========
+  // For `expr.` work out the type of expr (a variable, this/super, new T(...), a cast, a chain like
+  // map.get(k).next, an array element, a lambda parameter, ...) and list that type's members. Types come from
+  // the classes the problem provides (Robot, ListNode, TreeNode, ...), the classes in your own code (nested,
+  // generic, anonymous, subclasses, including subclasses of JDK classes) and the JDK / Python built-ins.
+  var provCache = {};
+  function provSrc(l){
+    var p = cur && PD[cur]; if (!p) return '';
+    return expand(l === 'java' ? (p.java_post || '') : (p.py_pre || ''));
+  }
+  function provClasses(l){
+    var k = cur + '|' + l;
+    if (!provCache[k]) {
+      var cls = l === 'java' ? javaClasses(provSrc(l), false) : pyClasses(provSrc(l), false);
+      delete cls.Main; delete cls.Solution;          // the test harness, not something you call
+      provCache[k] = cls;
+    }
+    return provCache[k];
+  }
+  function classTable(l, mine){                       // provided classes + yours (yours win)
+    var all = {}, prov = provClasses(l);
+    Object.keys(prov).forEach(function(k){ all[k] = prov[k]; });
+    Object.keys(mine).forEach(function(k){ all[k] = mine[k]; });
+    return all;
+  }
+  function blank(s){ return s.replace(/[^\n]/g, ' '); }
+  function escRe(s){ return s.replace(/[$]/g, '\\$'); }
+  function matchBack(s, i, open, close){              // s[i] is `close`; index of the matching `open`, or -1
+    for (var d = 0; i >= 0; i--) { var ch = s[i]; if (ch === close) d++; else if (ch === open && --d === 0) return i; }
+    return -1;
+  }
+  function matchFwd(s, i, open, close){               // s[i] is `open`; index of the matching `close`, or s.length
+    for (var d = 0; i < s.length; i++) { var ch = s[i]; if (ch === open) d++; else if (ch === close && --d === 0) return i; }
+    return s.length;
+  }
+  function splitArgs(s){                              // split on commas outside () [] {} <>
+    var out = [], d = 0, last = 0;
+    for (var i = 0; i < s.length; i++) {
+      var ch = s[i];
+      if ('([{<'.indexOf(ch) >= 0) d++;
+      else if (')]}>'.indexOf(ch) >= 0) { if (!(ch === '>' && s[i - 1] === '-')) d = Math.max(0, d - 1); }
+      else if (ch === ',' && d === 0) { out.push(s.slice(last, i).trim()); last = i + 1; }
+    }
+    out.push(s.slice(last).trim());
+    return out.filter(Boolean);
+  }
+  function copyOf(x, extra){ var y = {}; Object.keys(x).forEach(function(k){ y[k] = x[k]; }); Object.keys(extra || {}).forEach(function(k){ y[k] = extra[k]; }); return y; }
+  function memberItems(members, statics){             // statics: true = only static, false = no static, null = all
+    var seen = {}, out = [];
+    members.forEach(function(x){
+      if (statics != null && !!x.isStatic !== statics) return;
+      var key = x.kind + x.name + '(' + (x.params || '') + ')'; if (seen[key]) return; seen[key] = 1;
+      out.push({ m: [(x.isStatic ? 'static ' : '') + x.name + (x.kind === 'm' ? '(' + (x.params || '') + ')' : ''), x.type || '', x.desc || '', x.cx || ''], cls: x.cls });
+    });
+    return out;
+  }
+
+  // ---------------- Java ----------------
+  function stripJava(src){                            // blank out comments and string/char contents, keeping offsets
+    return src.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])+'/g, function(s){
+      return s.charAt(0) === '/' ? blank(s) : s.charAt(0) + blank(s.slice(1, -1)) + s.charAt(s.length - 1);
+    });
+  }
+  var JMOD = '(?:(?:public|protected|private|static|final|abstract|synchronized|native|default|transient|volatile|strictfp|sealed)\\s+)*';
+  var JGEN = '<(?:[^<>;{}()]|<(?:[^<>;{}()]|<[^<>;{}()]*>)*>)*>';
+  var JTYPE = '[A-Za-z_$][\\w$.]*(?:\\s*' + JGEN + ')?(?:\\s*\\[\\s*\\])*';
+  var JMETHOD = new RegExp('^(' + JMOD + ')(?:' + JGEN + '\\s*)?(' + JTYPE + ')\\s+([A-Za-z_$][\\w$]*)\\s*\\(([^()]*)\\)\\s*(?:throws\\s+[\\w$.,\\s]+)?$');
+  var JFIELD = new RegExp('^(' + JMOD + ')(' + JTYPE + ')\\s+([A-Za-z_$][\\s\\S]*)$');
+  var JPRIM = /^(int|long|short|byte|char|boolean|float|double|void)$/;
+  var JNOTTYPE = /^(return|new|throw|throws|case|else|yield|assert|import|package|instanceof|extends|implements|super|this|goto|break|continue|do)$/;
+  var JKEYCALL = /^(if|for|while|switch|catch|synchronized|return|throw|case|else|do|try|new|assert)$/;
+  // generic type parameter names of the JDK classes in the reference, and a few name aliases
+  var JTP = { List: ['E'], ArrayList: ['E'], LinkedList: ['E'], Set: ['E'], HashSet: ['E'], TreeSet: ['E'], Deque: ['E'], ArrayDeque: ['E'],
+              Queue: ['E'], PriorityQueue: ['E'], Stack: ['E'], Iterator: ['E'], Collection: ['E'], Iterable: ['T'], Map: ['K', 'V'],
+              HashMap: ['K', 'V'], LinkedHashMap: ['K', 'V'], TreeMap: ['K', 'V'], Entry: ['K', 'V'], Comparator: ['T'], Comparable: ['T'], __array__: ['T'] };
+  var JALIAS = { NavigableMap: 'TreeMap', SortedMap: 'TreeMap', NavigableSet: 'TreeSet', SortedSet: 'TreeSet', LinkedHashSet: 'HashSet', Vector: 'ArrayList',
+                 AbstractMap: 'HashMap', ConcurrentHashMap: 'HashMap', AbstractList: 'ArrayList', AbstractQueue: 'Queue' };
+  var JITER = /^(List|ArrayList|LinkedList|Set|HashSet|TreeSet|Deque|ArrayDeque|Queue|PriorityQueue|Stack|Collection|Iterable|Iterator)$/;
+  // a few JDK types the reference panel doesn't list but that autocomplete needs (not shown in the panel)
+  [{ name: 'Map.Entry', key: 'Entry', pkg: 'java.util', methods: [['getKey()', 'K', 'The key', 'O(1)'], ['getValue()', 'V', 'The value', 'O(1)'], ['setValue(V v)', 'V', 'Replace the value, returns the old one', 'O(1)']] },
+   { name: 'Stack', pkg: 'java.util', methods: [['push(E x)', 'E', 'Push on top', 'O(1)'], ['pop()', 'E', 'Remove the top (throws if empty)', 'O(1)'], ['peek()', 'E', 'Top without removing', 'O(1)'], ['empty()', 'boolean', 'Whether empty', 'O(1)'], ['isEmpty()', 'boolean', 'Whether empty', 'O(1)'], ['size()', 'int', 'Number of elements', 'O(1)'], ['get(int i)', 'E', 'Element at index i (0 = bottom)', 'O(1)'], ['search(Object o)', 'int', '1-based distance from the top, or -1', 'O(n)']] },
+   { name: 'Comparable', pkg: 'java.lang', methods: [['compareTo(T o)', 'int', 'Negative, zero or positive', '']] },
+   { name: 'Collection', pkg: 'java.util', methods: [['size()', 'int', 'Number of elements', 'O(1)'], ['isEmpty()', 'boolean', 'Whether empty', 'O(1)'], ['contains(Object o)', 'boolean', 'Whether present', ''], ['add(E e)', 'boolean', 'Add', ''], ['remove(Object o)', 'boolean', 'Remove one', ''], ['addAll(Collection<? extends E> c)', 'boolean', 'Add all', ''], ['clear()', 'void', 'Remove all', ''], ['iterator()', 'Iterator<E>', 'Iterator', 'O(1)']] },
+   { name: 'Iterable', pkg: 'java.lang', methods: [['iterator()', 'Iterator<T>', 'Iterator', 'O(1)']] }
+  ].forEach(function(c){ var k = c.key || c.name; if (!JBY[k]) JBY[k] = c; });
+
+  function jParse(t){                                 // 'java.util.Map.Entry<K, List<V>>[]' -> { base: 'Entry', args: ['K', 'List<V>'], dims: 1 }
+    t = (t || '').replace(/\s+/g, ' ').trim();
+    var dims = 0; while (/\[\s*\]$/.test(t)) { t = t.replace(/\s*\[\s*\]$/, ''); dims++; }
+    t = t.replace(/\s*\.\.\.$/, function(){ dims++; return ''; });
+    var lt = t.indexOf('<'), args = [];
+    if (lt >= 0 && t.charAt(t.length - 1) === '>') { args = splitArgs(t.slice(lt + 1, -1)); t = t.slice(0, lt); }
+    args = args.map(function(a){ return a.replace(/^\?\s*(extends|super)\s+/, '').replace(/^\?$/, 'Object'); });
+    return { base: t.replace(/\s/g, '').split('.').pop(), args: args, dims: dims };
+  }
+  function jStripDim(t){ return t.replace(/\s*(\[\s*\]|\.\.\.)\s*$/, ''); }
+  function jSubst(t, params, args){                   // replace type parameters (E, K, V, T, ...) with actual type arguments
+    if (!t || !params || !params.length || !args || !args.length) return t;
+    return t.replace(/[A-Za-z_$][\w$]*/g, function(w){ var i = params.indexOf(w); return i >= 0 && args[i] ? args[i] : w; });
+  }
+  function jTParams(gen){ return gen ? splitArgs(gen.trim().slice(1, -1)).map(function(p){ return (p.match(/^[A-Za-z_$][\w$]*/) || [''])[0]; }) : []; }
+  function jParents(h){
+    h = (h || '').replace(/^\s*\([^)]*\)/, '').replace(/\bpermits\b[\s\S]*$/, '');
+    var out = [], e = h.match(/\bextends\s+([\s\S]*?)(?=\bimplements\b|$)/), im = h.match(/\bimplements\s+([\s\S]*)$/);
+    if (e) out = out.concat(splitArgs(e[1]));
+    if (im) out = out.concat(splitArgs(im[1]));
+    return out;
+  }
+  function javaClasses(src, own){                     // every class / interface / enum / record and anonymous class in src
+    var out = {}, s = stripJava(src), m;
+    var re = new RegExp('\\b(class|interface|enum|record)\\s+([A-Za-z_$][\\w$]*)\\s*(' + JGEN + ')?([^{;]*)\\{|\\bnew\\s+([A-Za-z_$][\\w$.]*\\s*(?:' + JGEN + ')?)\\s*\\(', 'g');
+    while ((m = re.exec(s))) {
+      var open, cls;
+      if (m[1]) {
+        open = re.lastIndex - 1;
+        cls = { name: m[2], kind: m[1], tparams: jTParams(m[3]), parents: jParents(m[4]), header: m[4] };
+      } else {
+        var k = matchFwd(s, re.lastIndex - 1, '(', ')') + 1;
+        while (k < s.length && /\s/.test(s[k])) k++;
+        if (s[k] !== '{') continue;                   // a plain `new T(...)`, not an anonymous class
+        open = k;
+        cls = { name: '$anon@' + k, kind: 'anon', tparams: [], parents: [m[5].replace(/\s*<\s*>$/, '')], label: 'anonymous ' + jParse(m[5]).base };
+      }
+      cls.own = own; cls.bodyStart = open; cls.bodyEnd = matchFwd(s, open, '{', '}');
+      cls.members = javaMembers(cls, s.slice(open + 1, cls.bodyEnd), own);
+      out[cls.name] = cls;                            // the scan continues inside the body, so nested classes are found too
+    }
+    return out;
+  }
+  function javaMembers(cls, body, own){
+    var top = '', d = 0, i;
+    for (i = 0; i < body.length; i++) {               // keep only the body's own level; nested blocks become {}
+      var ch = body[i];
+      if (ch === '{') { if (d === 0) top += '{}'; d++; } else if (ch === '}') d = Math.max(0, d - 1); else if (d === 0) top += ch;
+    }
+    top = top.replace(/@[\w$.]+(?:\s*\([^)]*\))?/g, ' ');
+    var segs = [], seg = '';
+    for (i = 0; i < top.length; i++) {               // declarations end at ';' or at a method / initializer body
+      if (top[i] === ';') { segs.push(seg); seg = ''; }
+      else if (top[i] === '{' && top[i + 1] === '}') { i++; if (/=|->/.test(seg)) seg += '{}'; else { segs.push(seg); seg = ''; } }
+      else seg += top[i];
+    }
+    segs.push(seg);
+    var list = [], desc = own ? 'your class' : 'provided', label = cls.label || cls.name;
+    function add(x){ x.cls = label; x.desc = desc; list.push(x); }
+    if (cls.kind === 'record') {                      // record P(int x, int y) -> x(), y()
+      var rp = (cls.header || '').match(/^\s*\(([^)]*)\)/);
+      if (rp) splitArgs(rp[1]).forEach(function(p){ var pm = p.match(/^([\s\S]+?)\s+([A-Za-z_$][\w$]*)$/); if (pm) add({ name: pm[2], kind: 'm', params: '', type: pm[1].trim() }); });
+    }
+    if (cls.kind === 'enum') {
+      splitArgs((segs.shift() || '').replace(/\{\}/g, '')).forEach(function(k){ var km = k.match(/^([A-Za-z_$][\w$]*)/); if (km) add({ name: km[1], kind: 'f', type: cls.name, isStatic: true }); });
+      add({ name: 'name', kind: 'm', params: '', type: 'String' }); add({ name: 'ordinal', kind: 'm', params: '', type: 'int' });
+    }
+    var ctor = new RegExp('^' + JMOD + '(?:' + JGEN + '\\s*)?' + escRe(cls.name) + '\\s*(\\(|$)');
+    segs.forEach(function(s){
+      s = s.replace(/\s+/g, ' ').trim();
+      if (!s || s === 'static' || ctor.test(s) || /\b(class|interface|enum|record)\s+[A-Za-z_$]/.test(s)) return;
+      var mm = s.match(JMETHOD);
+      if (mm) {
+        if (!own && /\bprivate\b/.test(mm[1])) return;
+        add({ name: mm[3], kind: 'm', params: mm[4].replace(/\s+/g, ' ').trim(), type: mm[2].replace(/\s+/g, ' '), isStatic: /\bstatic\b/.test(mm[1]) });
+        return;
+      }
+      var fm = s.match(JFIELD);
+      if (!fm || JNOTTYPE.test(jParse(fm[2]).base) || (!own && /\bprivate\b/.test(fm[1]))) return;
+      var st = /\bstatic\b/.test(fm[1]) || cls.kind === 'interface';
+      splitArgs(fm[3]).forEach(function(part){
+        var nm = part.match(/^([A-Za-z_$][\w$]*)\s*((?:\[\s*\])*)\s*(?:=|$)/);
+        if (nm) add({ name: nm[1], kind: 'f', type: (fm[2] + nm[2]).replace(/\s+/g, ' '), isStatic: st });
+      });
+    });
+    return list;
+  }
+  function jSelfType(c){ return c.kind === 'anon' || !c.tparams.length ? c.name : c.name + '<' + c.tparams.join(', ') + '>'; }
+  function jScopes(classes, pos){                     // your classes whose body contains pos, innermost first
+    return Object.keys(classes).map(function(k){ return classes[k]; })
+      .filter(function(c){ return c.own && c.bodyStart < pos && pos <= c.bodyEnd; })
+      .sort(function(a, b){ return b.bodyStart - a.bodyStart; });
+  }
+  function jbyMembers(base, args){
+    return methodsOf(base).map(function(x){
+      var ps = parseSig(x.m[0]);
+      return { name: ps.name, kind: ps.params === null ? 'f' : 'm', params: ps.params || '', type: jSubst(x.m[1], JTP[base], args),
+               isStatic: ps.isStatic, cls: x.cls, desc: x.m[2], cx: x.m[3], ctor: x.m[1] === '' };
+    }).filter(function(x){ return !x.ctor; });
+  }
+  function jMembers(t, ctx, depth){                   // all members of type t (own + inherited), or null if t is unknown
+    depth = depth || 0; if (!t || depth > 8) return null;
+    var p = jParse(t), base = JALIAS[p.base] || p.base;
+    if (p.dims) return jbyMembers('__array__', [jStripDim(t)]);
+    var c = ctx.classes[p.base];
+    if (c) {
+      var out = c.members.map(function(x){ return copyOf(x, { type: jSubst(x.type, c.tparams, p.args) }); });
+      c.parents.forEach(function(par){ out = out.concat(jMembers(jSubst(par, c.tparams, p.args), ctx, depth + 1) || []); });
+      return out;
+    }
+    return JBY[base] ? jbyMembers(base, p.args) : null;
+  }
+  function jMemberType(t, name, kind, ctx){
+    var ms = jMembers(t, ctx) || [];
+    for (var i = 0; i < ms.length; i++) if (ms[i].name === name && ms[i].kind === kind && ms[i].type) return ms[i].type;
+    return null;
+  }
+  function jElem(t, ctx, depth){                      // what a for-each over t yields
+    depth = depth || 0; if (!t || depth > 8) return null;
+    var p = jParse(t), base = JALIAS[p.base] || p.base;
+    if (p.dims) return jStripDim(t);
+    if (JITER.test(base)) return p.args[0] || null;
+    var c = ctx.classes[p.base];
+    if (c) for (var i = 0; i < c.parents.length; i++) { var e = jElem(jSubst(c.parents[i], c.tparams, p.args), ctx, depth + 1); if (e) return e; }
+    return null;
+  }
+  function jChain(s, i){                              // parse the expression that ends at s[i - 1], right to left
+    var steps = [];
+    function ws(){ while (i > 0 && /\s/.test(s[i - 1])) i--; }
+    for (var guard = 0; guard < 60; guard++) {
+      ws(); if (i <= 0) return null;
+      var ch = s[i - 1];
+      if (ch === ']') { var ob = matchBack(s, i - 1, '[', ']'); if (ob < 0) return null; i = ob; steps.unshift({ k: 'index' }); continue; }
+      if (ch === '}') { var oc = matchBack(s, i - 1, '{', '}'); return oc < 0 ? null : { head: { k: 'block', open: oc }, steps: steps }; }
+      if (ch === '"') return { head: { k: 'type', type: 'String' }, steps: steps };
+      if (ch === ')') {
+        var close = i - 1, open = matchBack(s, close, '(', ')'); if (open < 0) return null;
+        i = open; ws();
+        var gen = '';
+        if (s[i - 1] === '>' && s[i - 2] !== '-') { var go = matchBack(s, i - 1, '<', '>'); if (go < 0) return null; gen = s.slice(go, i); i = go; ws(); }
+        var nm = s.slice(Math.max(0, i - 120), i).match(/([A-Za-z_$][\w$]*)$/);
+        if (nm && !JKEYCALL.test(nm[1])) {
+          var at = i - nm[1].length; i = at; ws();
+          if (/(^|[^\w$])new$/.test(s.slice(Math.max(0, i - 4), i))) return { head: { k: 'new', type: nm[1] + gen, close: close, pos: at }, steps: steps };
+          if (s[i - 1] === '.') { steps.unshift({ k: 'call', name: nm[1] }); i--; continue; }
+          return { head: { k: 'call0', name: nm[1], pos: at }, steps: steps };
+        }
+        var cast = s.slice(open + 1, close).match(new RegExp('^\\s*\\(\\s*(' + JTYPE + ')\\s*\\)'));
+        if (cast && !JPRIM.test(cast[1])) return { head: { k: 'type', type: cast[1] }, steps: steps };
+        return { head: { k: 'expr', end: close, pos: open }, steps: steps };
+      }
+      var id = s.slice(Math.max(0, i - 120), i).match(/([A-Za-z_$][\w$]*)$/);
+      if (!id || /^\d/.test(id[1])) return null;
+      var start = i - id[1].length; i = start; ws();
+      if (s[i - 1] === '.' && !/\d$/.test(s.slice(0, i - 1))) { steps.unshift({ k: 'field', name: id[1] }); i--; continue; }
+      return { head: { k: 'name', name: id[1], pos: start }, steps: steps };
+    }
+    return null;
+  }
+  function jResolve(s, end, ctx, depth){              // type of the expression ending right before s[end]
+    depth = depth || 0; if (depth > 6) return null;
+    var ch = jChain(s, end); if (!ch) return null;
+    var h = ch.head, t = null, st = false, self = false, sc;
+    if (h.k === 'name') {
+      if (h.name === 'this') { sc = jScopes(ctx.classes, h.pos)[0]; t = sc && jSelfType(sc); self = true; }
+      else if (h.name === 'super') { sc = jScopes(ctx.classes, h.pos)[0]; t = sc && sc.parents[0]; self = true; }
+      else {
+        t = jVarType(h.name, s, h.pos, ctx, depth);
+        if (!t && (ctx.classes[h.name] || JBY[h.name] || JALIAS[h.name])) { t = h.name; st = true; }
+      }
+    } else if (h.k === 'new') {
+      t = h.type.replace(/\s*<\s*>$/, '');
+      var k = h.close + 1; while (k < s.length && /\s/.test(s[k])) k++;
+      if (s[k] === '{' && ctx.classes['$anon@' + k]) t = '$anon@' + k;
+    } else if (h.k === 'block') t = ctx.classes['$anon@' + h.open] ? '$anon@' + h.open : null;
+    else if (h.k === 'type') t = h.type;
+    else if (h.k === 'expr') { var r = jResolve(s, h.end, ctx, depth + 1); t = r && r.type; }
+    else if (h.k === 'call0') {
+      var scs = jScopes(ctx.classes, h.pos);
+      for (var q = 0; q < scs.length && !t; q++) t = jMemberType(jSelfType(scs[q]), h.name, 'm', ctx);
+    }
+    for (var i = 0; t && i < ch.steps.length; i++) {
+      var sp = ch.steps[i];
+      if (sp.k === 'index') t = jParse(t).dims ? jStripDim(t) : null;
+      else t = jMemberType(t, sp.name, sp.k === 'call' ? 'm' : 'f', ctx);
+      st = false; self = false;
+    }
+    return t ? { type: t, isStatic: st, self: self } : null;
+  }
+  function jExprEnd(s, i, stops){                      // from i, the end of an expression: first stop char at depth 0
+    for (var d = 0; i < s.length; i++) {
+      var ch = s[i];
+      if ('([{'.indexOf(ch) >= 0) d++;
+      else if (')]}'.indexOf(ch) >= 0) { if (d === 0) return i; d--; }
+      else if (d === 0 && stops.indexOf(ch) >= 0) return i;
+    }
+    return i;
+  }
+  function jVarType(name, s, pos, ctx, depth){        // declared type of a variable / parameter / field visible at pos
+    var before = s.slice(0, pos), best = null, m, n = escRe(name);
+    function later(c){ if (!best || c.idx > best.idx) best = c; }
+    // Type name  /  Type name = ...  /  Type name : ...  /  (Type name, ...)  /  instanceof Type name
+    var re = new RegExp('(?:^|[\\s(,;{}])(?:final\\s+)?(' + JTYPE + ')(?:\\s*\\.\\.\\.)?\\s+' + n + '\\s*(?=[=;,):]|$)', 'gm');
+    while ((m = re.exec(before))) {
+      if (JNOTTYPE.test(jParse(m[1]).base)) continue;
+      later({ type: m[1].replace(/\s+/g, ' ').trim(), at: m.index + m[0].length, idx: m.index + m[0].length });
+    }
+    // int a = 0, name = 1;  /  for (int i = 0, name = n; ...)
+    var re2 = new RegExp(',\\s*' + n + '\\s*(?=[=;,)])', 'g');
+    while ((m = re2.exec(before))) {
+      for (var k = m.index, d = 0; k > 0; k--) {
+        var c2 = before[k - 1];
+        if (c2 === ')' || c2 === ']') d++;
+        else if (c2 === '(' || c2 === '[') { if (d === 0) break; d--; }
+        else if ((c2 === ';' || c2 === '{' || c2 === '}') && d === 0) break;
+      }
+      var dm = before.slice(k, m.index).match(new RegExp('^\\s*(?:final\\s+)?(' + JTYPE + ')\\s+[A-Za-z_$][\\w$]*\\s*(?:=|$)'));
+      if (dm && !JNOTTYPE.test(jParse(dm[1]).base)) later({ type: dm[1].replace(/\s+/g, ' ').trim(), at: m.index + m[0].length, idx: m.index + m[0].length });
+    }
+    // untyped lambda parameters:  name -> ...  /  (a, name) -> ...
+    var re3 = new RegExp('(?:\\(([^()]*)\\)|(?:^|[^\\w$.])(' + n + '))\\s*->', 'g');
+    while ((m = re3.exec(before))) {
+      var ps = m[1] != null ? splitArgs(m[1]) : [name], pi = ps.indexOf(name);
+      if (pi >= 0) later({ lambda: true, lpos: m[1] != null ? m.index : m.index + m[0].indexOf(name), pidx: pi, idx: m.index + m[0].length });
+    }
+    if (best && best.lambda) return jLambdaType(s, best.lpos, best.pidx, ctx, depth);
+    if (best && best.type === 'var') {
+      var a = best.at; while (a < s.length && /\s/.test(s[a])) a++;
+      if (s[a] === '=') { var r = jResolve(s, jExprEnd(s, a + 1, ';,'), ctx, depth + 1); return r && r.type; }
+      if (s[a] === ':') { var r2 = jResolve(s, jExprEnd(s, a + 1, ';'), ctx, depth + 1); return r2 && jElem(r2.type, ctx); }
+      return null;
+    }
+    if (best) return best.type;
+    var scs = jScopes(ctx.classes, pos);              // a field of an enclosing class (declared anywhere, or inherited)
+    for (var q = 0; q < scs.length; q++) { var ft = jMemberType(jSelfType(scs[q]), name, 'f', ctx); if (ft) return ft; }
+    return null;
+  }
+  function jLambdaType(s, lpos, pidx, ctx, depth){    // type of an untyped lambda parameter, from where the lambda is passed
+    if (depth > 6) return null;
+    for (var k = lpos - 1, d = 0, argi = 0; k >= 0; k--) {   // the call this lambda is an argument of
+      var ch = s[k];
+      if (ch === ')' || ch === ']' || ch === '}') d++;
+      else if (ch === '(' || ch === '[' || ch === '{') { if (d === 0) break; d--; }
+      else if (ch === ',' && d === 0) argi++;
+      else if (ch === ';' && d === 0) return null;
+    }
+    if (k < 0 || s[k] !== '(') return null;
+    var open = k, head = s.slice(0, open).replace(/\s+$/, ''), m, r, t;
+    // Comparator.comparing(x -> ...) and friends: x is whatever the comparator compares
+    if ((m = head.match(/\bComparator\s*\.\s*(?:<[^<>]*>\s*)?(?:comparing\w*)$/))) return jLambdaType(s, head.length - m[0].length, 0, ctx, depth + 1);
+    if ((m = head.match(/\.\s*thenComparing\w*$/))) { var c0 = jChain(s, head.length - m[0].length); return c0 && c0.head.pos != null ? jLambdaType(s, c0.head.pos, 0, ctx, depth + 1) : null; }
+    // new PriorityQueue<>((a, b) -> ...), new TreeSet<>(...), new TreeMap<>(...)
+    if ((m = head.match(new RegExp('\\bnew\\s+([A-Za-z_$][\\w$.]*)\\s*(' + JGEN + ')?$')))) {
+      if (!/^(PriorityQueue|TreeSet|TreeMap|ConcurrentSkipListSet|ConcurrentSkipListMap)$/.test(m[1])) return null;
+      var targs = m[2] ? jParse(m[1] + m[2]).args : [];
+      if (targs.length) return targs[0];
+      var pre = head.slice(0, head.length - m[0].length), dm = pre.match(new RegExp('(' + JTYPE + ')\\s+[A-Za-z_$][\\w$]*\\s*=\\s*$')), am;
+      if (dm) return jParse(dm[1]).args[0] || null;
+      if ((am = pre.match(/([A-Za-z_$][\w$]*)\s*=\s*$/))) { t = jVarType(am[1], s, pre.length - am[0].length, ctx, depth + 1); return t ? jParse(t).args[0] || null : null; }
+      return null;
+    }
+    if (!(m = head.match(/\.\s*([A-Za-z_$][\w$]*)$/))) return null;
+    var meth = m[1], dot = head.length - m[0].length;
+    r = jResolve(s, dot, ctx, depth + 1);
+    if (r && r.isStatic && /^(Collections|Arrays)$/.test(r.type)) {   // Collections.sort(list, (a, b) -> ...), Arrays.sort(arr, ...)
+      var fa = jResolve(s, jExprEnd(s, open + 1, ','), ctx, depth + 1);
+      return fa ? jElem(fa.type, ctx) : null;
+    }
+    if (!r) return null;
+    var p = jParse(r.type), base = JALIAS[p.base] || p.base;
+    if (/Map$/.test(base) || base === 'Map') {
+      if (/^(forEach|compute|computeIfPresent|replaceAll)$/.test(meth)) return p.args[pidx] || null;
+      if (meth === 'computeIfAbsent') return p.args[0] || null;
+      if (meth === 'merge') return p.args[1] || null;
+      return null;
+    }
+    if (/^(sort|forEach|removeIf|anyMatch|allMatch|noneMatch|filter|map|mapToInt|mapToLong|mapToDouble|max|min|sorted)$/.test(meth)) return jElem(r.type, ctx);
+    return null;
+  }
+
+  // ---------------- Python ----------------
+  function stripPy(src){                              // blank out comments and strings (keeping offsets); keep 'Name' annotations
+    return src.replace(/'''[\s\S]*?'''|"""[\s\S]*?"""|#[^\n]*|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"/g, function(s){
+      if (s.charAt(0) === '#' || s.length >= 6 && /^('''|""")/.test(s)) return blank(s);
+      var inner = s.slice(1, -1);
+      return /^[A-Za-z_][\w.\[\], ]*$/.test(inner) ? s : s.charAt(0) + blank(inner) + s.charAt(0);
+    });
+  }
+  var PYLINK = /^(next|prev|left|right|parent|random|child)$/;    // node links usually point at the same class
+  var PYTYPES = { list: 'list', List: 'list', Sequence: 'list', dict: 'dict', Dict: 'dict', defaultdict: 'dict', DefaultDict: 'dict', OrderedDict: 'dict',
+                  Counter: 'dict', set: 'set', Set: 'set', frozenset: 'set', str: 'str', deque: 'collections.deque', Deque: 'collections.deque' };
+  var PYKW = /^(if|elif|while|for|in|not|and|or|return|lambda|yield|await|assert|del|with|except|print|is|else|import|from|raise|global|nonlocal|pass|class|def)$/;
+  function pyParse(t){                                // 'Optional[List[Node]]' -> { base: 'List', args: ['Node'] }
+    t = (t || '').trim().replace(/^['"]|['"]$/g, '');
+    var m;
+    while ((m = t.match(/^(?:typing\.)?Optional\[([\s\S]*)\]$/))) t = m[1].trim().replace(/^['"]|['"]$/g, '');
+    t = splitArgs(t.replace(/\|/g, ','))[0] || '';     // X | None -> X
+    var lb = t.indexOf('['), args = [];
+    if (lb > 0 && t.charAt(t.length - 1) === ']') { args = splitArgs(t.slice(lb + 1, -1)).map(function(a){ return a.replace(/^['"]|['"]$/g, ''); }); t = t.slice(0, lb); }
+    return { base: t.trim().split('.').pop(), args: args };
+  }
+  function pyLitType(rhs){
+    rhs = (rhs || '').trim();
+    if (/^\[/.test(rhs)) return 'list';
+    if (/^\{\s*\}$/.test(rhs) || /^\{[^}]*:/.test(rhs)) return 'dict';
+    if (/^\{/.test(rhs)) return 'set';
+    if (/^[rbfu]?['"]/.test(rhs)) return 'str';
+    if (/^-?\d+$/.test(rhs)) return 'int';
+    if (/^-?\d*\.\d+$/.test(rhs)) return 'float';
+    if (/^(True|False)$/.test(rhs)) return 'bool';
+    return '';
+  }
+  function pyClasses(src, own){
+    var out = {}, s = stripPy(src), lines = s.split('\n'), offs = [], o = 0, desc = own ? 'your class' : 'provided';
+    lines.forEach(function(L){ offs.push(o); o += L.length + 1; });
+    lines.forEach(function(line, i){
+      var m = line.match(/^([ \t]*)class\s+([A-Za-z_]\w*)\s*(?:\(([^)]*)\))?\s*:/); if (!m) return;
+      var ind = m[1].length, name = m[2], members = [], seen = {}, meth = {}, selfNames = [], bodyInd = -1, end = lines.length, params = {};
+      var cls = { name: name, own: own, ind: ind, start: offs[i], members: members,
+                  parents: m[3] ? splitArgs(m[3]).filter(function(p){ return !/^(object|Generic\b|ABC$|metaclass\s*=)/.test(p); }) : [] };
+      function hidden(n){ return /^__.*__$/.test(n) || (!own && n.charAt(0) === '_'); }
+      function add(x){
+        var key = x.kind + x.name;
+        if (seen[key]) { if (!seen[key].type && x.type) seen[key].type = x.type; return; }
+        if (hidden(x.name)) return;
+        x.cls = name; x.desc = desc; seen[key] = x; members.push(x);
+      }
+      function rhsType(rhs, attr){
+        rhs = (rhs || '').trim();
+        var cm = rhs.match(/^([A-Za-z_][\w.]*)\s*\(/), im = rhs.match(/^([A-Za-z_]\w*)$/);
+        if (cm) return cm[1].split('.').pop();
+        if (im && params[im[1]]) return params[im[1]];
+        var lt = pyLitType(rhs); if (lt) return lt;
+        return PYLINK.test(attr) && (!im || im[1] === 'None' || im[1] === attr) ? name : '';
+      }
+      for (var j = i + 1; j < lines.length; j++) {
+        var L = lines[j]; if (!L.trim()) continue;
+        var li = L.match(/^[ \t]*/)[0].length; if (li <= ind) { end = j; break; }
+        if (bodyInd < 0) bodyInd = li;
+        if (li === bodyInd) {
+          var d = L.match(/^\s*def\s+([A-Za-z_]\w*)\s*\(([\s\S]*?)\)\s*(?:->\s*([^:]+?))?\s*:/);
+          if (d) {
+            meth[d[1]] = 1; params = {};
+            var ps = splitArgs(d[2]);
+            if (ps.length && /^(self|cls)\b/.test(ps[0])) ps.shift();
+            ps.forEach(function(p){ var pm = p.match(/^\*{0,2}([A-Za-z_]\w*)\s*(?::\s*([^=]+?))?\s*(?:=[\s\S]*)?$/); if (pm) params[pm[1]] = pm[2] ? pm[2].trim() : ''; });
+            add({ name: d[1], kind: 'm', params: ps.join(', '), type: (d[3] || '').trim(), isStatic: /@staticmethod/.test(lines[j - 1] || '') });
+            continue;
+          }
+          var a = L.match(/^\s*([A-Za-z_]\w*)\s*(?::\s*([^=]+?))?\s*(?:=(?!=)\s*(.*))?$/);
+          if (a && (a[2] || a[3] != null) && !PYKW.test(a[1])) add({ name: a[1], kind: 'f', type: a[2] ? a[2].trim() : rhsType(a[3], a[1]) });
+          continue;
+        }
+        var sm, sre = /self\.([A-Za-z_]\w*)\s*(?::\s*([^=\n]+?))?\s*=(?!=)\s*([^\n]*)/g;
+        while ((sm = sre.exec(L))) add({ name: sm[1], kind: 'f', type: sm[2] ? sm[2].trim() : rhsType(sm[3].split(/[,;]\s*(?![^()\[\]{}]*[)\]}])/)[0], sm[1]) });
+        var an, are = /self\.([A-Za-z_]\w*)/g; while ((an = are.exec(L))) selfNames.push(an[1]);
+      }
+      selfNames.forEach(function(n){ if (!meth[n]) add({ name: n, kind: 'f', type: PYLINK.test(n) ? name : '' }); });
+      cls.end = end < lines.length ? offs[end] : s.length;
+      out[name] = cls;
+    });
+    return out;
+  }
+  function pyScope(classes, pos){                     // the innermost of your classes containing pos
+    var best = null;
+    Object.keys(classes).forEach(function(k){ var c = classes[k]; if (c.own && c.start < pos && pos <= c.end && (!best || c.start > best.start)) best = c; });
+    return best;
+  }
+  function pyRet(r, p){                               // a reference return word -> a type
+    if (r === 'item') return p.args[0] || '';
+    if (r === 'value') return p.base === 'Counter' ? 'int' : p.args[1] || '';
+    if (/^(list|dict|set|str|int|bool|float)$/.test(r)) return r === 'list' && p.base === 'str' ? 'List[str]' : r;
+    return '';
+  }
+  function pyMembers(t, ctx, depth){                  // all members of type t (own + inherited), or null if unknown
+    depth = depth || 0; if (!t || depth > 8) return null;
+    var p = pyParse(t), c = ctx.classes[p.base];
+    if (c) {
+      var out = c.members.slice();
+      c.parents.forEach(function(par){ out = out.concat(pyMembers(par, ctx, depth + 1) || []); });
+      return out;
+    }
+    var mod = PYTYPES[p.base] && PYMOD[PYTYPES[p.base]];
+    return mod ? mod.methods.map(function(m){ var ps = parseSig(m[0]); return { name: ps.name, kind: 'm', params: ps.params || '', type: pyRet(m[1], p), cls: mod.name, desc: m[2], cx: m[3] }; }) : null;
+  }
+  function pyMemberType(t, name, kind, ctx){
+    var ms = pyMembers(t, ctx) || [];
+    for (var i = 0; i < ms.length; i++) if (ms[i].name === name && ms[i].kind === kind && ms[i].type) return ms[i].type;
+    if (kind === 'f') for (i = 0; i < ms.length; i++) if (ms[i].name === name && ms[i].type) return ms[i].type;
+    return null;
+  }
+  function pyElem(t){                                 // what `for x in t` yields
+    var p = pyParse(t), b = PYTYPES[p.base];
+    if (b === 'str') return 'str';
+    if (/^(list|set|collections\.deque|dict)$/.test(b) || /^(Iterable|Iterator|Generator|tuple|Tuple)$/.test(p.base)) return p.args[0] || null;
+    return null;
+  }
+  function pyIndex(t){                                // what t[i] gives
+    var p = pyParse(t), b = PYTYPES[p.base];
+    if (b === 'str') return 'str';
+    if (b === 'dict') return p.base === 'Counter' ? 'int' : p.args[1] || null;
+    if (/^(list|collections\.deque)$/.test(b)) return p.args[0] || null;
+    return null;
+  }
+  function pyChain(s, i){                             // parse the expression that ends at s[i - 1], right to left
+    var steps = [];
+    function ws(){ while (i > 0 && /[ \t]/.test(s[i - 1])) i--; }
+    for (var guard = 0; guard < 60; guard++) {
+      ws(); if (i <= 0) return null;
+      var ch = s[i - 1], o;
+      if (ch === '"' || ch === "'") return { head: { k: 'type', type: 'str' }, steps: steps };
+      if (ch === '}') return { head: { k: 'type', type: pyLitType(s.slice(matchBack(s, i - 1, '{', '}'), i)) || 'dict' }, steps: steps };
+      if (ch === ']') {
+        o = matchBack(s, i - 1, '[', ']'); if (o < 0) return null;
+        var pb = s.slice(0, o).replace(/[ \t]+$/, '');
+        if (/[\w)\]'"]$/.test(pb) && !/(^|[^\w])(in|return|and|or|not|if|else|yield|print)$/.test(pb)) { i = o; steps.unshift({ k: 'index' }); continue; }
+        return { head: { k: 'type', type: 'list' }, steps: steps };
+      }
+      if (ch === ')') {
+        var close = i - 1, open = matchBack(s, close, '(', ')'); if (open < 0) return null;
+        i = open; ws();
+        var nm = s.slice(Math.max(0, i - 120), i).match(/([A-Za-z_]\w*)$/);
+        if (nm && !PYKW.test(nm[1])) {
+          var at = i - nm[1].length; i = at; ws();
+          if (s[i - 1] === '.') { steps.unshift({ k: 'call', name: nm[1], pos: at, args: s.slice(open + 1, close) }); i--; continue; }
+          return { head: { k: 'call0', name: nm[1], pos: at, args: s.slice(open + 1, close) }, steps: steps };
+        }
+        return { head: { k: 'expr', end: close }, steps: steps };
+      }
+      var id = s.slice(Math.max(0, i - 120), i).match(/([A-Za-z_]\w*)$/);
+      if (!id || /^\d/.test(id[1])) return null;
+      var start = i - id[1].length; i = start; ws();
+      if (s[i - 1] === '.' && !/\d$/.test(s.slice(0, i - 1))) { steps.unshift({ k: 'field', name: id[1] }); i--; continue; }
+      return { head: { k: 'name', name: id[1], pos: start }, steps: steps };
+    }
+    return null;
+  }
+  function pyResolve(s, end, ctx, depth){
+    depth = depth || 0; if (depth > 6) return null;
+    var ch = pyChain(s, end); if (!ch) return null;
+    var h = ch.head, t = null, sc;
+    if (h.k === 'name' && /^(collections|typing|builtins)$/.test(h.name) && ch.steps.length && ch.steps[0].k === 'call') { h = ch.steps.shift(); h.k = 'call0'; }
+    if (h.k === 'name') {
+      if (h.name === 'self' || h.name === 'cls') { sc = pyScope(ctx.classes, h.pos); t = sc && sc.name; }
+      else t = pyVarType(h.name, s, h.pos, ctx, depth) || (ctx.classes[h.name] || PYTYPES[h.name] ? h.name : null);
+    } else if (h.k === 'call0') {
+      var a = (h.args || '').trim();
+      if (h.name === 'super') { sc = pyScope(ctx.classes, h.pos); t = sc && sc.parents[0]; }
+      else if (h.name === 'defaultdict') t = 'Dict[Any, ' + (a.match(/^[A-Za-z_]\w*$/) ? a : 'Any') + ']';
+      else if (h.name === 'Counter') t = 'Counter';
+      else if (ctx.classes[h.name] || PYTYPES[h.name]) t = h.name;
+      else if (/^(sorted|list)$/.test(h.name)) t = 'list';
+      else if (/^(str|repr|chr|input)$/.test(h.name)) t = 'str';
+      else {                                          // your own top-level function with a return annotation
+        var fm = s.match(new RegExp('^def\\s+' + h.name + '\\s*\\([^)]*\\)\\s*->\\s*([^:]+?)\\s*:', 'm'));
+        t = fm ? fm[1] : null;
+      }
+    } else if (h.k === 'type') t = h.type;
+    else if (h.k === 'expr') { var r = pyResolve(s, h.end, ctx, depth + 1); t = r && r.type; }
+    for (var i = 0; t && i < ch.steps.length; i++) {
+      var sp = ch.steps[i];
+      t = sp.k === 'index' ? pyIndex(t) : pyMemberType(t, sp.name, sp.k === 'call' ? 'm' : 'f', ctx);
+    }
+    return t ? { type: t } : null;
+  }
+  function pyLineEnd(s, i){ var e = s.indexOf('\n', i); e = e < 0 ? s.length : e; while (e > i && /\s/.test(s[e - 1])) e--; return e; }
+  function pyTypeText(s, i){                          // the annotation text starting at s[i]
+    var m = s.slice(i).match(/^['"]?[A-Za-z_][\w.]*['"]?/); if (!m) return null;
+    var e = i + m[0].length;
+    if (s[e] === '[') e = matchFwd(s, e, '[', ']') + 1;
+    return s.slice(i, e);
+  }
+  function pyVarType(name, s, pos, ctx, depth){
+    var before = s.slice(0, pos), best = null, m, n = name;
+    function later(c){ if (!best || c.idx > best.idx) best = c; }
+    var re = new RegExp('(?:^[ \\t]*|[(,]\\s*)' + n + '\\s*:(?!=)[ \\t]*(?=[A-Za-z_\'"])', 'gm');      // name: Type  (params, variables)
+    while ((m = re.exec(before))) { var tt = pyTypeText(before, m.index + m[0].length); if (tt) later({ type: tt, idx: m.index + m[0].length }); }
+    var re2 = new RegExp('^[ \\t]*' + n + '\\s*=(?!=)[ \\t]*', 'gm');                                 // name = expr
+    while ((m = re2.exec(before))) if (pyLineEnd(s, m.index + m[0].length) < pos) later({ rhs: m.index + m[0].length, idx: m.index + m[0].length });   // not the line being evaluated
+    var re3 = new RegExp('\\bfor\\s+([A-Za-z_]\\w*(?:\\s*,\\s*[A-Za-z_]\\w*)*)\\s+in\\s+', 'g');      // for name in expr
+    while ((m = re3.exec(before))) {
+      var targets = m[1].split(',').map(function(x){ return x.trim(); }), ti = targets.indexOf(name);
+      if (ti >= 0) later({ loop: m.index + m[0].length, ti: ti, tn: targets.length, idx: m.index + m[0].length });
+    }
+    var re4 = /\bdef\s+([A-Za-z_]\w*)\s*\(([^)]*)\)/g;                                        // def f(a, name): no annotation
+    while ((m = re4.exec(before))) {
+      var dps = splitArgs(m[2]).map(function(x){ return x.replace(/\s*=[\s\S]*$/, '').trim(); }), di = dps.indexOf(name);
+      if (di >= 0) later({ fn: m[1], pidx: di, selfArg: dps[0] === 'self' || dps[0] === 'cls', idx: m.index + m[0].length });
+    }
+    for (var kb = pos - 1, db = 0; kb >= 0; kb--) {   // a comprehension variable is introduced after its use: [x.val for x in xs]
+      var cb = s[kb]; if (')]}'.indexOf(cb) >= 0) db++; else if ('([{'.indexOf(cb) >= 0) { if (db === 0) break; db--; } else if (cb === '\n' && db === 0 && !/[(\[{,]\s*$/.test(s.slice(0, kb))) { kb = -1; break; }
+    }
+    if (kb >= 0) {
+      var close = matchFwd(s, kb, s[kb], { '(': ')', '[': ']', '{': '}' }[s[kb]]), seg = s.slice(pos, close), cre2 = /\bfor\s+([A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*)\s+in\s+/g, cm2;
+      while ((cm2 = cre2.exec(seg))) { var ct = cm2[1].split(',').map(function(x){ return x.trim(); }); if (ct.indexOf(name) >= 0) { later({ loop: pos + cm2.index + cm2[0].length, ti: ct.indexOf(name), tn: ct.length, idx: Infinity }); break; } }
+    }
+    var re5 = /\blambda\s+([A-Za-z_][\w\s,]*?)\s*:/g;                                            // lambda name: ...
+    while ((m = re5.exec(before))) { var lps = m[1].split(',').map(function(x){ return x.trim(); }); if (lps.indexOf(name) >= 0) later({ lam: m.index, idx: m.index + m[0].length }); }
+    if (!best) return null;
+    if (best.type) return best.type;
+    if (best.fn) {                                    // look at what the function is called with (outermost call first)
+      var cre = new RegExp('(?:^|[^\\w.]|self\\.)' + best.fn + '\\s*\\(', 'g'), calls = [];
+      while ((m = cre.exec(s))) if (!/def\s+$/.test(s.slice(Math.max(0, m.index - 8), m.index + 1))) calls.push({ open: m.index + m[0].length - 1, viaSelf: m[0].indexOf('self.') >= 0 });
+      for (var ci = calls.length - 1; ci >= 0; ci--) {
+        var ai = best.pidx - (best.selfArg && calls[ci].viaSelf ? 1 : 0), st = calls[ci].open + 1;
+        if (best.selfArg && !calls[ci].viaSelf) continue;
+        for (var q = 0; q < ai && st < s.length; q++) st = jExprEnd(s, st, ',') + 1;
+        if (s[st - 1] === ')') continue;
+        var ca = pyResolve(s, jExprEnd(s, st, ','), ctx, depth + 1);
+        if (ca) return ca.type;
+      }
+      return null;
+    }
+    if (best.lam != null) {                           // sorted(xs, key=lambda x: ...), xs.sort(key=...), min / max / heapq.nsmallest
+      for (var k2 = best.lam - 1, d2 = 0; k2 >= 0; k2--) { var c2 = s[k2]; if (')]}'.indexOf(c2) >= 0) d2++; else if ('([{'.indexOf(c2) >= 0) { if (d2 === 0) break; d2--; } }
+      if (k2 < 0 || s[k2] !== '(') return null;
+      var callee = s.slice(0, k2).replace(/\s+$/, ''), lm;
+      if ((lm = callee.match(/\.\s*sort$/))) { var lr = pyResolve(s, callee.length - lm[0].length, ctx, depth + 1); return lr && pyElem(lr.type); }
+      if (/(^|[^\w.])(sorted|min|max|filter|map)$|heapq\.(nsmallest|nlargest)$/.test(callee)) {
+        var fst = k2 + 1; if (/nsmallest|nlargest/.test(callee)) fst = jExprEnd(s, fst, ',') + 1;
+        var lr2 = pyResolve(s, jExprEnd(s, fst, ','), ctx, depth + 1); return lr2 && pyElem(lr2.type);
+      }
+      return null;
+    }
+    if (best.rhs != null) {
+      var e = pyLineEnd(s, best.rhs), r = pyResolve(s, e, ctx, depth + 1);
+      return r ? r.type : pyLitType(s.slice(best.rhs, e)) || null;
+    }
+    // for-loop target: find where the iterable expression ends (':' / newline, or the end of a comprehension)
+    for (var k = best.loop, d = 0; k < s.length; k++) {
+      var c = s[k];
+      if ('([{'.indexOf(c) >= 0) d++;
+      else if (')]}'.indexOf(c) >= 0) { if (d === 0) break; d--; }
+      else if (d === 0 && (c === ':' || c === '\n' || /^\sif\s/.test(s.slice(k, k + 4)))) break;
+    }
+    var ex = s.slice(best.loop, k).trim(), em;
+    if (best.tn === 1) { var r1 = pyResolve(s, best.loop + s.slice(best.loop, k).replace(/\s+$/, '').length, ctx, depth + 1); return r1 && pyElem(r1.type); }
+    if ((em = ex.match(/^enumerate\s*\(/)) && best.tn === 2) {
+      if (best.ti === 0) return 'int';
+      var eo = best.loop + s.slice(best.loop).indexOf('(') ;
+      var r2 = pyResolve(s, jExprEnd(s, eo + 1, ','), ctx, depth + 1); return r2 && pyElem(r2.type);
+    }
+    if (/\.\s*items\s*\(\s*\)$/.test(ex) && best.tn === 2) {
+      var it = best.loop + s.slice(best.loop, k).lastIndexOf('.'), r3 = pyResolve(s, it, ctx, depth + 1);
+      return r3 ? pyParse(r3.type).args[best.ti] || (best.ti === 1 && pyParse(r3.type).base === 'Counter' ? 'int' : null) : null;
+    }
+    return null;
   }
   function hintItems(list, prefix, from, to){
     prefix = prefix.toLowerCase();
@@ -1369,46 +2063,52 @@
   var PYMOD = {};
   PYREF.forEach(function(c){ PYMOD[c.name] = c; });
   function javaHint(c){
-    var cur = c.getCursor(), line = c.getLine(cur.line).slice(0, cur.ch);
-    var md = line.match(/([A-Za-z_$][\w$]*(?:\[[^\]]*\])*)\s*\.\s*([\w$]*)$/);
-    var to = cur, code = c.getRange({ line: 0, ch: 0 }, cur);
-    if (md) {
-      var obj = md[1], prefix = md[2], from = { line: cur.line, ch: cur.ch - prefix.length }, list;
-      if (/\[/.test(obj)) { var bt = resolveJava(code, obj.replace(/\[.*$/, '')); if (bt === '__array__') list = methodsOf('__array__'); }
-      if (JBY[obj] && obj !== '__array__') {
-        list = JBY[obj].methods.filter(function(m){ return m[0].indexOf('static ') === 0; }).map(function(m){ return { m: m, cls: obj }; });
-        if (!list.length) list = methodsOf(obj);
-      } else if (!list) {
-        var t = resolveJava(code, obj);
-        if (t === '__array__') list = methodsOf('__array__');
-        else if (t && JBY[t]) list = methodsOf(t).filter(function(x){ return x.m[0].indexOf('static ') !== 0 && x.m[1] !== ''; });
-        else if (t === 'StringBuilder' || t === 'String') list = methodsOf(t);
-        else {
-          list = [];
-          ['List', 'Map', 'Set', 'Deque', 'PriorityQueue', 'String', 'StringBuilder', 'TreeMap', 'TreeSet'].forEach(function(n){ list = list.concat(methodsOf(n)); });
-          list = list.filter(function(x){ return x.m[0].indexOf('static ') !== 0 && x.m[1] !== ''; });
-        }
+    var cur = c.getCursor(), line = c.getLine(cur.line).slice(0, cur.ch), to = cur;
+    var md = line.match(/([\w$)\]}"])\s*\.\s*([\w$]*)$/);
+    if (md && !/(^|[^\w$.])\d+\s*\.\s*[\w$]*$/.test(line)) {
+      var prefix = md[2], from = { line: cur.line, ch: cur.ch - prefix.length }, list;
+      var full = c.getValue(), s = stripJava(full), dot = c.indexFromPos(from) - 1;
+      while (dot > 0 && s[dot] !== '.') dot--;
+      var ctx = { classes: classTable('java', javaClasses(full, true)) };
+      var r = jResolve(s, dot, ctx), ms = r && jMembers(r.type, ctx);
+      if (ms) {
+        list = memberItems(ms, r.self ? null : r.isStatic);
+        if (r.isStatic && !list.length && JBY[r.type]) list = memberItems(ms, null);
+      } else if (r) list = [];                        // a primitive, or a type we know nothing about: no guesses
+      else {                                          // couldn't work out the type: offer the common collection methods
+        list = [];
+        ['List', 'Map', 'Set', 'Deque', 'PriorityQueue', 'String', 'StringBuilder', 'TreeMap', 'TreeSet'].forEach(function(n){ list = list.concat(methodsOf(n)); });
+        list = list.filter(function(x){ return x.m[0].indexOf('static ') !== 0 && x.m[1] !== ''; });
       }
       return hintItems(list, prefix, from, to);
     }
     var mw = line.match(/([A-Za-z_$][\w$]*)$/); if (!mw) return null;
     var p = mw[1], f = { line: cur.line, ch: cur.ch - p.length };
     var idents = (c.getValue().match(/[A-Za-z_$][\w$]{2,}/g) || []);
-    return wordItems(Object.keys(JBY).filter(function(k){ return k !== '__array__'; }).concat(JKEYWORDS, idents), p, f, to);
+    var types = Object.keys(classTable('java', javaClasses(c.getValue(), true))).filter(function(k){ return k.charAt(0) !== '$'; });
+    return wordItems(Object.keys(JBY).filter(function(k){ return k !== '__array__'; }).concat(types, JKEYWORDS, idents), p, f, to);
   }
   function pyHint(c){
     var cur = c.getCursor(), line = c.getLine(cur.line).slice(0, cur.ch);
-    var md = line.match(/([A-Za-z_][\w]*(?:\.[A-Za-z_]\w*)?)\s*\.\s*(\w*)$/);
-    if (md) {
-      var obj = md[1], prefix = md[2], from = { line: cur.line, ch: cur.ch - prefix.length }, list = [];
-      var mod = PYMOD[obj] || PYMOD['collections.' + obj];
-      if (mod) list = mod.methods.map(function(m){ return { m: m, cls: mod.name }; });
+    var md = line.match(/([\w)\]}'"])\s*\.\s*(\w*)$/);
+    if (md && !/(^|[^\w.])\d+\.\w*$/.test(line)) {
+      var prefix = md[2], from = { line: cur.line, ch: cur.ch - prefix.length }, list = [];
+      var bare = line.match(/(?:^|[^\w.])([A-Za-z_]\w*(?:\.[A-Za-z_]\w*)?)\s*\.\s*\w*$/), obj = bare && bare[1];
+      var mod = obj && (PYMOD[obj] || PYMOD['collections.' + obj]);
+      var full = c.getValue(), s = stripPy(full), dot = c.indexFromPos(from) - 1;
+      while (dot > 0 && s[dot] !== '.') dot--;
+      var ctx = { classes: classTable('python', pyClasses(full, true)) };
+      var r = mod ? null : pyResolve(s, dot, ctx), ms = r && pyMembers(r.type, ctx);
+      if (mod) list = mod.methods.map(function(m){ return { m: m, cls: mod.name }; });          // heapq. / bisect. / collections.
+      else if (ms) list = memberItems(ms, null);
+      else if (r) list = [];                          // int, float, or a type we know nothing about: no guesses
       else ['list', 'dict', 'set', 'str', 'collections.deque'].forEach(function(n){ list = list.concat(PYMOD[n].methods.map(function(m){ return { m: m, cls: n }; })); });
       return hintItems(list, prefix, from, cur);
     }
     var mw = line.match(/([A-Za-z_]\w*)$/); if (!mw) return null;
     var kw = 'def return class for while if elif else import from in not and or None True False len range enumerate zip sorted sum min max abs list dict set tuple str int float append heapq deque defaultdict Counter bisect self lambda break continue pass'.split(' ');
-    return wordItems(kw.concat(c.getValue().match(/[A-Za-z_]\w{2,}/g) || []), mw[1], { line: cur.line, ch: cur.ch - mw[1].length }, cur);
+    var types = Object.keys(classTable('python', pyClasses(c.getValue(), true)));
+    return wordItems(kw.concat(types, c.getValue().match(/[A-Za-z_]\w{2,}/g) || []), mw[1], { line: cur.line, ch: cur.ch - mw[1].length }, cur);
   }
   function showHints(c, manual){
     c.showHint({ hint: lang === 'java' ? javaHint : pyHint, completeSingle: false, closeOnUnfocus: true, alignWithWord: true });

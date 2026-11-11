@@ -186,11 +186,24 @@ Every problem shows a status: *(none)* not started · **Started** (code written)
 | Progress | `prep/solutions/progress.json` (plus a browser copy) |
 | Problems you added | `prep/content/custom_problems.json` |
 | Focus tab content | `prep/content/focus.json` |
+| System design write-ups | `prep/content/system_design.json` |
 | Saved versions | `prep/solutions/<slug>/<name>.java` / `.py`, listed in `prep/solutions/<slug>/versions.json` |
 
 Problems are linked to files by their LeetCode slug: `two-sum` → `solutions/two-sum.java` and the
 `"two-sum"` entry in `progress.json`. On load the page merges the file and the browser copy, so nothing
 marked done is lost. **Commit `prep/solutions/` to git** to keep your work across machines.
+
+### System design tab
+
+The **System design** tab has a full design for every system design question in the prep. There are 12:
+- the LinkedIn list: feed, messaging, job recommendations, PYMK, Live, notifications, URL shortener;
+- the onsite-report questions: distributed job scheduler, CI job scheduler, activity platform, API blocking / rate limiting;
+- the ML feed-ranking design.
+
+Each design covers requirements, estimates, API, data model, an architecture diagram, the end-to-end flow, deep dives,
+trade-offs, a rollout plan and likely follow-ups. You can filter by tag, and *Practice mode* hides the design until
+you click. The designs live in `prep/content/system_design.json`; the Focus and ML & LLM tabs show the same
+designs (they reference them by id).
 
 ### ★ Focus tab (LinkedIn Staff onsite)
 

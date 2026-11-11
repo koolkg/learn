@@ -119,6 +119,7 @@
   },
   {
    "id": "feed-ranking-optimization",
+   "design": "feed-ranking-ml",
    "category": "ML system design",
    "title": "Staff AI system design: feed ranking optimization",
    "question": "Round 2 (Staff AI System Design): a typical ML system design problem. The interviewer presented a feed ranking scenario and asked how to optimize it. (The rest of the question was cut off in the report; this answer covers both ranking quality and serving cost/latency.)",
