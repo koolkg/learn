@@ -25,10 +25,27 @@
   },
   "custom-api-request-blocker": {
     "attempted": true,
-    "done": false,
-    "doneAt": null,
-    "last": null,
-    "updated": "2026-11-06T23:13:12.178Z"
+    "done": true,
+    "doneAt": "2026-11-12",
+    "last": {
+      "at": "2026-11-12T05:03:31.051Z",
+      "lang": "java",
+      "ok": 14,
+      "total": 14
+    },
+    "updated": "2026-11-11T21:03:36"
+  },
+  "custom-job-scheduler": {
+    "attempted": true,
+    "done": true,
+    "doneAt": "2026-11-13",
+    "last": {
+      "at": "2026-11-13T06:20:33.670Z",
+      "lang": "java",
+      "ok": 15,
+      "total": 15
+    },
+    "updated": "2026-11-12T22:20:56"
   },
   "custom-progressive-lru-implementation": {
     "attempted": true,
